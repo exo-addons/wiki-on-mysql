@@ -1,4 +1,4 @@
-Wiki RDMS backend
+Wiki RDBMS backend
 =======
 
-Wiki RDMS backend add-on
+Wiki RDBMS backend add-on
