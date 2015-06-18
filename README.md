@@ -1,4 +1,4 @@
-Wiki on MySQL
+Wiki RDMS backend
 =======
 
-Wiki on MySQL add-on
+Wiki RDMS backend add-on
