@@ -14,19 +14,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.wiki.dao;
+package org.exoplatform.wiki.jpa.entity;
 
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  *          exo@exoplatform.com
- * Jun 19, 2015  
+ * Jun 23, 2015  
  */
-public class HelloWorld {
-
-  public static void main(String[] args) {
-    System.out.println("Hello new add-on");
-
-  }
+public class DraftPage extends Page {
 
 }
