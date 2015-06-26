@@ -14,23 +14,34 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.wiki.jpa.entity;
+package org.exoplatform.wiki.jpa.test.dao;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import org.exoplatform.wiki.jpa.dao.AttachmentDAO;
+import org.exoplatform.wiki.jpa.entity.Attachment;
 
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  *          exo@exoplatform.com
- * Jun 23, 2015  
+ * Jun 26, 2015  
  */
-@Entity
-@Table(name = "WIKI_PAGES")
-public class Page {
-  @Id 
-  @Column(name = "PAGE_ID")
-  private long id;
+public class TestWikiBaseDAO extends BaseTest {
+  public void testRollBackTransaction(){
+    AttachmentDAO dao = new AttachmentDAO();
+    dao.beginTransaction();
+    Attachment att = dao.create(new Attachment());
+    assertNotNull(dao.find(att.getId()));
+    dao.rollback();
+    assertNull(dao.find(att.getId()));
+  }
+  public void testCommit(){
+    
+    AttachmentDAO dao = new AttachmentDAO();
+    long count = dao.count();
+    dao.beginTransaction();
+    Attachment att = dao.create(new Attachment());
+    dao.commit();
+    assertEquals(new Long(count + 1), dao.count());
+    dao.delete(att);
+  }
 }

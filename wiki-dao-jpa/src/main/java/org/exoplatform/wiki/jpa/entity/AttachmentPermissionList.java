@@ -16,21 +16,43 @@
  */
 package org.exoplatform.wiki.jpa.entity;
 
+import java.util.List;
+
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  *          exo@exoplatform.com
- * Jun 23, 2015  
+ * Jun 26, 2015  
  */
 @Entity
-@Table(name = "WIKI_PAGES")
-public class Page {
-  @Id 
-  @Column(name = "PAGE_ID")
+@Table(name = "WIKI_ATTACHMENT_PERMISSIONS_LIST")
+public class AttachmentPermissionList {
+  @Id
+  @Column(name = "ATTACHMENT_PERMISSION_LIST_ID")
   private long id;
+  public long getId(){
+    return this.id;
+  }
+  @Column(name = "Key")
+  private String key;
+  public String getKey(){
+    return key;
+  }
+  public void setKey(String key){
+    this.key = key;
+  }
+  
+  @ElementCollection  
+  @CollectionTable(name="WIKI_ATTACHMENT_PERMISSIONS_LIST", joinColumns=@JoinColumn(name="ATTACHMENT_PERMISSION_LIST_ID"))
+  @Column(name="Value")
+  private List<String> values;
+  
 }

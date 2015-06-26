@@ -14,23 +14,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.wiki.jpa.entity;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+package org.exoplatform.wiki.jpa.dao;
 
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  *          exo@exoplatform.com
- * Jun 23, 2015  
+ * Jun 24, 2015  
  */
-@Entity
-@Table(name = "WIKI_PAGES")
-public class Page {
-  @Id 
-  @Column(name = "PAGE_ID")
-  private long id;
+public class PageDAO {
+
 }

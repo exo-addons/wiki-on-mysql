@@ -16,12 +16,89 @@
  */
 package org.exoplatform.wiki.jpa.entity;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.JoinColumn;
+
+import org.exoplatform.wiki.service.PermissionType;
+
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  *          exo@exoplatform.com
  * Jun 23, 2015  
  */
+@Entity
+@Table(name = "WIKI_ATTACHMENTS")
 public class Attachment {
-
+  @Id 
+  @Column(name = "ATTACHMENT_ID")
+  private long id;
+  public long getId(){return this.id;}
+  @Column(name = "WeightInBytes")
+  private long weightInBytes;
+  public long getWeightInBytes(){
+    return weightInBytes;
+  }
+  @Column(name = "Creator")
+  private String creator;
+  public String getCreator(){
+    return creator;
+  }
+  @Column(name = "CreatedDate")
+  private Calendar createdDate;
+  public Calendar getCreatedDate(){
+    return createdDate;
+  }
+  @Column(name = "UpdatedDate")
+  private Calendar updatedDate;
+  public Calendar getUpdatedDate(){
+    return updatedDate;
+  }
+  @Column(name = "DownloadURL")
+  private String downloadURL;
+  public String getDownloadURL(){
+    return downloadURL;
+  }
+  @Column(name = "Title")
+  private String title;
+  public String getTitle(){
+    return title;
+  }
+  public void setTitle(String title){
+    this.title = title;
+  }
+  @Column(name = "Text")
+  private String text;
+  public String getText(){
+    return text;
+  }
+  public void setText(String text){
+    this.text = text;
+  }
+  @OneToMany
+  @Column(name="Permission")
+  private List<AttachmentPermissionList> permission;
+  public List<AttachmentPermissionList> getPermission(){
+    return permission;
+  }
+  public void setPermission(List<AttachmentPermissionList> permission){
+    this.permission = permission;
+  }
+  
+  public boolean hasPermission(PermissionType permissionType){
+    return false;
+  }
 }

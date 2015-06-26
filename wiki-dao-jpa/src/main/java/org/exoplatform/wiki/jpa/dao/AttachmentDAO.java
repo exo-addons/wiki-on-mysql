@@ -14,23 +14,20 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.wiki.jpa.entity;
+package org.exoplatform.wiki.jpa.dao;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.EntityManager;
+
+import org.exoplatform.commons.api.jpa.EntityManagerService;
+import org.exoplatform.commons.api.jpa.dao.AbstractGenericDAO;
+import org.exoplatform.container.PortalContainer;
+import org.exoplatform.wiki.jpa.entity.Attachment;
 
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  *          exo@exoplatform.com
- * Jun 23, 2015  
+ * Jun 24, 2015  
  */
-@Entity
-@Table(name = "WIKI_PAGES")
-public class Page {
-  @Id 
-  @Column(name = "PAGE_ID")
-  private long id;
+public class AttachmentDAO extends BaseWikiDAO<Attachment,Long>{
 }
