@@ -16,12 +16,14 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
+import org.exoplatform.wiki.jpa.entity.Page;
+
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  *          exo@exoplatform.com
  * Jun 24, 2015  
  */
-public class PageDAO {
+public class PageDAO extends BaseWikiDAO<Page, Long>{
 
 }

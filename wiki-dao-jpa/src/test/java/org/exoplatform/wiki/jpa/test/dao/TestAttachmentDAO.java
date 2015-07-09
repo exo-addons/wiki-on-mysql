@@ -36,7 +36,7 @@ import com.ibm.icu.impl.Assert;
 public class TestAttachmentDAO extends BaseTest{
 
   public void testInsert(){
-    AttachmentDAO attachmentDAO = new AttachmentDAO();
+    AttachmentDAO attachmentDAO = getService(AttachmentDAO.class);
     Attachment att = new Attachment();
     att.setText("abc");
     attachmentDAO.create(att);

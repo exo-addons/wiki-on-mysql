@@ -16,20 +16,10 @@
  */
 
 package org.exoplatform.wiki.jpa.test.dao;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
-
-import org.exoplatform.commons.api.jpa.EntityManagerService;
 import org.exoplatform.commons.testing.BaseExoTestCase;
 import org.exoplatform.component.test.ConfigurationUnit;
 import org.exoplatform.component.test.ConfiguredBy;
 import org.exoplatform.component.test.ContainerScope;
-import org.exoplatform.container.StandaloneContainer;
-import org.junit.Ignore;
-
-import junit.framework.TestCase;
 
 //import org.exoplatform.container.StandaloneContainer;
 

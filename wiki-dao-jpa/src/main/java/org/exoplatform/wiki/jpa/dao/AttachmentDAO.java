@@ -16,11 +16,6 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
-import javax.persistence.EntityManager;
-
-import org.exoplatform.commons.api.jpa.EntityManagerService;
-import org.exoplatform.commons.api.jpa.dao.AbstractGenericDAO;
-import org.exoplatform.container.PortalContainer;
 import org.exoplatform.wiki.jpa.entity.Attachment;
 
 /**
