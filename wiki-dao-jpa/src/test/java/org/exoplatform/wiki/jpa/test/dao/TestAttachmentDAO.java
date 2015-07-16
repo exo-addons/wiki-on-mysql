@@ -35,11 +35,16 @@ import com.ibm.icu.impl.Assert;
  */
 public class TestAttachmentDAO extends BaseTest{
 
+//  private EntityManagerService emService = getService(EntityManagerService.class);
+
   public void testInsert(){
+    //Given
     AttachmentDAO attachmentDAO = getService(AttachmentDAO.class);
     Attachment att = new Attachment();
     att.setText("abc");
+    //When
     attachmentDAO.create(att);
+    //Then
     Attachment got = attachmentDAO.find(att.getId());
     assertEquals("abc", got.getText());
   }

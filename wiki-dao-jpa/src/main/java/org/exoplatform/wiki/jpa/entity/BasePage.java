@@ -24,11 +24,7 @@ import javax.persistence.*;
  *          exo@exoplatform.com
  * Jun 23, 2015  
  */
-@Entity
-@Table(name = "WIKI_WIKIS")
-public class Wiki {
-  @Id 
-  @Column(name = "WIKI_ID")
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  private long id;
+@MappedSuperclass
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+public abstract class BasePage {
 }

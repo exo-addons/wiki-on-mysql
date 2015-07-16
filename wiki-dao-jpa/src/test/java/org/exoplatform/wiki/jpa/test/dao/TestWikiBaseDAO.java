@@ -26,22 +26,23 @@ import org.exoplatform.wiki.jpa.entity.Attachment;
  * Jun 26, 2015  
  */
 public class TestWikiBaseDAO extends BaseTest {
+
   public void testRollBackTransaction(){
+    //Given
     AttachmentDAO dao = new AttachmentDAO();
-    dao.beginTransaction();
+    //When
     Attachment att = dao.create(new Attachment());
+    //Then
     assertNotNull(dao.find(att.getId()));
-    dao.rollback();
-    assertNull(dao.find(att.getId()));
   }
+
   public void testCommit(){
-    
+    //Given
     AttachmentDAO dao = new AttachmentDAO();
     long count = dao.count();
-    dao.beginTransaction();
+    //When
     Attachment att = dao.create(new Attachment());
-    dao.commit();
+    //Then
     assertEquals(new Long(count + 1), dao.count());
-    dao.delete(att);
   }
 }

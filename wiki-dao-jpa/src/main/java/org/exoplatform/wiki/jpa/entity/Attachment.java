@@ -22,15 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.MapKeyColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.JoinColumn;
+import javax.persistence.*;
 
 import org.exoplatform.wiki.service.PermissionType;
 
@@ -45,52 +37,72 @@ import org.exoplatform.wiki.service.PermissionType;
 public class Attachment {
   @Id 
   @Column(name = "ATTACHMENT_ID")
+  @GeneratedValue(strategy = GenerationType.AUTO)
   private long id;
-  public long getId(){return this.id;}
+
   @Column(name = "WeightInBytes")
   private long weightInBytes;
-  public long getWeightInBytes(){
-    return weightInBytes;
-  }
+
   @Column(name = "Creator")
   private String creator;
-  public String getCreator(){
-    return creator;
-  }
+
   @Column(name = "CreatedDate")
   private Calendar createdDate;
-  public Calendar getCreatedDate(){
-    return createdDate;
-  }
+
   @Column(name = "UpdatedDate")
   private Calendar updatedDate;
-  public Calendar getUpdatedDate(){
-    return updatedDate;
-  }
+
   @Column(name = "DownloadURL")
   private String downloadURL;
-  public String getDownloadURL(){
-    return downloadURL;
-  }
+
   @Column(name = "Title")
   private String title;
-  public String getTitle(){
-    return title;
-  }
-  public void setTitle(String title){
-    this.title = title;
-  }
+
   @Column(name = "Text")
   private String text;
-  public String getText(){
-    return text;
-  }
-  public void setText(String text){
-    this.text = text;
-  }
+
   @OneToMany
   @Column(name="Permission")
   private List<AttachmentPermissionList> permission;
+
+  public long getId(){return this.id;}
+
+  public long getWeightInBytes(){
+    return weightInBytes;
+  }
+
+  public String getCreator(){
+    return creator;
+  }
+
+  public Calendar getCreatedDate(){
+    return createdDate;
+  }
+
+  public Calendar getUpdatedDate(){
+    return updatedDate;
+  }
+
+  public String getDownloadURL(){
+    return downloadURL;
+  }
+
+  public String getTitle(){
+    return title;
+  }
+
+  public void setTitle(String title){
+    this.title = title;
+  }
+
+  public String getText(){
+    return text;
+  }
+
+  public void setText(String text){
+    this.text = text;
+  }
+
   public List<AttachmentPermissionList> getPermission(){
     return permission;
   }

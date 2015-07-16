@@ -1,35 +1,34 @@
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"
-	xmlns="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd">
+               xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"
+               xmlns="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd">
     <component>
-    <key>org.exoplatform.commons.api.jpa.EntityManagerService</key>
-    <type>org.exoplatform.commons.api.jpa.EntityManagerService</type>
-    <init-params>    
-      <value-param>
-        <name>persistence.unit.name</name>
-        <description>The name of persistence unit</description>
-        <value>${persistence.unit.name:wiki-persistence-h2}</value>      
-      </value-param>
-    </init-params>
-  </component>
-  <component>
-     <key>org.exoplatform.services.idgenerator.IDGeneratorService</key>
-     <type>org.exoplatform.services.idgenerator.impl.IDGeneratorServiceImpl</type>
-  </component>
+        <type>org.exoplatform.commons.persistence.impl.EntityManagerService</type>
+        <init-params>
+            <value-param>
+                <name>persistence.unit.name</name>
+                <description>The name of persistence unit</description>
+                <value>${persistence.unit.name:wiki-persistence}</value>
+            </value-param>
+        </init-params>
+    </component>
+    <component>
+        <key>org.exoplatform.services.idgenerator.IDGeneratorService</key>
+        <type>org.exoplatform.services.idgenerator.impl.IDGeneratorServiceImpl</type>
+    </component>
 
-  <component>
-     <type>org.exoplatform.services.security.IdentityRegistry</type>
-  </component>
-  <component>
-     <type>org.exoplatform.wiki.jpa.dao.AttachmentDAO</type>
-  </component>
-  <component>
-     <key>org.exoplatform.services.document.DocumentReaderService</key>
-     <type>org.exoplatform.services.document.impl.DocumentReaderServiceImpl</type>
-  </component>
+    <component>
+        <type>org.exoplatform.services.security.IdentityRegistry</type>
+    </component>
+    <component>
+        <type>org.exoplatform.wiki.jpa.dao.AttachmentDAO</type>
+    </component>
+    <component>
+        <key>org.exoplatform.services.document.DocumentReaderService</key>
+        <type>org.exoplatform.services.document.impl.DocumentReaderServiceImpl</type>
+    </component>
 
-  <component>
-    <key>org.exoplatform.services.jdbc.DataSourceProvider</key>
-    <type>org.exoplatform.services.jdbc.impl.DataSourceProviderImpl</type>
-  </component>
+    <component>
+        <key>org.exoplatform.services.jdbc.DataSourceProvider</key>
+        <type>org.exoplatform.services.jdbc.impl.DataSourceProviderImpl</type>
+    </component>
 </configuration>

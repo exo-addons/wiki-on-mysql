@@ -18,13 +18,7 @@ package org.exoplatform.wiki.jpa.entity;
 
 import java.util.List;
 
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * Created by The eXo Platform SAS
@@ -37,22 +31,28 @@ import javax.persistence.Table;
 public class AttachmentPermissionList {
   @Id
   @Column(name = "ATTACHMENT_PERMISSION_LIST_ID")
+  @GeneratedValue(strategy = GenerationType.AUTO)
   private long id;
+
+  @Column(name = "Key")
+  private String key;
+
+  @ElementCollection
+  @CollectionTable(name="WIKI_ATTACHMENT_PERMISSIONS_LIST",
+          joinColumns=@JoinColumn(name="ATTACHMENT_PERMISSION_LIST_ID"))
+  @Column(name="Value")
+  private List<String> values;
+
   public long getId(){
     return this.id;
   }
-  @Column(name = "Key")
-  private String key;
+
   public String getKey(){
     return key;
   }
+  
   public void setKey(String key){
     this.key = key;
   }
-  
-  @ElementCollection  
-  @CollectionTable(name="WIKI_ATTACHMENT_PERMISSIONS_LIST", joinColumns=@JoinColumn(name="ATTACHMENT_PERMISSION_LIST_ID"))
-  @Column(name="Value")
-  private List<String> values;
   
 }

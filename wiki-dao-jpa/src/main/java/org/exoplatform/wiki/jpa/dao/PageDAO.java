@@ -16,7 +16,8 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
-import org.exoplatform.wiki.jpa.entity.Page;
+import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
+import org.exoplatform.wiki.jpa.entity.BasePage;
 
 /**
  * Created by The eXo Platform SAS
@@ -24,6 +25,6 @@ import org.exoplatform.wiki.jpa.entity.Page;
  *          exo@exoplatform.com
  * Jun 24, 2015  
  */
-public class PageDAO extends BaseWikiDAO<Page, Long>{
+public class PageDAO extends GenericDAOJPAImpl<BasePage, Long> {
 
 }

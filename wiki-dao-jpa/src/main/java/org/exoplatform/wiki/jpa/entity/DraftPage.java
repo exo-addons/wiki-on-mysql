@@ -16,10 +16,7 @@
  */
 package org.exoplatform.wiki.jpa.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * Created by The eXo Platform SAS
@@ -29,8 +26,10 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "WIKI_DRAFT_PAGES")
-public class DraftPage extends Page {
-  @Column(name = "DRAFT_PAGE_ID")
-  private long id;
+public class DraftPage extends BasePage {
 
+    @Id
+    @Column(name="DRAFT_PAGE_ID")
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private long id;
 }

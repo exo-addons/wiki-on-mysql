@@ -16,12 +16,15 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
+import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
+import org.exoplatform.wiki.jpa.entity.Wiki;
+
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  *          exo@exoplatform.com
  * Jun 24, 2015  
  */
-public class WikiDAO {
+public class WikiDAO  extends GenericDAOJPAImpl<Wiki, Long> {
 
 }
