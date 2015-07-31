@@ -16,7 +16,8 @@
  */
 package org.exoplatform.wiki.jpa.entity;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 
 import javax.persistence.*;
 

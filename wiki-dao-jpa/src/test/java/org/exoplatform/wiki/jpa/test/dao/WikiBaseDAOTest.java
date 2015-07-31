@@ -23,21 +23,26 @@ import org.exoplatform.wiki.jpa.entity.Attachment;
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  *          exo@exoplatform.com
- * Jun 25, 2015  
+ * Jun 26, 2015  
  */
-public class TestAttachmentDAO extends BaseTest{
+public class WikiBaseDAOTest extends BaseTest {
 
-//  private EntityManagerService emService = getService(EntityManagerService.class);
-
-  public void testInsert(){
+  public void testRollBackTransaction(){
     //Given
-    AttachmentDAO attachmentDAO = getService(AttachmentDAO.class);
-    Attachment att = new Attachment();
-    att.setText("abc");
+    AttachmentDAO dao = new AttachmentDAO();
     //When
-    attachmentDAO.create(att);
+    Attachment att = dao.create(new Attachment());
     //Then
-    Attachment got = attachmentDAO.find(att.getId());
-    assertEquals("abc", got.getText());
+    assertNotNull(dao.find(att.getId()));
+  }
+
+  public void testCommit(){
+    //Given
+    AttachmentDAO dao = new AttachmentDAO();
+    long count = dao.count();
+    //When
+    Attachment att = dao.create(new Attachment());
+    //Then
+    assertEquals(new Long(count + 1), dao.count());
   }
 }

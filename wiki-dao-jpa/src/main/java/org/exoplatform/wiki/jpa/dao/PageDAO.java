@@ -16,8 +16,16 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
+import java.util.List;
+
+import org.hibernate.envers.AuditReader;
+import org.hibernate.envers.AuditReaderFactory;
+import org.hibernate.envers.RevisionType;
+import org.hibernate.envers.query.AuditEntity;
+import org.hibernate.envers.query.AuditQuery;
+
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
-import org.exoplatform.wiki.jpa.entity.BasePage;
+import org.exoplatform.wiki.jpa.entity.Page;
 
 /**
  * Created by The eXo Platform SAS
@@ -25,6 +33,14 @@ import org.exoplatform.wiki.jpa.entity.BasePage;
  *          exo@exoplatform.com
  * Jun 24, 2015  
  */
-public class PageDAO extends GenericDAOJPAImpl<BasePage, Long> {
+public class PageDAO extends GenericDAOJPAImpl<Page, Long> {
 
+    public List<Page> findRemovedPages(Page parentPage) {
+        AuditReader reader = AuditReaderFactory.get(getEntityManager());
+        AuditQuery query = reader.createQuery()
+                .forRevisionsOfEntity(Page.class, true, true)
+                .add(AuditEntity.property("parentPage").eq(parentPage))
+                .add(AuditEntity.revisionType().eq(RevisionType.DEL));
+        return query.getResultList();
+    }
 }
