@@ -16,7 +16,7 @@
  */
 package org.exoplatform.wiki.jpa.entity;
 
-import java.util.List;
+import org.exoplatform.commons.api.persistence.ExoEntity;
 
 import javax.persistence.*;
 
@@ -27,32 +27,45 @@ import javax.persistence.*;
  * Jun 26, 2015  
  */
 @Entity
-@Table(name = "WIKI_ATTACHMENT_PERMISSIONS_LIST")
-public class AttachmentPermissionList {
+@ExoEntity
+@Table(name = "WIKI_PERMISSIONS")
+public class Permission {
+
   @Id
-  @Column(name = "ATTACHMENT_PERMISSION_LIST_ID")
+  @Column(name = "PERMISSION_ID")
   @GeneratedValue(strategy = GenerationType.AUTO)
-  private long id;
+  private Long id;
 
-  @Column(name = "Key")
-  private String key;
+  /**
+   * User or Group
+   */
+  @Column(name = "USER")
+  private String user;
 
-  @ElementCollection
-  @CollectionTable(name="WIKI_ATTACHMENT_PERMISSIONS_LIST",
-          joinColumns=@JoinColumn(name="ATTACHMENT_PERMISSION_LIST_ID"))
-  @Column(name="Value")
-  private List<String> values;
+  @Column(name="TYPE")
+  private PermissionType type;
 
   public long getId(){
     return this.id;
   }
 
-  public String getKey(){
-    return key;
+  public void setId(Long id) {
+    this.id = id;
   }
-  
-  public void setKey(String key){
-    this.key = key;
+
+  public String getUser() {
+    return user;
   }
-  
+
+  public void setUser(String user) {
+    this.user = user;
+  }
+
+  public PermissionType getType() {
+    return type;
+  }
+
+  public void setType(PermissionType type) {
+    this.type = type;
+  }
 }

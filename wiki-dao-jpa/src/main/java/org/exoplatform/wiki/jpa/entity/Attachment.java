@@ -16,14 +16,11 @@
  */
 package org.exoplatform.wiki.jpa.entity;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.persistence.*;
 
+import org.exoplatform.commons.api.persistence.ExoEntity;
 import org.exoplatform.wiki.service.PermissionType;
 
 /**
@@ -33,58 +30,84 @@ import org.exoplatform.wiki.service.PermissionType;
  * Jun 23, 2015  
  */
 @Entity
+@ExoEntity
 @Table(name = "WIKI_ATTACHMENTS")
 public class Attachment {
   @Id 
   @Column(name = "ATTACHMENT_ID")
   @GeneratedValue(strategy = GenerationType.AUTO)
-  private long id;
+  private Long id;
 
-  @Column(name = "WeightInBytes")
-  private long weightInBytes;
+  @Column(name = "WEIGHT_IN_BYTES")
+  private Long weightInBytes;
 
-  @Column(name = "Creator")
+  @Column(name = "CREATOR")
   private String creator;
 
-  @Column(name = "CreatedDate")
-  private Calendar createdDate;
+  @Column(name = "CREATED_DATE")
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date createdDate;
 
-  @Column(name = "UpdatedDate")
-  private Calendar updatedDate;
+  @Column(name = "UPDATED_DATE")
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date updatedDate;
 
-  @Column(name = "DownloadURL")
+  @Column(name = "DOWNLOAD_URL")
   private String downloadURL;
 
-  @Column(name = "Title")
+  @Column(name = "TITLE")
   private String title;
 
-  @Column(name = "Text")
+  @Column(name = "TEXT")
   private String text;
 
   @OneToMany
-  @Column(name="Permission")
-  private List<AttachmentPermissionList> permission;
+  private List<Permission> permission;
 
   public long getId(){return this.id;}
 
+  public void setId(Long id) {
+    this.id = id;
+  }
+
   public long getWeightInBytes(){
     return weightInBytes;
+  }
+
+  public void setWeightInBytes(Long weightInBytes) {
+    this.weightInBytes = weightInBytes;
   }
 
   public String getCreator(){
     return creator;
   }
 
-  public Calendar getCreatedDate(){
+  public void setCreator(String creator) {
+    this.creator = creator;
+  }
+
+  public Date getCreatedDate(){
     return createdDate;
   }
 
-  public Calendar getUpdatedDate(){
+  public void setCreatedDate(Date createdDate) {
+    this.createdDate = createdDate;
+  }
+
+  public Date getUpdatedDate(){
     return updatedDate;
+  }
+
+  public void setUpdatedDate(Date updatedDate) {
+    this.updatedDate = updatedDate;
   }
 
   public String getDownloadURL(){
     return downloadURL;
+  }
+
+  public void setDownloadURL(String downloadURL) {
+    this.downloadURL = downloadURL;
   }
 
   public String getTitle(){
@@ -103,14 +126,14 @@ public class Attachment {
     this.text = text;
   }
 
-  public List<AttachmentPermissionList> getPermission(){
+  public List<Permission> getPermission(){
     return permission;
   }
-  public void setPermission(List<AttachmentPermissionList> permission){
+  public void setPermission(List<Permission> permission){
     this.permission = permission;
   }
   
   public boolean hasPermission(PermissionType permissionType){
-    return false;
+    throw new UnsupportedOperationException("Not implemented");
   }
 }

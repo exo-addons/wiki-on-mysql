@@ -16,6 +16,8 @@
  */
 package org.exoplatform.wiki.jpa.entity;
 
+import org.exoplatform.commons.api.persistence.ExoEntity;
+
 import javax.persistence.*;
 
 /**
@@ -25,6 +27,7 @@ import javax.persistence.*;
  * Jun 23, 2015  
  */
 @MappedSuperclass
+@ExoEntity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class BasePage {
 }

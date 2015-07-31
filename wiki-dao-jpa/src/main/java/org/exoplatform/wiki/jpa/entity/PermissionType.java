@@ -19,27 +19,15 @@
 
 package org.exoplatform.wiki.jpa.entity;
 
-import org.exoplatform.commons.api.persistence.ExoEntity;
-
-import javax.persistence.*;
-import java.util.List;
-
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  * exo@exoplatform.com
  * 7/16/15
  */
-@Entity
-@ExoEntity
-@Table(name = "WIKI_PAGES")
-public class Page extends BasePage{
-
-    @Id
-    @Column(name = "PAGE_ID")
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
-
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<Attachment> attachments;
+public enum PermissionType {
+    VIEWPAGE,
+    EDITPAGE,
+    ADMINPAGE,
+    ADMINSPACE
 }

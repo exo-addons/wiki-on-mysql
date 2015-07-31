@@ -16,16 +16,8 @@
  */
 package org.exoplatform.wiki.jpa.test.dao;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
-
-import junit.framework.TestCase;
-
-import org.exoplatform.commons.api.jpa.EntityManagerService;
 import org.exoplatform.wiki.jpa.dao.AttachmentDAO;
 import org.exoplatform.wiki.jpa.entity.Attachment;
-
-import com.ibm.icu.impl.Assert;
 
 /**
  * Created by The eXo Platform SAS

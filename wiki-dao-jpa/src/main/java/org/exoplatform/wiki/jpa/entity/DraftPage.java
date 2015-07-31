@@ -16,6 +16,8 @@
  */
 package org.exoplatform.wiki.jpa.entity;
 
+import org.exoplatform.commons.api.persistence.ExoEntity;
+
 import javax.persistence.*;
 
 /**
@@ -25,6 +27,7 @@ import javax.persistence.*;
  * Jun 23, 2015  
  */
 @Entity
+@ExoEntity
 @Table(name = "WIKI_DRAFT_PAGES")
 public class DraftPage extends BasePage {
 
