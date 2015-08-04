@@ -22,7 +22,6 @@ import java.util.List;
 import javax.persistence.*;
 
 import org.exoplatform.commons.api.persistence.ExoEntity;
-import org.exoplatform.wiki.service.PermissionType;
 
 /**
  * Created by The eXo Platform SAS
@@ -62,7 +61,7 @@ public class Attachment {
   @Column(name = "TEXT")
   private String text;
 
-  @OneToMany
+  @OneToMany(cascade=CascadeType.ALL)
   private List<Permission> permission;
 
   public long getId(){return this.id;}

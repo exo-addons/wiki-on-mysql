@@ -26,4 +26,5 @@ import org.exoplatform.wiki.jpa.entity.Attachment;
  * Jun 24, 2015  
  */
 public class AttachmentDAO extends GenericDAOJPAImpl<Attachment,Long> {
+
 }

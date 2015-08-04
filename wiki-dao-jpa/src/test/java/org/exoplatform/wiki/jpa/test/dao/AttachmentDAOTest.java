@@ -16,8 +16,15 @@
  */
 package org.exoplatform.wiki.jpa.test.dao;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.wiki.jpa.dao.AttachmentDAO;
 import org.exoplatform.wiki.jpa.entity.Attachment;
+import org.exoplatform.wiki.jpa.entity.Permission;
+import org.exoplatform.wiki.jpa.entity.PermissionType;
 
 /**
  * Created by The eXo Platform SAS
@@ -27,15 +34,53 @@ import org.exoplatform.wiki.jpa.entity.Attachment;
  */
 public class AttachmentDAOTest extends BaseTest{
 
-  public void testInsert(){
+  public void testInsertDelete(){
     //Given
     AttachmentDAO attachmentDAO = getService(AttachmentDAO.class);
     Attachment att = new Attachment();
     att.setText("abc");
     //When
     attachmentDAO.create(att);
+    Long id = att.getId();
     //Then
-    Attachment got = attachmentDAO.find(att.getId());
+    Attachment got = attachmentDAO.find(id);
     assertEquals("abc", got.getText());
+    //Delete
+    attachmentDAO.delete(att);
+    assertNull(attachmentDAO.find(id));
+  }
+
+  public void testUpdate(){
+    //Given
+    AttachmentDAO attachmentDAO = getService(AttachmentDAO.class);
+    Attachment att = new Attachment();
+    att.setText("abc");
+    //When
+    attachmentDAO.create(att);
+    Long id = att.getId();
+    Permission per = new Permission();
+    per.setUser("user");
+    per.setType(PermissionType.ADMINPAGE);
+    List<Permission> permissions = new ArrayList<Permission>();
+    permissions.add(per);
+    att.setPermission(permissions);
+    att.setText("def");
+    att.setWeightInBytes((long) 1000);
+    att.setCreator("creator");
+    att.setDownloadURL("http://exoplatform.com");
+    att.setTitle("title");
+    Date date = new Date();
+    att.setUpdatedDate(date);
+    //Then
+    attachmentDAO.update(att);
+    Attachment got = attachmentDAO.find(id);
+    assertEquals("def", got.getText());
+    assertEquals("http://exoplatform.com", got.getDownloadURL());
+    assertEquals("title", got.getTitle());
+    assertEquals("creator", got.getCreator());
+    assertEquals((long) 1000, got.getWeightInBytes());
+    assertEquals(date, got.getUpdatedDate());
+    Permission got_per = got.getPermission().get(0);
+    assertEquals("user", got_per.getUser());
   }
 }
