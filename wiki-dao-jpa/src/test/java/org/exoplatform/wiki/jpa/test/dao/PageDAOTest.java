@@ -19,13 +19,17 @@
 
 package org.exoplatform.wiki.jpa.test.dao;
 
+
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-
 import org.exoplatform.wiki.jpa.dao.PageDAO;
 import org.exoplatform.wiki.jpa.entity.Page;
+import org.exoplatform.wiki.jpa.entity.Permission;
+import org.exoplatform.wiki.jpa.entity.PermissionType;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
@@ -54,5 +58,73 @@ public class PageDAOTest extends BaseTest {
     List<Page> removedPages = dao.findRemovedPages(parentPage);
     // Then
     assertEquals(1, removedPages.size());
+    // Clean
+    dao.deleteAll();
+  }
+  @Test
+  public void testInsert(){
+    //Given
+    Page page = new Page();
+    Permission per = new Permission();
+    per.setUser("user");
+    per.setType(PermissionType.EDITPAGE);
+    List<Permission> permissions = new ArrayList<Permission>();
+    permissions.add(per);
+    page.setPermission(permissions);
+    
+    page.setAuthor("author");
+    page.setContent("content");
+    page.setComment("comment");
+    page.setCreateDate(new Date());
+    page.setName("name");
+    page.setMinorEdit(true);
+    page.setOwner("owner");
+    page.setSyntax("syntax");
+    page.setTitle("title");
+    page.setUrl("url");
+    // When
+    dao.create(page);
+    Page got = dao.find(page.getId());
+    // Then
+    assertNotNull(got);
+    if(got == null) return;
+    assertEquals("name", got.getName());
+    // Clean
+    dao.deleteAll();
+  }
+  @Test
+  public void testAudit(){
+    //Given
+    Page page = new Page();
+    Permission per = new Permission();
+    per.setUser("user");
+    per.setType(PermissionType.EDITPAGE);
+    List<Permission> permissions = new ArrayList<Permission>();
+    permissions.add(per);
+    page.setPermission(permissions);
+    
+    page.setAuthor("author");
+    page.setContent("content");
+    page.setComment("comment");
+    page.setCreateDate(new Date());
+    page.setName("name");
+    page.setMinorEdit(true);
+    page.setOwner("owner");
+    page.setSyntax("syntax");
+    page.setTitle("title");
+    page.setUrl("url");
+    // When
+    dao.create(page);
+    int size1 = dao.getAllHistory(page).size();
+    int version1 = dao.getCurrentVersion(page);
+    Page got = dao.find(page.getId());
+    got.setName("name2");
+    dao.update(got);
+    assertEquals(size1 + 1, dao.getAllHistory(got).size());
+    
+    Page oldVersion = dao.getPageAtRevision(got, version1);
+    assertEquals("name", oldVersion.getName());
+    // Clean
+    dao.deleteAll();
   }
 }

@@ -24,6 +24,8 @@ import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
 import javax.persistence.*;
+
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -50,7 +52,143 @@ public class Page extends BasePage {
     @OneToMany(cascade = CascadeType.ALL)
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private List<Attachment> attachments;
+    
+    @Column(name = "AUTHOR")
+    private String author;
+    
+    public long getId() {
+      return id;
+    }
 
+    @Column(name = "NAME")
+    private String name;
+    
+    @Column(name = "OWNER")
+    private String owner;
+    
+    @Column(name = "CREATE_DATE")
+    private Date createDate;
+    
+    @Column(name = "UPDATE_DATE")
+    private Date updateDate;
+    
+    @Column(name = "CONTENT")
+    private String content;
+    
+    @Column(name = "SYNTAX")
+    private String syntax;
+    
+    @Column(name = "TITLE")
+    private String title;
+    
+    @Column(name = "COMMENT")
+    private String comment;
+    
+    @Column(name = "URL")
+    private String url;
+    
+    @Column(name = "IS_MINOR_EDIT")
+    private boolean isMinorEdit;
+    
+    @OneToMany(cascade=CascadeType.ALL)
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+    private List<Permission> permission;
+
+    public String getAuthor() {
+      return author;
+    }
+
+    public void setAuthor(String author) {
+      this.author = author;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public String getOwner() {
+      return owner;
+    }
+
+    public void setOwner(String owner) {
+      this.owner = owner;
+    }
+
+    public Date getCreateDate() {
+      return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+      this.createDate = createDate;
+    }
+
+    public Date getUpdateDate() {
+      return updateDate;
+    }
+
+    public void setUpdateDate(Date updateDate) {
+      this.updateDate = updateDate;
+    }
+
+    public String getContent() {
+      return content;
+    }
+
+    public void setContent(String content) {
+      this.content = content;
+    }
+
+    public String getSyntax() {
+      return syntax;
+    }
+
+    public void setSyntax(String syntax) {
+      this.syntax = syntax;
+    }
+
+    public String getTitle() {
+      return title;
+    }
+
+    public void setTitle(String title) {
+      this.title = title;
+    }
+
+    public String getComment() {
+      return comment;
+    }
+
+    public void setComment(String comment) {
+      this.comment = comment;
+    }
+
+    public String getUrl() {
+      return url;
+    }
+
+    public void setUrl(String url) {
+      this.url = url;
+    }
+
+    public boolean isMinorEdit() {
+      return isMinorEdit;
+    }
+
+    public void setMinorEdit(boolean isMinorEdit) {
+      this.isMinorEdit = isMinorEdit;
+    }
+
+    public List<Permission> getPermission() {
+      return permission;
+    }
+
+    public void setPermission(List<Permission> permission) {
+      this.permission = permission;
+    }
     public Page getParentPage() {
         return parentPage;
     }

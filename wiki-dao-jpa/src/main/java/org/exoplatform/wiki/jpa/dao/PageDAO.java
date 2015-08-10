@@ -16,6 +16,7 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
+import java.util.Date;
 import java.util.List;
 
 import org.hibernate.envers.AuditReader;
@@ -23,7 +24,6 @@ import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.RevisionType;
 import org.hibernate.envers.query.AuditEntity;
 import org.hibernate.envers.query.AuditQuery;
-
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 import org.exoplatform.wiki.jpa.entity.Page;
 
@@ -42,5 +42,17 @@ public class PageDAO extends GenericDAOJPAImpl<Page, Long> {
                 .add(AuditEntity.property("parentPage").eq(parentPage))
                 .add(AuditEntity.revisionType().eq(RevisionType.DEL));
         return query.getResultList();
+    }
+    public List<Number> getAllHistory(Page page){
+      AuditReader reader = AuditReaderFactory.get(getEntityManager());
+      return reader.getRevisions(Page.class,page.getId());
+    }
+    public Page getPageAtRevision(Page page, int revision){
+      AuditReader reader = AuditReaderFactory.get(getEntityManager());
+      return reader.find(Page.class, page.getId(), revision);
+    }
+    public int getCurrentVersion(Page page){
+      AuditReader reader = AuditReaderFactory.get(getEntityManager());
+      return (Integer) reader.getRevisionNumberForDate(new Date(Long.MAX_VALUE));
     }
 }

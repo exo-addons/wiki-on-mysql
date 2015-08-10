@@ -35,4 +35,43 @@ public class DraftPage extends BasePage {
     @Column(name="DRAFT_PAGE_ID")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
+    
+    @OneToOne(cascade=CascadeType.ALL)
+    private Page targetPage;
+    
+    @Column(name="TARGET_REVISION")
+    private int targetRevision;
+    
+    @Column(name="IS_NEW_PAGE")
+    private boolean isNewPage;
+
+    public Page getTargetPage() {
+      return targetPage;
+    }
+
+    public void setTargetPage(Page targetPage) {
+      this.targetPage = targetPage;
+    }
+
+    public int getTargetRevision() {
+      return targetRevision;
+    }
+
+    public void setTargetRevision(int targetRevision) {
+      this.targetRevision = targetRevision;
+    }
+
+    public boolean isNewPage() {
+      return isNewPage;
+    }
+
+    public void setNewPage(boolean isNewPage) {
+      this.isNewPage = isNewPage;
+    }
+
+    public long getId() {
+      return id;
+    }
+    
+    
 }
