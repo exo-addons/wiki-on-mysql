@@ -2,14 +2,32 @@
                xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"
                xmlns="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd">
     <component>
-        <type>org.exoplatform.commons.persistence.impl.EntityManagerService</type>
+        <key>org.exoplatform.commons.api.search.SearchService</key>
+        <type>org.exoplatform.commons.search.driver.jcr.JcrSearchDriver</type>
         <init-params>
             <value-param>
-                <name>persistence.unit.name</name>
-                <description>The name of persistence unit</description>
-                <value>${persistence.unit.name:wiki-persistence}</value>
+                <name>exo.search.excluded-characters</name>
+                <value>.</value>
             </value-param>
         </init-params>
+    </component>
+    <component>
+        <!-- Required for SearchService -->
+        <type>org.exoplatform.commons.search.service.UnifiedSearchService</type>
+    </component>
+    <component>
+        <!-- Required for SearchService -->
+        <key>org.exoplatform.commons.api.settings.SettingService</key>
+        <type>org.exoplatform.wiki.jpa.mock.MockSettingService</type>
+    </component>
+    <component>
+        <!-- Required for SearchService -->
+        <key>org.exoplatform.commons.api.event.EventManager</key>
+        <type>org.exoplatform.commons.event.impl.EventManagerImpl</type>
+    </component>
+
+    <component>
+        <type>org.exoplatform.commons.persistence.impl.EntityManagerService</type>
     </component>
     <component>
         <key>org.exoplatform.services.idgenerator.IDGeneratorService</key>
@@ -31,4 +49,24 @@
         <key>org.exoplatform.services.jdbc.DataSourceProvider</key>
         <type>org.exoplatform.services.jdbc.impl.DataSourceProviderImpl</type>
     </component>
+
+    <external-component-plugins>
+        <target-component>org.exoplatform.commons.api.search.SearchService</target-component>
+        <component-plugin>
+            <name>ElasticSearchConnector</name>
+            <set-method>addConnector</set-method>
+            <type>org.exoplatform.wiki.jpa.search.WikiSearchConnector</type>
+            <description>Wiki ElasticSearch Connector</description>
+            <init-params>
+                <properties-param>
+                    <name>constructor.params</name>
+                    <property name="searchType" value="wiki"/>
+                    <property name="displayName" value="wiki"/>
+                    <property name="index" value="wiki"/>
+                    <property name="type" value="wiki"/>
+                    <property name="fields" value="name"/>
+                </properties-param>
+            </init-params>
+        </component-plugin>
+    </external-component-plugins>
 </configuration>

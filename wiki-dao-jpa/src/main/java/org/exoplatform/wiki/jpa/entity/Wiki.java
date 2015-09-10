@@ -16,19 +16,89 @@
  */
 package org.exoplatform.wiki.jpa.entity;
 
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
+
 import javax.persistence.*;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  *          exo@exoplatform.com
- * Jun 23, 2015  
+ * Jun 23, 2015
  */
 @Entity
 @Table(name = "WIKI_WIKIS")
 public class Wiki {
-  @Id 
+  @Id
   @Column(name = "WIKI_ID")
   @GeneratedValue(strategy = GenerationType.AUTO)
   private long id;
+
+
+  @Column(name = "NAME")
+  private String name;
+
+  @Column(name = "OWNER")
+  private String owner;
+
+  @Column(name = "TYPE")
+  private String type;
+
+  @OneToOne
+  @JoinColumn(name = "WIKI_HOME")
+  private Page wikiHome;
+
+  @OneToMany(cascade=CascadeType.ALL)
+  @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+  private List<Permission> permissions;
+
+  public long getId() {
+    return id;
+  }
+
+  public void setId(long id) {
+    this.id = id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public String getOwner() {
+    return owner;
+  }
+
+  public void setOwner(String owner) {
+    this.owner = owner;
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
+
+  public Page getWikiHome() {
+    return wikiHome;
+  }
+
+  public void setWikiHome(Page wikiHome) {
+    this.wikiHome = wikiHome;
+  }
+
+  public List<Permission> getPermissions() {
+    return permissions;
+  }
+
+  public void setPermissions(List<Permission> permissions) {
+    this.permissions = permissions;
+  }
 }

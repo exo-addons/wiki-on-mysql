@@ -5,6 +5,13 @@
 
     <persistence-unit name="exo-pu" transaction-type="RESOURCE_LOCAL">
 
+        <class>org.exoplatform.wiki.jpa.entity.Attachment</class>
+        <class>org.exoplatform.wiki.jpa.entity.BasePage</class>
+        <class>org.exoplatform.wiki.jpa.entity.DraftPage</class>
+        <class>org.exoplatform.wiki.jpa.entity.Page</class>
+        <class>org.exoplatform.wiki.jpa.entity.Permission</class>
+        <class>org.exoplatform.wiki.jpa.entity.Wiki</class>
+
         <properties>
             <property name="javax.persistence.provider" value="org.hibernate.ejb.HibernatePersistence"/>
             <property name="javax.persistence.jdbc.driver" value="org.hsqldb.jdbcDriver"/>

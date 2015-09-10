@@ -14,10 +14,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.wiki.jpa.test.dao;
+package org.exoplatform.wiki.jpa.dao;
 
-import org.exoplatform.wiki.jpa.dao.AttachmentDAO;
-import org.exoplatform.wiki.jpa.entity.Attachment;
+import org.exoplatform.wiki.jpa.BaseTest;
+import org.junit.Test;
+
+import org.exoplatform.wiki.jpa.entity.DraftPage;
+import org.exoplatform.wiki.jpa.entity.Page;
 
 /**
  * Created by The eXo Platform SAS
@@ -25,24 +28,28 @@ import org.exoplatform.wiki.jpa.entity.Attachment;
  *          exo@exoplatform.com
  * Jun 26, 2015  
  */
-public class WikiBaseDAOTest extends BaseTest {
+public class DraftPageDAOTest extends BaseTest {
 
-  public void testRollBackTransaction(){
-    //Given
-    AttachmentDAO dao = new AttachmentDAO();
-    //When
-    Attachment att = dao.create(new Attachment());
-    //Then
-    assertNotNull(dao.find(att.getId()));
-  }
-
-  public void testCommit(){
-    //Given
-    AttachmentDAO dao = new AttachmentDAO();
-    long count = dao.count();
-    //When
-    Attachment att = dao.create(new Attachment());
-    //Then
-    assertEquals(new Long(count + 1), dao.count());
+  @Test
+  public void testInsert(){
+    DraftPageDAO dao = new DraftPageDAO();
+    PageDAO pageDAO = new PageDAO();
+    DraftPage dp = new DraftPage();
+    Page page = new Page();
+    page.setName("name");
+    dp.setTargetPage(page);
+    dao.create(dp);
+    
+    assertNotNull(dao.find(dp.getId()));
+    assertNotNull(pageDAO.find(page.getId()));
+    
+    DraftPage got =dao.find(dp.getId());
+    got.getTargetPage().setName("name1");
+    dao.update(got);
+    assertEquals("name1",page.getName());
+    dao.deleteAll();
+    pageDAO.deleteAll();
+    
+    assertNull(dao.find(dp.getId()));
   }
 }

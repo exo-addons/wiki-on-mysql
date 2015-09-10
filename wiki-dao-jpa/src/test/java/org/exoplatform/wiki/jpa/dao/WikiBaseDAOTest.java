@@ -16,21 +16,33 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
-import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
-import org.exoplatform.wiki.jpa.entity.DraftPage;
-import org.exoplatform.wiki.jpa.entity.Page;
-import org.exoplatform.wiki.jpa.entity.Wiki;
+import org.exoplatform.wiki.jpa.entity.Attachment;
+import org.exoplatform.wiki.jpa.BaseTest;
 
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  *          exo@exoplatform.com
- * Jun 24, 2015  
+ * Jun 26, 2015  
  */
-public class DraftPageDAO  extends GenericDAOJPAImpl<DraftPage, Long> {
+public class WikiBaseDAOTest extends BaseTest {
 
-  public Page getPage(DraftPage page){
-    PageDAO pageDAO = new PageDAO();
-    return pageDAO.getPageAtRevision(page.getTargetPage(),page.getTargetRevision());
+  public void testRollBackTransaction(){
+    //Given
+    AttachmentDAO dao = new AttachmentDAO();
+    //When
+    Attachment att = dao.create(new Attachment());
+    //Then
+    assertNotNull(dao.find(att.getId()));
+  }
+
+  public void testCommit(){
+    //Given
+    AttachmentDAO dao = new AttachmentDAO();
+    long count = dao.count();
+    //When
+    Attachment att = dao.create(new Attachment());
+    //Then
+    assertEquals(new Long(count + 1), dao.count());
   }
 }

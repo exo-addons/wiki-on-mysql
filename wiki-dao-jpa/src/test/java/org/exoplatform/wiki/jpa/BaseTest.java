@@ -15,13 +15,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.exoplatform.wiki.jpa.test.dao;
+package org.exoplatform.wiki.jpa;
 import org.exoplatform.commons.testing.BaseExoTestCase;
 import org.exoplatform.component.test.ConfigurationUnit;
 import org.exoplatform.component.test.ConfiguredBy;
 import org.exoplatform.component.test.ContainerScope;
 
-//import org.exoplatform.container.StandaloneContainer;
 
 /**
  * Created by The eXo Platform SAS

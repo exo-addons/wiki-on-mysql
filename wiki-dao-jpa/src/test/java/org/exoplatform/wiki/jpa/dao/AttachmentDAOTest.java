@@ -14,17 +14,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.wiki.jpa.test.dao;
+package org.exoplatform.wiki.jpa.dao;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.exoplatform.commons.api.persistence.ExoTransactional;
-import org.exoplatform.wiki.jpa.dao.AttachmentDAO;
 import org.exoplatform.wiki.jpa.entity.Attachment;
 import org.exoplatform.wiki.jpa.entity.Permission;
 import org.exoplatform.wiki.jpa.entity.PermissionType;
+import org.exoplatform.wiki.jpa.BaseTest;
 
 /**
  * Created by The eXo Platform SAS
@@ -32,7 +31,7 @@ import org.exoplatform.wiki.jpa.entity.PermissionType;
  *          exo@exoplatform.com
  * Jun 25, 2015  
  */
-public class AttachmentDAOTest extends BaseTest{
+public class AttachmentDAOTest extends BaseTest {
 
   public void testInsertDelete(){
     //Given

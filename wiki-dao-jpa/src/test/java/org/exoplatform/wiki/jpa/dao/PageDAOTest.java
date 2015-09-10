@@ -17,16 +17,17 @@
  *
  */
 
-package org.exoplatform.wiki.jpa.test.dao;
+package org.exoplatform.wiki.jpa.dao;
 
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.exoplatform.wiki.jpa.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
-import org.exoplatform.wiki.jpa.dao.PageDAO;
+
 import org.exoplatform.wiki.jpa.entity.Page;
 import org.exoplatform.wiki.jpa.entity.Permission;
 import org.exoplatform.wiki.jpa.entity.PermissionType;
@@ -61,6 +62,7 @@ public class PageDAOTest extends BaseTest {
     // Clean
     dao.deleteAll();
   }
+
   @Test
   public void testInsert(){
     //Given
@@ -92,6 +94,7 @@ public class PageDAOTest extends BaseTest {
     // Clean
     dao.deleteAll();
   }
+
   @Test
   public void testAudit(){
     //Given

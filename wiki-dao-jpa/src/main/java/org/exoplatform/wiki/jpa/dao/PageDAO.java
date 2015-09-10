@@ -43,14 +43,17 @@ public class PageDAO extends GenericDAOJPAImpl<Page, Long> {
                 .add(AuditEntity.revisionType().eq(RevisionType.DEL));
         return query.getResultList();
     }
+
     public List<Number> getAllHistory(Page page){
       AuditReader reader = AuditReaderFactory.get(getEntityManager());
       return reader.getRevisions(Page.class,page.getId());
     }
+
     public Page getPageAtRevision(Page page, int revision){
       AuditReader reader = AuditReaderFactory.get(getEntityManager());
       return reader.find(Page.class, page.getId(), revision);
     }
+
     public int getCurrentVersion(Page page){
       AuditReader reader = AuditReaderFactory.get(getEntityManager());
       return (Integer) reader.getRevisionNumberForDate(new Date(Long.MAX_VALUE));

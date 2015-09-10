@@ -43,6 +43,7 @@ public class Permission {
   private String user;
 
   @Column(name="TYPE")
+  @Enumerated
   private PermissionType type;
 
   public long getId(){

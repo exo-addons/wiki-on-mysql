@@ -43,7 +43,7 @@ public class DraftPage extends BasePage {
     private int targetRevision;
     
     @Column(name="IS_NEW_PAGE")
-    private boolean isNewPage;
+    private Boolean isNewPage;
 
     public Page getTargetPage() {
       return targetPage;
@@ -61,11 +61,11 @@ public class DraftPage extends BasePage {
       this.targetRevision = targetRevision;
     }
 
-    public boolean isNewPage() {
+    public Boolean isNewPage() {
       return isNewPage;
     }
 
-    public void setNewPage(boolean isNewPage) {
+    public void setNewPage(Boolean isNewPage) {
       this.isNewPage = isNewPage;
     }
 

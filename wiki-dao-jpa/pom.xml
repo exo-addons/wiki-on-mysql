@@ -23,17 +23,71 @@
   <name>Wiki DAO RDBMS </name>
   <description>Wiki DAO RDBMS </description>
 
+  <properties>
+    <!-- Issue with the PLF pom parent that trigger lucene 3.6.2 (Only working with elastic version < 0.20.6) -->
+    <elasticsearch.version>1.7.0</elasticsearch.version>
+    <lucene.version>4.10.4</lucene.version>
+    <randomizedtesting-runner.version>2.1.14</randomizedtesting-runner.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-core</artifactId>
+        <version>4.10.4</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
-    <dependency>
-      <groupId>org.exoplatform.commons</groupId>
-      <artifactId>commons-api</artifactId>
-    </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-envers</artifactId>
       <version>${hibernate.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.exoplatform.addons.es</groupId>
+      <artifactId>exo-es-search-service</artifactId>
+      <version>1.0.x-SNAPSHOT</version>
+    </dependency>
 
+    <dependency>
+      <groupId>org.exoplatform.commons</groupId>
+      <artifactId>commons-api</artifactId>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.lucene</groupId>
+          <artifactId>lucene-spellchecker</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.commons</groupId>
+      <artifactId>commons-component-common</artifactId>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.lucene</groupId>
+          <artifactId>lucene-spellchecker</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.wiki</groupId>
+      <artifactId>wiki-service</artifactId>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.lucene</groupId>
+          <artifactId>lucene-core</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- Tests -->
     <dependency>
       <groupId>org.exoplatform.commons</groupId>
       <artifactId>commons-testing</artifactId>
@@ -50,9 +104,40 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.exoplatform.commons</groupId>
-      <artifactId>commons-component-common</artifactId>
+      <groupId>org.exoplatform.integration</groupId>
+      <artifactId>integ-search-service</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.exoplatform.social</groupId>
+          <artifactId>social-component-common</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.exoplatform.social</groupId>
+          <artifactId>social-component-core</artifactId>
+        </exclusion>
+      </exclusions>
+      <scope>test</scope>
     </dependency>
+    <!-- ES Test -->
+    <dependency>
+      <groupId>org.elasticsearch</groupId>
+      <artifactId>elasticsearch</artifactId>
+      <version>${elasticsearch.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.1.3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.1.3</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
   <build>
     <plugins>
