@@ -44,12 +44,12 @@ import org.exoplatform.wiki.service.search.WikiSearchData;
 public class JPADataStorage implements DataStorage {
 
     @Override
-    public PageList<SearchResult> search(ChromatticSession chromatticSession, WikiSearchData wikiSearchData) throws Exception {
+    //TODO Remove dependency to ChromatticSession
+    public PageList<SearchResult> search(ChromatticSession chromatticSession, WikiSearchData wikiSearchData) {
         List<SearchResult> searchResults = new ArrayList<SearchResult>();
         Map<String, Collection<org.exoplatform.commons.api.search.data.SearchResult>> results;
-        //TODO Remove dependency to ChromatticSession
-        //TODO remove throws Exception in the signature
         SearchService searchService = PortalContainer.getInstance().getComponentInstanceOfType(SearchService.class);
+
         //TODO add other wiki types
         List<String> types = Arrays.asList("wiki");
         results = searchService.search(null, wikiSearchData.getTitle(), null, types,

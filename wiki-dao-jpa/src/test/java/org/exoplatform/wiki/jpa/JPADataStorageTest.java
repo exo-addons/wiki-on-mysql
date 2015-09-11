@@ -99,6 +99,9 @@ public class JPADataStorageTest extends BaseTest {
         assertEquals(1, results.getAll().size());
     }
 
+    //TODO test search with other types
+    //TODO test search on all the fields
+
     //TODO replace with a call to exo-es-search indexer
     private void indexWiki(String name) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
