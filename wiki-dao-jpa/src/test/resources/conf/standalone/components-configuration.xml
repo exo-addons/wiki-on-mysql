@@ -71,4 +71,25 @@
             </init-params>
         </component-plugin>
     </external-component-plugins>
+    <external-component-plugins>
+        <target-component>org.exoplatform.commons.api.search.SearchService</target-component>
+        <component-plugin>
+            <name>ElasticSearchConnector</name>
+            <set-method>addConnector</set-method>
+            <type>org.exoplatform.addons.es.search.ElasticSearchServiceConnector</type>
+            <description>Page ElasticSearch Connector</description>
+            <init-params>
+                <properties-param>
+                    <name>constructor.params</name>
+                    <property name="searchType" value="wikiPage"/>
+                    <property name="displayName" value="wikiPage"/>
+                    <property name="index" value="wiki"/>
+                    <property name="type" value="wiki-page"/>
+                    <property name="titleField" value="title"/>
+                    <property name="detailField" value="content"/>
+                    <property name="searchFields" value="name, title, content, comment"/>
+                </properties-param>
+            </init-params>
+        </component-plugin>
+    </external-component-plugins>
 </configuration>

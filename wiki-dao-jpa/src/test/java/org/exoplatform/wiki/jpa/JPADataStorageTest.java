@@ -79,7 +79,9 @@ public class JPADataStorageTest extends BaseTest {
                 "       {\"type\" : \"string\", \"index\" : \"not_analyzed\"}" +
                 "   }" +
                 "}";
-        CreateIndexRequestBuilder cirb = node.client().admin().indices().prepareCreate("wiki").addMapping("wiki", mapping);
+        CreateIndexRequestBuilder cirb = node.client().admin().indices().prepareCreate("wiki")
+                .addMapping("wiki", mapping)
+                .addMapping("wiki-page", mapping);
         cirb.execute().actionGet();
     }
 
@@ -99,12 +101,22 @@ public class JPADataStorageTest extends BaseTest {
         assertEquals(1, results.getAll().size());
     }
 
-    //TODO test search with other types
+    public void testSearchPageByName() throws Exception {
+        //Given
+        indexPage("My Page", "My Page", "This is the content of my Page", "This is a comment");
+        JPADataStorage storage = new JPADataStorage();
+        WikiSearchData searchData = new WikiSearchData("Page", null, null, null);
+        //When
+        PageList<SearchResult> results = storage.search(null, searchData);
+        //Then
+        assertEquals(1, results.getAll().size());
+    }
+
     //TODO test search on all the fields
     //TODO test with wrong field in the configuration
 
     //TODO replace with a call to exo-es-search indexer
-    private void indexWiki(String name) throws JsonProcessingException {
+    private void indexWiki(String name) throws JsonProcessingException, InterruptedException {
         ObjectMapper mapper = new ObjectMapper();
         Document wikiDocument = new Document();
         wikiDocument.setCreatedDate(new Date());
@@ -118,6 +130,31 @@ public class JPADataStorageTest extends BaseTest {
         String jsonString = mapper.writeValueAsString(wikiDocument);
         indexRequest.source(jsonString);
         node.client().prepareBulk().add(indexRequest).execute().actionGet();
+        //Forcing ES to refresh index
+        node.client().admin().indices().prepareRefresh().execute().actionGet();
+    }
+
+    //TODO replace with a call to exo-es-search indexer
+    private void indexPage(String name, String title, String content, String comment)
+            throws JsonProcessingException, InterruptedException {
+        ObjectMapper mapper = new ObjectMapper();
+        Document wikiDocument = new Document();
+        wikiDocument.setCreatedDate(new Date());
+        wikiDocument.setId("1");
+        wikiDocument.setType("wiki-page");
+        Map<String, String> fields = new HashMap<String, String>();
+        fields.put("name", name);
+        fields.put("title", title);
+        fields.put("content", content);
+        fields.put("comment", comment);
+        wikiDocument.setFields(fields);
+        wikiDocument.setPermissions(new String[]{"BCH"});
+        IndexRequest indexRequest = new IndexRequest("wiki", "wiki-page", "1");
+        String jsonString = mapper.writeValueAsString(wikiDocument);
+        indexRequest.source(jsonString);
+        node.client().prepareBulk().add(indexRequest).execute().actionGet();
+        //Forcing ES to refresh index
+        node.client().admin().indices().prepareRefresh().execute().actionGet();
     }
 
     private void setCurrentUser() {

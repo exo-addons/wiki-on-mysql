@@ -50,13 +50,13 @@ public class JPADataStorage implements DataStorage {
         Map<String, Collection<org.exoplatform.commons.api.search.data.SearchResult>> results;
         SearchService searchService = PortalContainer.getInstance().getComponentInstanceOfType(SearchService.class);
 
-        //TODO add other wiki types
-        List<String> types = Arrays.asList("wiki");
-        results = searchService.search(null, wikiSearchData.getTitle(), null, types,
+        results = searchService.search(null, wikiSearchData.getTitle(), null, Arrays.asList("all"),
                                         (int)wikiSearchData.getOffset(), wikiSearchData.getLimit(),
                                         wikiSearchData.getSort(), wikiSearchData.getOrder());
-        for (org.exoplatform.commons.api.search.data.SearchResult result : results.get("wiki")) {
-            searchResults.add(toSearchResult(result));
+        for (String type : results.keySet()) {
+            for (org.exoplatform.commons.api.search.data.SearchResult result : results.get(type)) {
+                searchResults.add(toSearchResult(result));
+            }
         }
         return new ObjectPageList<SearchResult>(searchResults, searchResults.size());
     }
