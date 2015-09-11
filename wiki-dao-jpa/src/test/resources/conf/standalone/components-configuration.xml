@@ -55,7 +55,7 @@
         <component-plugin>
             <name>ElasticSearchConnector</name>
             <set-method>addConnector</set-method>
-            <type>org.exoplatform.wiki.jpa.search.WikiSearchConnector</type>
+            <type>org.exoplatform.addons.es.search.ElasticSearchServiceConnector</type>
             <description>Wiki ElasticSearch Connector</description>
             <init-params>
                 <properties-param>
@@ -64,7 +64,9 @@
                     <property name="displayName" value="wiki"/>
                     <property name="index" value="wiki"/>
                     <property name="type" value="wiki"/>
-                    <property name="fields" value="name"/>
+                    <property name="titleField" value="name"/>
+                    <property name="detailField" value="name"/>
+                    <property name="searchFields" value="name"/>
                 </properties-param>
             </init-params>
         </component-plugin>

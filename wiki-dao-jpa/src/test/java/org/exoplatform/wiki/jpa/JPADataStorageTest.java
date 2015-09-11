@@ -101,6 +101,7 @@ public class JPADataStorageTest extends BaseTest {
 
     //TODO test search with other types
     //TODO test search on all the fields
+    //TODO test with wrong field in the configuration
 
     //TODO replace with a call to exo-es-search indexer
     private void indexWiki(String name) throws JsonProcessingException {
