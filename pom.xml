@@ -23,7 +23,7 @@
   <parent>
     <artifactId>addons-parent-pom</artifactId>
     <groupId>org.exoplatform.addons</groupId>
-    <version>4</version>
+    <version>6</version>
     <relativePath />
   </parent>
   <groupId>org.exoplatform.addons.wiki</groupId>
@@ -41,7 +41,6 @@
     <!-- Platform Project Dependencies -->
     <hibernate.version>4.1.12.Final</hibernate.version>
     <exoplatform.version>4.3.x-plf-wiki-rdbms-SNAPSHOT</exoplatform.version>
-    <liquibase.version>3.3.2</liquibase.version>
     <!-- **************************************** -->
     <!-- Jenkins Settings -->
     <!-- **************************************** -->
