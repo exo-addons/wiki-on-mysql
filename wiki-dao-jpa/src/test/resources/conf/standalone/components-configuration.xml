@@ -26,6 +26,31 @@
         <type>org.exoplatform.commons.event.impl.EventManagerImpl</type>
     </component>
 
+
+
+    <component>
+        <key>org.exoplatform.addons.es.index.IndexingService</key>
+        <type>org.exoplatform.addons.es.index.elastic.ElasticIndexingService</type>
+    </component>
+    <component>
+        <type>org.exoplatform.wiki.jpa.dao.WikiDAO</type>
+    </component>
+    <component>
+        <key>org.exoplatform.addons.es.dao.IndexingOperationDAO</key>
+        <type>org.exoplatform.addons.es.dao.impl.IndexingOperationDAOImpl</type>
+    </component>
+    <component>
+        <type>org.exoplatform.addons.es.client.ElasticIndexingClient</type>
+    </component>
+    <component>
+        <type>org.exoplatform.addons.es.client.ElasticSearchingClient</type>
+    </component>
+    <component>
+        <type>org.exoplatform.addons.es.client.ElasticContentRequestBuilder</type>
+    </component>
+
+
+
     <component>
         <type>org.exoplatform.commons.persistence.impl.EntityManagerService</type>
     </component>
@@ -81,13 +106,30 @@
             <init-params>
                 <properties-param>
                     <name>constructor.params</name>
-                    <property name="searchType" value="wikiPage"/>
-                    <property name="displayName" value="wikiPage"/>
+                    <property name="searchType" value="wiki-page"/>
+                    <property name="displayName" value="wiki-page"/>
                     <property name="index" value="wiki"/>
                     <property name="type" value="wiki-page"/>
                     <property name="titleField" value="title"/>
                     <property name="detailField" value="content"/>
                     <property name="searchFields" value="name, title, content, comment"/>
+                </properties-param>
+            </init-params>
+        </component-plugin>
+    </external-component-plugins>
+
+    <external-component-plugins>
+        <target-component>org.exoplatform.addons.es.index.IndexingService</target-component>
+        <component-plugin>
+            <name>WikiIndexingConnector</name>
+            <set-method>addConnector</set-method>
+            <type>org.exoplatform.wiki.jpa.search.WikiIndexingServiceConnector</type>
+            <description>Wiki ElasticSearch Indexing Connector</description>
+            <init-params>
+                <properties-param>
+                    <name>constructor.params</name>
+                    <property name="index" value="wiki"/>
+                    <property name="type" value="wiki"/>
                 </properties-param>
             </init-params>
         </component-plugin>

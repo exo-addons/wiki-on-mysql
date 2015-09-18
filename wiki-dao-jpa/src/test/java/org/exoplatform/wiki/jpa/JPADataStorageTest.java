@@ -21,7 +21,6 @@ package org.exoplatform.wiki.jpa;
 
 import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,9 +37,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.exoplatform.addons.es.domain.Document;
 import org.exoplatform.commons.utils.PageList;
-import org.exoplatform.services.security.ConversationState;
-import org.exoplatform.services.security.Identity;
-import org.exoplatform.services.security.MembershipEntry;
 import org.exoplatform.wiki.service.search.SearchResult;
 import org.exoplatform.wiki.service.search.WikiSearchData;
 
@@ -70,7 +66,7 @@ public class JPADataStorageTest extends BaseTest {
         assertNotNull(node);
         assertFalse(node.isClosed());
         initMapping();
-        setCurrentUser();
+        SecurityUtils.setCurrentUser("BCH", "*:/admin");
     }
 
     private void initMapping() {
@@ -155,14 +151,5 @@ public class JPADataStorageTest extends BaseTest {
         node.client().prepareBulk().add(indexRequest).execute().actionGet();
         //Forcing ES to refresh index
         node.client().admin().indices().prepareRefresh().execute().actionGet();
-    }
-
-    private void setCurrentUser() {
-        ConversationState conversationState = ConversationState.getCurrent();
-        if ((conversationState == null) || (conversationState.getIdentity() == null)) {
-            Identity identity = new Identity("BCH");
-            identity.setMemberships(Arrays.asList(new MembershipEntry("Admin")));
-            ConversationState.setCurrent(new ConversationState(identity));
-        }
     }
 }

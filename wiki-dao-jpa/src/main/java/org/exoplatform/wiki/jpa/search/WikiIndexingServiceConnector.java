@@ -19,9 +19,20 @@
 
 package org.exoplatform.wiki.jpa.search;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+
 import org.exoplatform.addons.es.domain.Document;
 import org.exoplatform.addons.es.index.elastic.ElasticIndexingServiceConnector;
 import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.wiki.jpa.dao.WikiDAO;
+import org.exoplatform.wiki.jpa.entity.Wiki;
 
 /**
  * Created by The eXo Platform SAS
@@ -30,14 +41,36 @@ import org.exoplatform.container.xml.InitParams;
  * 9/9/15
  */
 public class WikiIndexingServiceConnector extends ElasticIndexingServiceConnector {
+    private static final Log LOGGER = ExoLogger.getExoLogger(WikiIndexingServiceConnector.class);
+    private final WikiDAO dao;
 
-    public WikiIndexingServiceConnector(InitParams initParams) {
+    public WikiIndexingServiceConnector(InitParams initParams, WikiDAO dao) {
         super(initParams);
+        this.dao = dao;
     }
 
     @Override
     public Document create(String id) {
-        return null;
+        if (StringUtils.isBlank(id)) {
+            throw new IllegalArgumentException("Id is null");
+        }
+        Wiki wiki = dao.find(Long.parseLong(id));
+        if (wiki==null) {
+            LOGGER.info("The wiki entity with id {} doesn't exist.", id);
+            return null;
+        }
+        Map<String,String> fields = new HashMap<String, String>();
+        fields.put("name", wiki.getName());
+        return new Document("wiki", id, null, null, computePermissions(wiki), fields);
+    }
+
+    private String[] computePermissions(Wiki wiki) {
+        List<String> permissions = new ArrayList<String>();
+        //Add the owner
+        permissions.add(wiki.getOwner());
+        //TODO Add the permissions
+        String[] result = new String[permissions.size()];
+        return permissions.toArray(result);
     }
 
     @Override

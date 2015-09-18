@@ -16,9 +16,9 @@
  */
 package org.exoplatform.wiki.jpa.entity;
 
-import org.exoplatform.commons.api.persistence.ExoEntity;
-
 import javax.persistence.*;
+
+import org.exoplatform.commons.api.persistence.ExoEntity;
 
 /**
  * Created by The eXo Platform SAS
@@ -45,6 +45,16 @@ public class Permission {
   @Column(name="TYPE")
   @Enumerated
   private PermissionType type;
+
+
+  public Permission() {
+    //Default constructor
+  }
+
+  public Permission(String user, PermissionType type) {
+    this.user = user;
+    this.type = type;
+  }
 
   public long getId(){
     return this.id;

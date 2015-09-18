@@ -84,7 +84,7 @@ public class JPADataStorage implements DataStorage {
 
     @Override
     public Page getWikiPageByUUID(ChromatticSession chromatticSession, String id) throws Exception {
-        //TODO Wiki page are not identified by ID anymore
+        //TODO Remove from interface: Wiki pages are not identified by ID anymore
         throw new IllegalAccessException("Not implemented");
     }
 }
