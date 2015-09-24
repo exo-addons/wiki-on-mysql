@@ -19,10 +19,7 @@
 
 package org.exoplatform.wiki.jpa.search;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -54,23 +51,16 @@ public class WikiIndexingServiceConnector extends ElasticIndexingServiceConnecto
         if (StringUtils.isBlank(id)) {
             throw new IllegalArgumentException("Id is null");
         }
+        //Get the wiki object from BD
         Wiki wiki = dao.find(Long.parseLong(id));
         if (wiki==null) {
             LOGGER.info("The wiki entity with id {} doesn't exist.", id);
             return null;
         }
         Map<String,String> fields = new HashMap<String, String>();
+        //we just want to index the field "name"
         fields.put("name", wiki.getName());
-        return new Document("wiki", id, null, null, computePermissions(wiki), fields);
-    }
-
-    private String[] computePermissions(Wiki wiki) {
-        List<String> permissions = new ArrayList<String>();
-        //Add the owner
-        permissions.add(wiki.getOwner());
-        //TODO Add the permissions
-        String[] result = new String[permissions.size()];
-        return permissions.toArray(result);
+        return new Document("wiki", id, getUrl(wiki), getCreatedDate(wiki), computePermissions(wiki), fields);
     }
 
     @Override
@@ -81,5 +71,24 @@ public class WikiIndexingServiceConnector extends ElasticIndexingServiceConnecto
     @Override
     public String delete(String id) {
         return null;
+    }
+
+    private Date getCreatedDate(Wiki wiki) {
+        //TODO
+        return null;
+    }
+
+    private String getUrl(Wiki wiki) {
+        //TODO
+        return null;
+    }
+
+    private String[] computePermissions(Wiki wiki) {
+        List<String> permissions = new ArrayList<String>();
+        //Add the owner
+        permissions.add(wiki.getOwner());
+        //TODO Add the permissions
+        String[] result = new String[permissions.size()];
+        return permissions.toArray(result);
     }
 }
