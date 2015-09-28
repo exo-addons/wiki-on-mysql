@@ -107,9 +107,8 @@
                 <properties-param>
                     <name>constructor.params</name>
                     <property name="searchType" value="wiki-page"/>
-                    <property name="displayName" value="wiki-page"/>
+                    <property name="displayName" value="Wiki Page"/>
                     <property name="index" value="wiki"/>
-                    <property name="type" value="wiki-page"/>
                     <property name="titleField" value="title"/>
                     <property name="detailField" value="content"/>
                     <property name="searchFields" value="name, title, content, comment"/>

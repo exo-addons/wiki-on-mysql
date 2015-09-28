@@ -57,7 +57,7 @@ public class WikiIndexingServiceConnector extends ElasticIndexingServiceConnecto
             LOGGER.info("The wiki entity with id {} doesn't exist.", id);
             return null;
         }
-        Map<String,String> fields = new HashMap<String, String>();
+        Map<String,String> fields = new HashMap<>();
         //we just want to index the field "name"
         fields.put("name", wiki.getName());
         return new Document("wiki", id, getUrl(wiki), getCreatedDate(wiki), computePermissions(wiki), fields);
@@ -65,11 +65,6 @@ public class WikiIndexingServiceConnector extends ElasticIndexingServiceConnecto
 
     @Override
     public Document update(String id) {
-        return null;
-    }
-
-    @Override
-    public String delete(String id) {
         return null;
     }
 
