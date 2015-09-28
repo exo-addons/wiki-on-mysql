@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~ /*
+  ~  * Copyright (C) 2003-2015 eXo Platform SAS.
+  ~  *
+  ~  * This program is free software; you can redistribute it and/or
+  ~ * modify it under the terms of the GNU Affero General Public License
+  ~ * as published by the Free Software Foundation; either version 3
+  ~ * of the License, or (at your option) any later version.
+  ~ *
+  ~ * This program is distributed in the hope that it will be useful,
+  ~ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ * GNU General Public License for more details.
+  ~ *
+  ~ * You should have received a copy of the GNU General Public License
+  ~ * along with this program; if not, see<http://www.gnu.org/licenses/>.
+  ~  */
+  -->
+
+<configuration
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+        xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd">
+
+    <component>
+        <type>org.exoplatform.wiki.jpa.dao.WikiDAO</type>
+    </component>
+    <component>
+        <type>org.exoplatform.wiki.jpa.dao.AttachmentDAO</type>
+    </component>
+
+    <external-component-plugins>
+        <target-component>org.exoplatform.commons.api.search.SearchService</target-component>
+        <component-plugin>
+            <name>ElasticSearchConnector</name>
+            <set-method>addConnector</set-method>
+            <type>org.exoplatform.addons.es.search.ElasticSearchServiceConnector</type>
+            <description>Wiki ElasticSearch Connector</description>
+            <init-params>
+                <properties-param>
+                    <name>constructor.params</name>
+                    <property name="searchType" value="wiki"/>
+                    <property name="displayName" value="wiki"/>
+                    <property name="index" value="wiki"/>
+                    <property name="type" value="wiki"/>
+                    <property name="titleField" value="name"/>
+                    <property name="detailField" value="name"/>
+                    <property name="searchFields" value="name"/>
+                </properties-param>
+            </init-params>
+        </component-plugin>
+    </external-component-plugins>
+    <external-component-plugins>
+        <target-component>org.exoplatform.commons.api.search.SearchService</target-component>
+        <component-plugin>
+            <name>ElasticSearchConnector</name>
+            <set-method>addConnector</set-method>
+            <type>org.exoplatform.addons.es.search.ElasticSearchServiceConnector</type>
+            <description>Page ElasticSearch Connector</description>
+            <init-params>
+                <properties-param>
+                    <name>constructor.params</name>
+                    <property name="searchType" value="wiki-page"/>
+                    <property name="displayName" value="Wiki Page"/>
+                    <property name="index" value="wiki"/>
+                    <property name="titleField" value="title"/>
+                    <property name="detailField" value="content"/>
+                    <property name="searchFields" value="name, title, content, comment"/>
+                </properties-param>
+            </init-params>
+        </component-plugin>
+    </external-component-plugins>
+
+    <external-component-plugins>
+        <target-component>org.exoplatform.addons.es.index.IndexingService</target-component>
+        <component-plugin>
+            <name>WikiIndexingConnector</name>
+            <set-method>addConnector</set-method>
+            <type>org.exoplatform.wiki.jpa.search.WikiIndexingServiceConnector</type>
+            <description>Wiki ElasticSearch Indexing Connector</description>
+            <init-params>
+                <properties-param>
+                    <name>constructor.params</name>
+                    <property name="index" value="wiki"/>
+                    <property name="type" value="wiki"/>
+                </properties-param>
+            </init-params>
+        </component-plugin>
+    </external-component-plugins>
+</configuration>

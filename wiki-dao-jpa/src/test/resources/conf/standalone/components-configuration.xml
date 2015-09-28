@@ -33,9 +33,6 @@
         <type>org.exoplatform.addons.es.index.elastic.ElasticIndexingService</type>
     </component>
     <component>
-        <type>org.exoplatform.wiki.jpa.dao.WikiDAO</type>
-    </component>
-    <component>
         <key>org.exoplatform.addons.es.dao.IndexingOperationDAO</key>
         <type>org.exoplatform.addons.es.dao.impl.IndexingOperationDAOImpl</type>
     </component>
@@ -63,9 +60,6 @@
         <type>org.exoplatform.services.security.IdentityRegistry</type>
     </component>
     <component>
-        <type>org.exoplatform.wiki.jpa.dao.AttachmentDAO</type>
-    </component>
-    <component>
         <key>org.exoplatform.services.document.DocumentReaderService</key>
         <type>org.exoplatform.services.document.impl.DocumentReaderServiceImpl</type>
     </component>
@@ -75,62 +69,5 @@
         <type>org.exoplatform.services.jdbc.impl.DataSourceProviderImpl</type>
     </component>
 
-    <external-component-plugins>
-        <target-component>org.exoplatform.commons.api.search.SearchService</target-component>
-        <component-plugin>
-            <name>ElasticSearchConnector</name>
-            <set-method>addConnector</set-method>
-            <type>org.exoplatform.addons.es.search.ElasticSearchServiceConnector</type>
-            <description>Wiki ElasticSearch Connector</description>
-            <init-params>
-                <properties-param>
-                    <name>constructor.params</name>
-                    <property name="searchType" value="wiki"/>
-                    <property name="displayName" value="wiki"/>
-                    <property name="index" value="wiki"/>
-                    <property name="type" value="wiki"/>
-                    <property name="titleField" value="name"/>
-                    <property name="detailField" value="name"/>
-                    <property name="searchFields" value="name"/>
-                </properties-param>
-            </init-params>
-        </component-plugin>
-    </external-component-plugins>
-    <external-component-plugins>
-        <target-component>org.exoplatform.commons.api.search.SearchService</target-component>
-        <component-plugin>
-            <name>ElasticSearchConnector</name>
-            <set-method>addConnector</set-method>
-            <type>org.exoplatform.addons.es.search.ElasticSearchServiceConnector</type>
-            <description>Page ElasticSearch Connector</description>
-            <init-params>
-                <properties-param>
-                    <name>constructor.params</name>
-                    <property name="searchType" value="wiki-page"/>
-                    <property name="displayName" value="Wiki Page"/>
-                    <property name="index" value="wiki"/>
-                    <property name="titleField" value="title"/>
-                    <property name="detailField" value="content"/>
-                    <property name="searchFields" value="name, title, content, comment"/>
-                </properties-param>
-            </init-params>
-        </component-plugin>
-    </external-component-plugins>
-
-    <external-component-plugins>
-        <target-component>org.exoplatform.addons.es.index.IndexingService</target-component>
-        <component-plugin>
-            <name>WikiIndexingConnector</name>
-            <set-method>addConnector</set-method>
-            <type>org.exoplatform.wiki.jpa.search.WikiIndexingServiceConnector</type>
-            <description>Wiki ElasticSearch Indexing Connector</description>
-            <init-params>
-                <properties-param>
-                    <name>constructor.params</name>
-                    <property name="index" value="wiki"/>
-                    <property name="type" value="wiki"/>
-                </properties-param>
-            </init-params>
-        </component-plugin>
-    </external-component-plugins>
+    <import>jar:/conf/portal/configuration.xml</import>
 </configuration>
