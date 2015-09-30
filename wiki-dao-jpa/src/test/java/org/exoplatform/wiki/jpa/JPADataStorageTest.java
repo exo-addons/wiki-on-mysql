@@ -115,7 +115,7 @@ public class JPADataStorageTest extends BaseTest {
     private void indexWiki(String name) throws JsonProcessingException, InterruptedException {
         ObjectMapper mapper = new ObjectMapper();
         Document wikiDocument = new Document();
-        wikiDocument.setCreatedDate(new Date());
+        wikiDocument.setLastUpdatedDate(new Date());
         wikiDocument.setId("1");
         wikiDocument.setType("wiki");
         Map<String, String> fields = new HashMap<String, String>();
@@ -135,7 +135,7 @@ public class JPADataStorageTest extends BaseTest {
             throws JsonProcessingException, InterruptedException {
         ObjectMapper mapper = new ObjectMapper();
         Document wikiDocument = new Document();
-        wikiDocument.setCreatedDate(new Date());
+        wikiDocument.setLastUpdatedDate(new Date());
         wikiDocument.setId("1");
         wikiDocument.setType("wiki-page");
         Map<String, String> fields = new HashMap<String, String>();

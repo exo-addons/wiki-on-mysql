@@ -92,7 +92,7 @@ public class Page extends BasePage {
     
     @OneToMany(cascade=CascadeType.ALL)
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-    private List<Permission> permission;
+    private List<Permission> permissions;
 
     public String getAuthor() {
       return author;
@@ -182,12 +182,12 @@ public class Page extends BasePage {
       this.isMinorEdit = isMinorEdit;
     }
 
-    public List<Permission> getPermission() {
-      return permission;
+    public List<Permission> getPermissions() {
+      return permissions;
     }
 
-    public void setPermission(List<Permission> permission) {
-      this.permission = permission;
+    public void setPermissions(List<Permission> permission) {
+      this.permissions = permission;
     }
     public Page getParentPage() {
         return parentPage;

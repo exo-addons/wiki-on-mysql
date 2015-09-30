@@ -72,7 +72,7 @@ public class PageDAOTest extends BaseTest {
     per.setType(PermissionType.EDITPAGE);
     List<Permission> permissions = new ArrayList<Permission>();
     permissions.add(per);
-    page.setPermission(permissions);
+    page.setPermissions(permissions);
     
     page.setAuthor("author");
     page.setContent("content");
@@ -104,7 +104,7 @@ public class PageDAOTest extends BaseTest {
     per.setType(PermissionType.EDITPAGE);
     List<Permission> permissions = new ArrayList<Permission>();
     permissions.add(per);
-    page.setPermission(permissions);
+    page.setPermissions(permissions);
     
     page.setAuthor("author");
     page.setContent("content");

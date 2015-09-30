@@ -28,7 +28,9 @@ import org.exoplatform.addons.es.index.elastic.ElasticIndexingServiceConnector;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.wiki.jpa.dao.PageDAO;
 import org.exoplatform.wiki.jpa.dao.WikiDAO;
+import org.exoplatform.wiki.jpa.entity.Page;
 import org.exoplatform.wiki.jpa.entity.Wiki;
 
 /**
@@ -37,12 +39,12 @@ import org.exoplatform.wiki.jpa.entity.Wiki;
  * exo@exoplatform.com
  * 9/9/15
  */
-public class WikiIndexingServiceConnector extends ElasticIndexingServiceConnector {
-    private static final Log LOGGER = ExoLogger.getExoLogger(WikiIndexingServiceConnector.class);
-    public static final String TYPE = "wiki";
-    private final WikiDAO dao;
+public class WikiPageIndexingServiceConnector extends ElasticIndexingServiceConnector {
+    private static final Log LOGGER = ExoLogger.getExoLogger(WikiPageIndexingServiceConnector.class);
+    public static final String TYPE = "wiki-page";
+    private final PageDAO dao;
 
-    public WikiIndexingServiceConnector(InitParams initParams, WikiDAO dao) {
+    public WikiPageIndexingServiceConnector(InitParams initParams, PageDAO dao) {
         super(initParams);
         this.dao = dao;
     }
@@ -52,16 +54,18 @@ public class WikiIndexingServiceConnector extends ElasticIndexingServiceConnecto
         if (StringUtils.isBlank(id)) {
             throw new IllegalArgumentException("Id is null");
         }
-        //Get the wiki object from BD
-        Wiki wiki = dao.find(Long.parseLong(id));
-        if (wiki==null) {
-            LOGGER.info("The wiki entity with id {} doesn't exist.", id);
+        //Get the Page object from BD
+        Page page = dao.find(Long.parseLong(id));
+        if (page==null) {
+            LOGGER.info("The page entity with id {} doesn't exist.", id);
             return null;
         }
         Map<String,String> fields = new HashMap<>();
-        //we just want to index the field "name"
-        fields.put("name", wiki.getName());
-        return new Document(TYPE, id, getUrl(wiki), getCreatedDate(wiki), computePermissions(wiki), fields);
+        fields.put("name", page.getName());
+        fields.put("content", page.getContent());
+        fields.put("title", page.getTitle());
+        fields.put("comment", page.getComment());
+        return new Document(TYPE, id, page.getUrl(), page.getUpdateDate(), computePermissions(page), fields);
     }
 
     @Override
@@ -69,17 +73,7 @@ public class WikiIndexingServiceConnector extends ElasticIndexingServiceConnecto
         return null;
     }
 
-    private Date getCreatedDate(Wiki wiki) {
-        //TODO
-        return null;
-    }
-
-    private String getUrl(Wiki wiki) {
-        //TODO
-        return null;
-    }
-
-    private String[] computePermissions(Wiki wiki) {
+    private String[] computePermissions(Page wiki) {
         List<String> permissions = new ArrayList<String>();
         //Add the owner
         permissions.add(wiki.getOwner());

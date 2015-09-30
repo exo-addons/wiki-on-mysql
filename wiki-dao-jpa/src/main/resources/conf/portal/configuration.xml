@@ -24,12 +24,19 @@
         xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd">
 
     <component>
+        <type>org.exoplatform.wiki.jpa.JPADataStorage</type>
+    </component>
+    <component>
         <type>org.exoplatform.wiki.jpa.dao.WikiDAO</type>
+    </component>
+    <component>
+        <type>org.exoplatform.wiki.jpa.dao.PageDAO</type>
     </component>
     <component>
         <type>org.exoplatform.wiki.jpa.dao.AttachmentDAO</type>
     </component>
 
+    <!-- SEARCH -->
     <external-component-plugins>
         <target-component>org.exoplatform.commons.api.search.SearchService</target-component>
         <component-plugin>
@@ -72,6 +79,7 @@
         </component-plugin>
     </external-component-plugins>
 
+    <!-- INDEXING -->
     <external-component-plugins>
         <target-component>org.exoplatform.addons.es.index.IndexingService</target-component>
         <component-plugin>
@@ -84,6 +92,22 @@
                     <name>constructor.params</name>
                     <property name="index" value="wiki"/>
                     <property name="type" value="wiki"/>
+                </properties-param>
+            </init-params>
+        </component-plugin>
+    </external-component-plugins>
+    <external-component-plugins>
+        <target-component>org.exoplatform.addons.es.index.IndexingService</target-component>
+        <component-plugin>
+            <name>WikiPageIndexingConnector</name>
+            <set-method>addConnector</set-method>
+            <type>org.exoplatform.wiki.jpa.search.WikiPageIndexingServiceConnector</type>
+            <description>Wiki Page ElasticSearch Indexing Connector</description>
+            <init-params>
+                <properties-param>
+                    <name>constructor.params</name>
+                    <property name="index" value="wiki"/>
+                    <property name="type" value="wiki-page"/>
                 </properties-param>
             </init-params>
         </component-plugin>

@@ -20,17 +20,21 @@
 package org.exoplatform.wiki.jpa.search;
 
 import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 import java.util.Date;
 
+import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.internal.InternalNode;
 import org.elasticsearch.rest.RestController;
+import org.elasticsearch.search.SearchHit;
 
 import org.exoplatform.addons.es.domain.OperationType;
 import org.exoplatform.addons.es.index.IndexingService;
@@ -38,11 +42,15 @@ import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.commons.persistence.impl.EntityManagerService;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.wiki.jpa.BaseTest;
+import org.exoplatform.wiki.jpa.JPADataStorage;
 import org.exoplatform.wiki.jpa.SecurityUtils;
+import org.exoplatform.wiki.jpa.dao.PageDAO;
 import org.exoplatform.wiki.jpa.dao.WikiDAO;
+import org.exoplatform.wiki.jpa.entity.Page;
 import org.exoplatform.wiki.jpa.entity.Permission;
 import org.exoplatform.wiki.jpa.entity.PermissionType;
 import org.exoplatform.wiki.jpa.entity.Wiki;
+import org.exoplatform.wiki.service.search.WikiSearchData;
 
 /**
  * Created by The eXo Platform SAS
@@ -69,33 +77,71 @@ public class IndexingTest extends BaseTest {
                 .setWaitForYellowStatus().execute().actionGet();
         assertNotNull(node);
         assertFalse(node.isClosed());
-//        initMapping();
+        deleteAllDocuments();
         SecurityUtils.setCurrentUser("BCH", "*:/admin");
     }
 
+    private void deleteAllDocuments() {
+        IndicesExistsResponse exists = node.client().admin().indices().prepareExists("wiki").execute().actionGet();
+        if(exists.isExists()) {
+            SearchResponse docs = node.client().prepareSearch("wiki")
+                    .setQuery(QueryBuilders.matchAllQuery())
+                    .setTypes(WikiIndexingServiceConnector.TYPE, WikiPageIndexingServiceConnector.TYPE)
+                    .execute().actionGet();
+            if (docs.getHits().getHits().length>0) {
+                BulkRequestBuilder bulk = node.client().prepareBulk();
+                for (SearchHit hit : docs.getHits().getHits()) {
+                    bulk.add(new DeleteRequest(hit.getIndex(), hit.getType(), hit.getId()));
+                }
+                bulk.execute().actionGet();
+            }
+        }
+    }
+
     public void tearDown() {
-        node.client().admin().indices().prepareDelete("wiki").execute().actionGet();
         node.close();
     }
 
-    public void testCreateIndex_addCreateOperation_sizeOfWikiIs1() throws NoSuchFieldException, IllegalAccessException {
+    public void testIndexingAndSearchingOfWiki() throws NoSuchFieldException, IllegalAccessException {
         //Given
         Wiki wiki = new Wiki();
-        wiki.setName("My Wiki");
+        wiki.setName("RDBMS Guidelines");
         wiki.setOwner("BCH");
         wiki.setPermissions(Arrays.asList(new Permission("publisher:/developers", PermissionType.VIEWPAGE)));
         WikiDAO dao = new WikiDAO();
         wiki = dao.create(wiki);
-        assertThat(dao.findAll().size(), is(1));
+        assertEquals(1, dao.findAll().size());
         assertNotEquals(wiki.getId(), 0);
         IndexingService indexingService = PortalContainer.getInstance().getComponentInstanceOfType(IndexingService.class);
-        indexingService.addToIndexingQueue("wiki", Long.toString(wiki.getId()), OperationType.CREATE);
+        indexingService.addToIndexingQueue(WikiIndexingServiceConnector.TYPE, Long.toString(wiki.getId()), OperationType.CREATE);
         setIndexingOperationTimestamp();
         //When
         indexingService.process();
         node.client().admin().indices().prepareRefresh().execute().actionGet();
         //Then
-        assertThat(getNumberOfDocInIndex("wiki"), is(1L));
+        JPADataStorage storage = PortalContainer.getInstance().getComponentInstanceOfType(JPADataStorage.class);
+        assertEquals(1, storage.search(null, new WikiSearchData("RDBMS", null, null, null)).getPageSize());
+    }
+
+    public void testIndexingAndSearchingOfWikiPage() throws NoSuchFieldException, IllegalAccessException {
+        //Given
+        Page page = new Page();
+        page.setName("RDBMS Guidelines");
+        page.setOwner("BCH");
+        page.setPermissions(Arrays.asList(new Permission("publisher:/developers", PermissionType.VIEWPAGE)));
+        PageDAO dao = new PageDAO();
+        page = dao.create(page);
+        assertEquals(1, dao.findAll().size());
+        assertNotEquals(page.getId(), 0);
+        IndexingService indexingService = PortalContainer.getInstance().getComponentInstanceOfType(IndexingService.class);
+        indexingService.addToIndexingQueue(WikiPageIndexingServiceConnector.TYPE, Long.toString(page.getId()), OperationType.CREATE);
+        setIndexingOperationTimestamp();
+        //When
+        indexingService.process();
+        node.client().admin().indices().prepareRefresh().execute().actionGet();
+        //Then
+        JPADataStorage storage = PortalContainer.getInstance().getComponentInstanceOfType(JPADataStorage.class);
+        assertEquals(1, storage.search(null, new WikiSearchData("RDBMS", null, null, null)).getPageSize());
     }
 
     // TODO This method MUST be removed : we MUST find a way to use exo-es-search Liquibase changelogs
@@ -106,9 +152,5 @@ public class IndexingTest extends BaseTest {
                 .createQuery("UPDATE IndexingOperation set timestamp = :now")
                 .setParameter("now", new Date(0L))
                 .executeUpdate();
-    }
-
-    private long getNumberOfDocInIndex(String wiki) {
-        return node.client().prepareCount("wiki").execute().actionGet().getCount();
     }
 }
