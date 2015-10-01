@@ -92,7 +92,7 @@ public class JPADataStorageTest extends BaseTest {
         JPADataStorage storage = new JPADataStorage();
         WikiSearchData searchData = new WikiSearchData("My Wiki", null, null, null);
         //When
-        PageList<SearchResult> results = storage.search(null, searchData);
+        PageList<SearchResult> results = storage.search(searchData);
         //Then
         assertEquals(1, results.getAll().size());
     }
@@ -103,7 +103,7 @@ public class JPADataStorageTest extends BaseTest {
         JPADataStorage storage = new JPADataStorage();
         WikiSearchData searchData = new WikiSearchData("Page", null, null, null);
         //When
-        PageList<SearchResult> results = storage.search(null, searchData);
+        PageList<SearchResult> results = storage.search(searchData);
         //Then
         assertEquals(1, results.getAll().size());
     }
@@ -118,7 +118,7 @@ public class JPADataStorageTest extends BaseTest {
         wikiDocument.setLastUpdatedDate(new Date());
         wikiDocument.setId("1");
         wikiDocument.setType("wiki");
-        Map<String, String> fields = new HashMap<String, String>();
+        Map<String, String> fields = new HashMap<>();
         fields.put("name", name);
         wikiDocument.setFields(fields);
         wikiDocument.setPermissions(new String[]{"BCH"});
@@ -138,7 +138,7 @@ public class JPADataStorageTest extends BaseTest {
         wikiDocument.setLastUpdatedDate(new Date());
         wikiDocument.setId("1");
         wikiDocument.setType("wiki-page");
-        Map<String, String> fields = new HashMap<String, String>();
+        Map<String, String> fields = new HashMap<>();
         fields.put("name", name);
         fields.put("title", title);
         fields.put("content", content);

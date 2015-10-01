@@ -70,7 +70,7 @@ public class WikiPageIndexingServiceConnector extends ElasticIndexingServiceConn
 
     @Override
     public Document update(String id) {
-        return null;
+        return create(id);
     }
 
     private String[] computePermissions(Page wiki) {

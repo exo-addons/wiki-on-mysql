@@ -22,14 +22,18 @@ package org.exoplatform.wiki.jpa;
 import java.io.InputStream;
 import java.util.*;
 
-import org.chromattic.api.ChromatticSession;
-
 import org.exoplatform.commons.api.search.SearchService;
 import org.exoplatform.commons.utils.ObjectPageList;
 import org.exoplatform.commons.utils.PageList;
 import org.exoplatform.container.PortalContainer;
-import org.exoplatform.wiki.mow.api.Page;
+import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.xml.ValuesParam;
+import org.exoplatform.services.security.Identity;
+import org.exoplatform.wiki.mow.api.*;
 import org.exoplatform.wiki.service.DataStorage;
+import org.exoplatform.wiki.service.PermissionEntry;
+import org.exoplatform.wiki.service.PermissionType;
+import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.search.SearchResult;
 import org.exoplatform.wiki.service.search.TemplateSearchData;
 import org.exoplatform.wiki.service.search.TemplateSearchResult;
@@ -44,21 +48,20 @@ import org.exoplatform.wiki.service.search.WikiSearchData;
 public class JPADataStorage implements DataStorage {
 
     @Override
-    //TODO Remove dependency to ChromatticSession
-    public PageList<SearchResult> search(ChromatticSession chromatticSession, WikiSearchData wikiSearchData) {
-        List<SearchResult> searchResults = new ArrayList<SearchResult>();
+    public PageList<SearchResult> search(WikiSearchData wikiSearchData) {
+        List<SearchResult> searchResults = new ArrayList<>();
         Map<String, Collection<org.exoplatform.commons.api.search.data.SearchResult>> results;
         SearchService searchService = PortalContainer.getInstance().getComponentInstanceOfType(SearchService.class);
 
-        results = searchService.search(null, wikiSearchData.getTitle(), null, Arrays.asList("all"),
-                                        (int)wikiSearchData.getOffset(), wikiSearchData.getLimit(),
-                                        wikiSearchData.getSort(), wikiSearchData.getOrder());
+        results = searchService.search(null, wikiSearchData.getTitle(), null, Collections.singleton("all"),
+                (int)wikiSearchData.getOffset(), wikiSearchData.getLimit(),
+                wikiSearchData.getSort(), wikiSearchData.getOrder());
         for (String type : results.keySet()) {
             for (org.exoplatform.commons.api.search.data.SearchResult result : results.get(type)) {
                 searchResults.add(toSearchResult(result));
             }
         }
-        return new ObjectPageList<SearchResult>(searchResults, searchResults.size());
+        return new ObjectPageList<>(searchResults, searchResults.size());
     }
 
     private SearchResult toSearchResult(org.exoplatform.commons.api.search.data.SearchResult input) {
@@ -68,23 +71,222 @@ public class JPADataStorage implements DataStorage {
     }
 
     @Override
-    public InputStream getAttachmentAsStream(String s, ChromatticSession chromatticSession) throws Exception {
+    public Wiki getWikiByTypeAndOwner(String s, String s1, boolean b) throws Exception {
         throw new IllegalAccessException("Not implemented");
     }
 
     @Override
-    public List<SearchResult> searchRenamedPage(ChromatticSession chromatticSession, WikiSearchData wikiSearchData) throws Exception {
+    public Wiki createWiki(String s, String s1) throws Exception {
         throw new IllegalAccessException("Not implemented");
     }
 
     @Override
-    public List<TemplateSearchResult> searchTemplate(ChromatticSession chromatticSession, TemplateSearchData templateSearchData) throws Exception {
+    public Page createPage(Wiki wiki, Page page, Page page1) throws Exception {
         throw new IllegalAccessException("Not implemented");
     }
 
     @Override
-    public Page getWikiPageByUUID(ChromatticSession chromatticSession, String id) throws Exception {
-        //TODO Remove from interface: Wiki pages are not identified by ID anymore
+    public Page getPageOfWikiByName(String s, String s1, String s2) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public Page getPageById(String s) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public Page getParentPageOf(Page page) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public List<Page> getChildrenPageOf(Page page) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public void createTemplatePage(ConfigurationManager configurationManager, String s, String s1) {
+
+    }
+
+    @Override
+    public void createTemplatePage(String s, WikiPageParams wikiPageParams) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public void deleteTemplatePage(String s, String s1, String s2) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public void deletePage(String s, String s1, String s2) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public Template getTemplatePage(WikiPageParams wikiPageParams, String s) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public Map<String, Template> getTemplates(WikiPageParams wikiPageParams) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public void deleteDraftOfPage(Page page, String s) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public void deleteDraftById(String s, String s1) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public void renamePage(String s, String s1, String s2, String s3, String s4) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public void movePage(WikiPageParams wikiPageParams, WikiPageParams wikiPageParams1) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public List<PermissionEntry> getWikiPermission(String s, String s1) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public List<String> getWikiDefaultPermissions(String s, String s1) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public void setWikiPermission(String s, String s1, List<PermissionEntry> list) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public List<Page> getRelatedPagesOfPage(Page page) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public Page getRelatedPage(String s, String s1, String s2) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public void addRelatedPage(Page page, Page page1) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public void removeRelatedPage(Page page, Page page1) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public Page getExsitedOrNewDraftPageById(String s, String s1, String s2, String s3) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public DraftPage getDraft(WikiPageParams wikiPageParams, String s) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public DraftPage getLastestDraft(String s) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public DraftPage getDraft(String s, String s1) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public List<DraftPage> getDraftPagesOfUser(String s) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public void createDraftPageForUser(DraftPage draftPage, String s) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public InputStream getAttachmentAsStream(String s) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public Object findByPath(String s, String s1) {
+        return null;
+    }
+
+    @Override
+    public Page getHelpSyntaxPage(String s, List<ValuesParam> list, ConfigurationManager configurationManager) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public Page getEmotionIconsPage() throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public String getPortalOwner() {
+        return null;
+    }
+
+    @Override
+    public boolean hasPermissionOnPage(Page page, PermissionType permissionType, Identity identity) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public boolean hasAdminSpacePermission(String s, String s1, Identity identity) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public boolean hasAdminPagePermission(String s, String s1, Identity identity) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public List<PageVersion> getVersionsOfPage(Page page) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public void addPageVersion(Page page) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public void updatePage(Page page) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public List<SearchResult> searchRenamedPage(WikiSearchData wikiSearchData) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public Page getPageOfAttachment(Attachment attachment) throws Exception {
+        throw new IllegalAccessException("Not implemented");
+    }
+
+    @Override
+    public List<TemplateSearchResult> searchTemplate(TemplateSearchData templateSearchData) throws Exception {
         throw new IllegalAccessException("Not implemented");
     }
 }

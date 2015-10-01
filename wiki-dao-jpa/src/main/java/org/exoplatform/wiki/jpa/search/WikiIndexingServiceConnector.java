@@ -66,7 +66,7 @@ public class WikiIndexingServiceConnector extends ElasticIndexingServiceConnecto
 
     @Override
     public Document update(String id) {
-        return null;
+        return create(id);
     }
 
     private Date getCreatedDate(Wiki wiki) {

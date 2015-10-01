@@ -22,7 +22,7 @@ package org.exoplatform.wiki.jpa.search;
 import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
 import static org.junit.Assert.assertNotEquals;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
@@ -107,7 +107,7 @@ public class IndexingTest extends BaseTest {
         Wiki wiki = new Wiki();
         wiki.setName("RDBMS Guidelines");
         wiki.setOwner("BCH");
-        wiki.setPermissions(Arrays.asList(new Permission("publisher:/developers", PermissionType.VIEWPAGE)));
+        wiki.setPermissions(Collections.singletonList(new Permission("publisher:/developers", PermissionType.VIEWPAGE)));
         WikiDAO dao = new WikiDAO();
         wiki = dao.create(wiki);
         assertEquals(1, dao.findAll().size());
@@ -120,7 +120,7 @@ public class IndexingTest extends BaseTest {
         node.client().admin().indices().prepareRefresh().execute().actionGet();
         //Then
         JPADataStorage storage = PortalContainer.getInstance().getComponentInstanceOfType(JPADataStorage.class);
-        assertEquals(1, storage.search(null, new WikiSearchData("RDBMS", null, null, null)).getPageSize());
+        assertEquals(1, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
     }
 
     public void testIndexingAndSearchingOfWikiPage() throws NoSuchFieldException, IllegalAccessException {
@@ -128,7 +128,7 @@ public class IndexingTest extends BaseTest {
         Page page = new Page();
         page.setName("RDBMS Guidelines");
         page.setOwner("BCH");
-        page.setPermissions(Arrays.asList(new Permission("publisher:/developers", PermissionType.VIEWPAGE)));
+        page.setPermissions(Collections.singletonList(new Permission("publisher:/developers", PermissionType.VIEWPAGE)));
         PageDAO dao = new PageDAO();
         page = dao.create(page);
         assertEquals(1, dao.findAll().size());
@@ -141,7 +141,36 @@ public class IndexingTest extends BaseTest {
         node.client().admin().indices().prepareRefresh().execute().actionGet();
         //Then
         JPADataStorage storage = PortalContainer.getInstance().getComponentInstanceOfType(JPADataStorage.class);
-        assertEquals(1, storage.search(null, new WikiSearchData("RDBMS", null, null, null)).getPageSize());
+        assertEquals(1, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
+    }
+
+    public void testUpdatingWiki() throws NoSuchFieldException, IllegalAccessException {
+        //Given
+        Wiki wiki = new Wiki();
+        wiki.setName("RDBMS Guidelines");
+        wiki.setOwner("BCH");
+        wiki.setPermissions(Collections.singletonList(new Permission("publisher:/developers", PermissionType.VIEWPAGE)));
+        WikiDAO dao = new WikiDAO();
+        wiki = dao.create(wiki);
+        assertEquals(1, dao.findAll().size());
+        assertNotEquals(wiki.getId(), 0);
+        IndexingService indexingService = PortalContainer.getInstance().getComponentInstanceOfType(IndexingService.class);
+        indexingService.addToIndexingQueue(WikiIndexingServiceConnector.TYPE, Long.toString(wiki.getId()), OperationType.CREATE);
+        setIndexingOperationTimestamp();
+        indexingService.process();
+        node.client().admin().indices().prepareRefresh().execute().actionGet();
+        JPADataStorage storage = PortalContainer.getInstance().getComponentInstanceOfType(JPADataStorage.class);
+        assertEquals(0, storage.search(new WikiSearchData("Liquibase", null, null, null)).getPageSize());
+        //When
+        wiki.setName("Liquibase Guidelines");
+        dao.update(wiki);
+        assertEquals(1, dao.findAll().size());
+        indexingService.addToIndexingQueue(WikiIndexingServiceConnector.TYPE, Long.toString(wiki.getId()), OperationType.UPDATE);
+        setIndexingOperationTimestamp();
+        indexingService.process();
+        node.client().admin().indices().prepareRefresh().execute().actionGet();
+        //Then
+        assertEquals(1, storage.search(new WikiSearchData("Liquibase", null, null, null)).getPageSize());
     }
 
     // TODO This method MUST be removed : we MUST find a way to use exo-es-search Liquibase changelogs
