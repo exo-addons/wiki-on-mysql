@@ -106,13 +106,9 @@ public class JPADataStorage implements DataStorage {
     }
 
     @Override
-    public void createTemplatePage(ConfigurationManager configurationManager, String s, String s1) {
-
-    }
-
-    @Override
-    public void createTemplatePage(String s, WikiPageParams wikiPageParams) throws Exception {
+    public void createTemplatePage(Wiki wiki, Template template) throws Exception {
         throw new IllegalAccessException("Not implemented");
+
     }
 
     @Override
