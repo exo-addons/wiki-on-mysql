@@ -36,7 +36,6 @@ import org.elasticsearch.node.internal.InternalNode;
 import org.elasticsearch.rest.RestController;
 import org.elasticsearch.search.SearchHit;
 
-import org.exoplatform.addons.es.domain.OperationType;
 import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.commons.persistence.impl.EntityManagerService;
@@ -61,6 +60,8 @@ import org.exoplatform.wiki.service.search.WikiSearchData;
 public class IndexingTest extends BaseTest {
 
     private Node node;
+    private WikiDAO wikiDAO = new WikiDAO();
+    private PageDAO pageDAO = new PageDAO();
 
     public void setUp() {
         //Init ES
@@ -77,11 +78,17 @@ public class IndexingTest extends BaseTest {
                 .setWaitForYellowStatus().execute().actionGet();
         assertNotNull(node);
         assertFalse(node.isClosed());
-        deleteAllDocuments();
+        deleteAllDocumentsInES();
+        deleteAllWikiInBD();
         SecurityUtils.setCurrentUser("BCH", "*:/admin");
     }
 
-    private void deleteAllDocuments() {
+    private void deleteAllWikiInBD() {
+        pageDAO.deleteAll();
+        wikiDAO.deleteAll();
+    }
+
+    private void deleteAllDocumentsInES() {
         IndicesExistsResponse exists = node.client().admin().indices().prepareExists("wiki").execute().actionGet();
         if(exists.isExists()) {
             SearchResponse docs = node.client().prepareSearch("wiki")
@@ -94,6 +101,7 @@ public class IndexingTest extends BaseTest {
                     bulk.add(new DeleteRequest(hit.getIndex(), hit.getType(), hit.getId()));
                 }
                 bulk.execute().actionGet();
+                node.client().admin().indices().prepareRefresh().execute().actionGet();
             }
         }
     }
@@ -108,12 +116,11 @@ public class IndexingTest extends BaseTest {
         wiki.setName("RDBMS Guidelines");
         wiki.setOwner("BCH");
         wiki.setPermissions(Collections.singletonList(new Permission("publisher:/developers", PermissionType.VIEWPAGE)));
-        WikiDAO dao = new WikiDAO();
-        wiki = dao.create(wiki);
-        assertEquals(1, dao.findAll().size());
+        wiki = wikiDAO.create(wiki);
+        assertEquals(1, wikiDAO.findAll().size());
         assertNotEquals(wiki.getId(), 0);
         IndexingService indexingService = PortalContainer.getInstance().getComponentInstanceOfType(IndexingService.class);
-        indexingService.addToIndexingQueue(WikiIndexingServiceConnector.TYPE, Long.toString(wiki.getId()), OperationType.CREATE);
+        indexingService.index(WikiIndexingServiceConnector.TYPE, Long.toString(wiki.getId()));
         setIndexingOperationTimestamp();
         //When
         indexingService.process();
@@ -129,12 +136,11 @@ public class IndexingTest extends BaseTest {
         page.setName("RDBMS Guidelines");
         page.setOwner("BCH");
         page.setPermissions(Collections.singletonList(new Permission("publisher:/developers", PermissionType.VIEWPAGE)));
-        PageDAO dao = new PageDAO();
-        page = dao.create(page);
-        assertEquals(1, dao.findAll().size());
+        page = pageDAO.create(page);
+        assertEquals(1, pageDAO.findAll().size());
         assertNotEquals(page.getId(), 0);
         IndexingService indexingService = PortalContainer.getInstance().getComponentInstanceOfType(IndexingService.class);
-        indexingService.addToIndexingQueue(WikiPageIndexingServiceConnector.TYPE, Long.toString(page.getId()), OperationType.CREATE);
+        indexingService.index(WikiPageIndexingServiceConnector.TYPE, Long.toString(page.getId()));
         setIndexingOperationTimestamp();
         //When
         indexingService.process();
@@ -150,12 +156,11 @@ public class IndexingTest extends BaseTest {
         wiki.setName("RDBMS Guidelines");
         wiki.setOwner("BCH");
         wiki.setPermissions(Collections.singletonList(new Permission("publisher:/developers", PermissionType.VIEWPAGE)));
-        WikiDAO dao = new WikiDAO();
-        wiki = dao.create(wiki);
-        assertEquals(1, dao.findAll().size());
+        wiki = wikiDAO.create(wiki);
+        assertEquals(1, wikiDAO.findAll().size());
         assertNotEquals(wiki.getId(), 0);
         IndexingService indexingService = PortalContainer.getInstance().getComponentInstanceOfType(IndexingService.class);
-        indexingService.addToIndexingQueue(WikiIndexingServiceConnector.TYPE, Long.toString(wiki.getId()), OperationType.CREATE);
+        indexingService.index(WikiIndexingServiceConnector.TYPE, Long.toString(wiki.getId()));
         setIndexingOperationTimestamp();
         indexingService.process();
         node.client().admin().indices().prepareRefresh().execute().actionGet();
@@ -163,9 +168,9 @@ public class IndexingTest extends BaseTest {
         assertEquals(0, storage.search(new WikiSearchData("Liquibase", null, null, null)).getPageSize());
         //When
         wiki.setName("Liquibase Guidelines");
-        dao.update(wiki);
-        assertEquals(1, dao.findAll().size());
-        indexingService.addToIndexingQueue(WikiIndexingServiceConnector.TYPE, Long.toString(wiki.getId()), OperationType.UPDATE);
+        wikiDAO.update(wiki);
+        assertEquals(1, wikiDAO.findAll().size());
+        indexingService.reindex(WikiIndexingServiceConnector.TYPE, Long.toString(wiki.getId()));
         setIndexingOperationTimestamp();
         indexingService.process();
         node.client().admin().indices().prepareRefresh().execute().actionGet();
