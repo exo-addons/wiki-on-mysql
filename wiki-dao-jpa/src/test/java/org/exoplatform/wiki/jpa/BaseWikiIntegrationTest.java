@@ -22,6 +22,9 @@ package org.exoplatform.wiki.jpa;
 import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
 import static org.junit.Assert.assertNotEquals;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Date;
 
@@ -33,6 +36,7 @@ import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.internal.InternalNode;
+import org.elasticsearch.plugins.PluginsService;
 import org.elasticsearch.rest.RestController;
 import org.elasticsearch.search.SearchHit;
 
@@ -40,12 +44,11 @@ import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.commons.persistence.impl.EntityManagerService;
 import org.exoplatform.container.PortalContainer;
+import org.exoplatform.wiki.jpa.dao.AttachmentDAO;
 import org.exoplatform.wiki.jpa.dao.PageDAO;
 import org.exoplatform.wiki.jpa.dao.WikiDAO;
-import org.exoplatform.wiki.jpa.entity.Page;
-import org.exoplatform.wiki.jpa.entity.Permission;
-import org.exoplatform.wiki.jpa.entity.PermissionType;
-import org.exoplatform.wiki.jpa.entity.Wiki;
+import org.exoplatform.wiki.jpa.entity.*;
+import org.exoplatform.wiki.jpa.search.AttachmentIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.WikiIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.WikiPageIndexingServiceConnector;
 
@@ -59,6 +62,7 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
     protected Node node;
     protected WikiDAO wikiDAO = new WikiDAO();
     protected PageDAO pageDAO = new PageDAO();
+    protected AttachmentDAO attachmentDAO = new AttachmentDAO();
     protected IndexingService indexingService;
     protected JPADataStorage storage;
 
@@ -68,7 +72,8 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
                 .put(RestController.HTTP_JSON_ENABLE, true)
                 .put(InternalNode.HTTP_ENABLED, true)
                 .put("network.host", "127.0.0.1")
-                .put("path.data", "target/data");
+                .put("path.data", "target/data")
+                .put("plugins." + PluginsService.LOAD_PLUGIN_FROM_CLASSPATH, true);
         node = nodeBuilder()
                 .local(true)
                 .settings(elasticsearchSettings.build())
@@ -149,6 +154,25 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
         assertEquals(1, pageDAO.findAll().size());
         assertNotEquals(page.getId(), 0);
         indexingService.index(WikiPageIndexingServiceConnector.TYPE, Long.toString(page.getId()));
+        setIndexingOperationTimestamp();
+        indexingService.process();
+        node.client().admin().indices().prepareRefresh().execute().actionGet();
+    }
+
+    protected void indexAttachment(String title, String filePath, String downloadedUrl)
+            throws NoSuchFieldException, IllegalAccessException, IOException {
+        Attachment attachment = new Attachment();
+        attachment.setDownloadURL(downloadedUrl);
+        attachment.setTitle(title);
+        attachment.setContent(Files.readAllBytes(Paths.get(filePath)));
+        attachment.setCreatedDate(new Date());
+        attachment.setUpdatedDate(new Date());
+        attachment.setCreator("BCH");
+        attachment.setPermissions(Collections.singletonList(new Permission("publisher:/developers", PermissionType.VIEWPAGE)));
+        attachment = attachmentDAO.create(attachment);
+        assertEquals(1, attachmentDAO.findAll().size());
+        assertNotEquals(attachment.getId(), 0);
+        indexingService.index(AttachmentIndexingServiceConnector.TYPE, Long.toString(attachment.getId()));
         setIndexingOperationTimestamp();
         indexingService.process();
         node.client().admin().indices().prepareRefresh().execute().actionGet();

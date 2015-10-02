@@ -21,6 +21,7 @@ package org.exoplatform.wiki.jpa.search;
 
 import static org.junit.Assert.assertNotEquals;
 
+import java.io.IOException;
 import java.util.Collections;
 
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
@@ -68,6 +69,15 @@ public class IndexingTest extends BaseWikiIntegrationTest {
         node.client().admin().indices().prepareRefresh().execute().actionGet();
         //Then
         assertEquals(1, storage.search(new WikiSearchData("Liquibase", null, null, null)).getPageSize());
+    }
+
+    public void testIndexingAndSearchingOfAttachment() throws NoSuchFieldException, IllegalAccessException, IOException {
+        //Given
+        //When
+        indexAttachment("Scrum @eXo - Collector", "src/test/resources/AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf", "www.exo.com");
+        //Then
+        assertEquals(1, storage.search(new WikiSearchData("Collector", null, null, null)).getPageSize()); //Title
+        assertEquals(1, storage.search(new WikiSearchData("Agile", null, null, null)).getPageSize()); //Content
     }
 
 }

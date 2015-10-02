@@ -52,7 +52,6 @@
                     <property name="index" value="wiki"/>
                     <property name="type" value="wiki"/>
                     <property name="titleField" value="name"/>
-                    <property name="detailField" value="name"/>
                     <property name="searchFields" value="name"/>
                 </properties-param>
             </init-params>
@@ -72,8 +71,26 @@
                     <property name="displayName" value="Wiki Page"/>
                     <property name="index" value="wiki"/>
                     <property name="titleField" value="title"/>
-                    <property name="detailField" value="content"/>
-                    <property name="searchFields" value="name, title, content, comment"/>
+                    <property name="searchFields" value="name,title,content,comment"/>
+                </properties-param>
+            </init-params>
+        </component-plugin>
+    </external-component-plugins>
+    <external-component-plugins>
+        <target-component>org.exoplatform.commons.api.search.SearchService</target-component>
+        <component-plugin>
+            <name>ElasticSearchConnector</name>
+            <set-method>addConnector</set-method>
+            <type>org.exoplatform.addons.es.search.ElasticSearchServiceConnector</type>
+            <description>Attachment ElasticSearch Connector</description>
+            <init-params>
+                <properties-param>
+                    <name>constructor.params</name>
+                    <property name="searchType" value="wiki-attachment"/>
+                    <property name="displayName" value="Wiki Attachment"/>
+                    <property name="index" value="wiki"/>
+                    <property name="titleField" value="title"/>
+                    <property name="searchFields" value="title,content"/>
                 </properties-param>
             </init-params>
         </component-plugin>
@@ -108,6 +125,22 @@
                     <name>constructor.params</name>
                     <property name="index" value="wiki"/>
                     <property name="type" value="wiki-page"/>
+                </properties-param>
+            </init-params>
+        </component-plugin>
+    </external-component-plugins>
+    <external-component-plugins>
+        <target-component>org.exoplatform.addons.es.index.IndexingService</target-component>
+        <component-plugin>
+            <name>AttachmentIndexingConnector</name>
+            <set-method>addConnector</set-method>
+            <type>org.exoplatform.wiki.jpa.search.AttachmentIndexingServiceConnector</type>
+            <description>Attachment ElasticSearch Indexing Connector</description>
+            <init-params>
+                <properties-param>
+                    <name>constructor.params</name>
+                    <property name="index" value="wiki"/>
+                    <property name="type" value="wiki-attachment"/>
                 </properties-param>
             </init-params>
         </component-plugin>

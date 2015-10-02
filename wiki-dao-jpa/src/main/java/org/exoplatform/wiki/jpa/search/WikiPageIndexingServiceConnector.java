@@ -74,7 +74,7 @@ public class WikiPageIndexingServiceConnector extends ElasticIndexingServiceConn
     }
 
     private String[] computePermissions(Page wiki) {
-        List<String> permissions = new ArrayList<String>();
+        List<String> permissions = new ArrayList<>();
         //Add the owner
         permissions.add(wiki.getOwner());
         //TODO Add the permissions
