@@ -16,6 +16,10 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -33,38 +37,37 @@ import org.exoplatform.wiki.jpa.BaseTest;
  */
 public class AttachmentDAOTest extends BaseTest {
 
-  public void testInsertDelete(){
+  public void testInsertDelete() throws IOException {
     //Given
     AttachmentDAO attachmentDAO = getService(AttachmentDAO.class);
     Attachment att = new Attachment();
-    att.setText("abc");
+    att.setContent(Files.readAllBytes(Paths.get("src/test/resources/AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf")));
     //When
     attachmentDAO.create(att);
     Long id = att.getId();
     //Then
     Attachment got = attachmentDAO.find(id);
-    assertEquals("abc", got.getText());
+    assertNotNull(got.getContent());
+    assertEquals(new File("src/test/resources/AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf").length(), got.getWeightInBytes());
     //Delete
     attachmentDAO.delete(att);
     assertNull(attachmentDAO.find(id));
   }
 
-  public void testUpdate(){
+  public void testUpdate() throws IOException {
     //Given
     AttachmentDAO attachmentDAO = getService(AttachmentDAO.class);
     Attachment att = new Attachment();
-    att.setText("abc");
+    att.setContent(Files.readAllBytes(Paths.get("src/test/resources/AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf")));
     //When
     attachmentDAO.create(att);
     Long id = att.getId();
     Permission per = new Permission();
     per.setUser("user");
     per.setType(PermissionType.ADMINPAGE);
-    List<Permission> permissions = new ArrayList<Permission>();
+    List<Permission> permissions = new ArrayList<>();
     permissions.add(per);
-    att.setPermission(permissions);
-    att.setText("def");
-    att.setWeightInBytes((long) 1000);
+    att.setPermissions(permissions);
     att.setCreator("creator");
     att.setDownloadURL("http://exoplatform.com");
     att.setTitle("title");
@@ -73,13 +76,11 @@ public class AttachmentDAOTest extends BaseTest {
     //Then
     attachmentDAO.update(att);
     Attachment got = attachmentDAO.find(id);
-    assertEquals("def", got.getText());
     assertEquals("http://exoplatform.com", got.getDownloadURL());
     assertEquals("title", got.getTitle());
     assertEquals("creator", got.getCreator());
-    assertEquals((long) 1000, got.getWeightInBytes());
     assertEquals(date, got.getUpdatedDate());
-    Permission got_per = got.getPermission().get(0);
+    Permission got_per = got.getPermissions().get(0);
     assertEquals("user", got_per.getUser());
   }
 }

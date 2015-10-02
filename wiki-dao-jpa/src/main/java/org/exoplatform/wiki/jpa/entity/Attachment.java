@@ -38,9 +38,6 @@ public class Attachment {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
 
-  @Column(name = "WEIGHT_IN_BYTES")
-  private Long weightInBytes;
-
   @Column(name = "CREATOR")
   private String creator;
 
@@ -58,11 +55,12 @@ public class Attachment {
   @Column(name = "TITLE")
   private String title;
 
-  @Column(name = "TEXT")
-  private String text;
+  @Lob
+  @Column(name = "CONTENT")
+  private byte[] content;
 
   @OneToMany(cascade=CascadeType.ALL)
-  private List<Permission> permission;
+  private List<Permission> permissions;
 
   public long getId(){return this.id;}
 
@@ -71,11 +69,7 @@ public class Attachment {
   }
 
   public long getWeightInBytes(){
-    return weightInBytes;
-  }
-
-  public void setWeightInBytes(Long weightInBytes) {
-    this.weightInBytes = weightInBytes;
+    return content==null?0:content.length;
   }
 
   public String getCreator(){
@@ -118,19 +112,19 @@ public class Attachment {
     this.title = title;
   }
 
-  public String getText(){
-    return text;
+  public byte[] getContent() {
+    return content;
   }
 
-  public void setText(String text){
-    this.text = text;
+  public void setContent(byte[] content) {
+    this.content = content;
   }
 
-  public List<Permission> getPermission(){
-    return permission;
+  public List<Permission> getPermissions(){
+    return permissions;
   }
-  public void setPermission(List<Permission> permission){
-    this.permission = permission;
+  public void setPermissions(List<Permission> permission){
+    this.permissions = permission;
   }
   
   public boolean hasPermission(PermissionType permissionType){
