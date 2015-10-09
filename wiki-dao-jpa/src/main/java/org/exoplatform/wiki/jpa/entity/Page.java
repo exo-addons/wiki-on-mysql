@@ -38,6 +38,7 @@ import java.util.List;
 @ExoEntity
 @Audited
 @Table(name = "WIKI_PAGES")
+@NamedQuery(  name = "wikiPage.getAllIds", query = "SELECT p.id FROM Page p")
 public class Page extends BasePage {
 
     @Id

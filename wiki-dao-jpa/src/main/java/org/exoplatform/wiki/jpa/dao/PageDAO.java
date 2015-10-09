@@ -46,7 +46,7 @@ public class PageDAO extends GenericDAOJPAImpl<Page, Long> {
 
     public List<Number> getAllHistory(Page page){
       AuditReader reader = AuditReaderFactory.get(getEntityManager());
-      return reader.getRevisions(Page.class,page.getId());
+      return reader.getRevisions(Page.class, page.getId());
     }
 
     public Page getPageAtRevision(Page page, int revision){
@@ -57,5 +57,9 @@ public class PageDAO extends GenericDAOJPAImpl<Page, Long> {
     public int getCurrentVersion(Page page){
       AuditReader reader = AuditReaderFactory.get(getEntityManager());
       return (Integer) reader.getRevisionNumberForDate(new Date(Long.MAX_VALUE));
+    }
+
+    public List<Long> findAllIds() {
+        return getEntityManager().createNamedQuery("wikiPage.getAllIds").getResultList();
     }
 }

@@ -84,6 +84,17 @@ public class WikiPageIndexingServiceConnector extends ElasticIndexingServiceConn
 
     @Override
     public List<String> getAllIds() {
-        throw new RuntimeException("Not implemented");
+        List<String> result;
+
+        List<Long> ids = this.dao.findAllIds();
+        if (ids==null) {
+            result = new ArrayList<>(0);
+        } else {
+            result = new ArrayList<>(ids.size());
+            for (Long id : ids) {
+                result.add(String.valueOf(id));
+            }
+        }
+        return result;
     }
 }

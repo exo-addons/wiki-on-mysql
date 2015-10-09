@@ -144,7 +144,7 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
         return wiki;
     }
 
-    protected void indexPage(String name, String title, String content, String comment)
+    protected Page indexPage(String name, String title, String content, String comment)
             throws NoSuchFieldException, IllegalAccessException {
         Page page = new Page();
         page.setName(name);
@@ -154,12 +154,12 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
         page.setOwner("BCH");
         page.setPermissions(Collections.singletonList(new Permission("publisher:/developers", PermissionType.VIEWPAGE)));
         page = pageDAO.create(page);
-        assertEquals(1, pageDAO.findAll().size());
         assertNotEquals(page.getId(), 0);
         indexingService.index(WikiPageIndexingServiceConnector.TYPE, Long.toString(page.getId()));
         setIndexingOperationTimestamp();
         indexingService.process();
         node.client().admin().indices().prepareRefresh().execute().actionGet();
+        return page;
     }
 
     protected void indexAttachment(String title, String filePath, String downloadedUrl)
