@@ -28,17 +28,11 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Date;
 
-import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
-import org.elasticsearch.action.bulk.BulkRequestBuilder;
-import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.internal.InternalNode;
 import org.elasticsearch.plugins.PluginsService;
 import org.elasticsearch.rest.RestController;
-import org.elasticsearch.search.SearchHit;
 
 import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.commons.api.persistence.ExoTransactional;
@@ -83,34 +77,23 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
                 .setWaitForYellowStatus().execute().actionGet();
         assertNotNull(node);
         assertFalse(node.isClosed());
-        deleteAllDocumentsInES();
-        deleteAllWikiInBD();
         SecurityUtils.setCurrentUser("BCH", "*:/admin");
         indexingService = PortalContainer.getInstance().getComponentInstanceOfType(IndexingService.class);
         storage = PortalContainer.getInstance().getComponentInstanceOfType(JPADataStorage.class);
+        deleteAllDocumentsInES();
+        cleanDB();
     }
 
-    private void deleteAllWikiInBD() {
+    private void cleanDB() {
+        attachmentDAO.deleteAll();
         pageDAO.deleteAll();
         wikiDAO.deleteAll();
     }
 
     private void deleteAllDocumentsInES() {
-        IndicesExistsResponse exists = node.client().admin().indices().prepareExists("wiki").execute().actionGet();
-        if(exists.isExists()) {
-            SearchResponse docs = node.client().prepareSearch("wiki")
-                    .setQuery(QueryBuilders.matchAllQuery())
-                    .setTypes(WikiIndexingServiceConnector.TYPE, WikiPageIndexingServiceConnector.TYPE)
-                    .execute().actionGet();
-            if (docs.getHits().getHits().length>0) {
-                BulkRequestBuilder bulk = node.client().prepareBulk();
-                for (SearchHit hit : docs.getHits().getHits()) {
-                    bulk.add(new DeleteRequest(hit.getIndex(), hit.getType(), hit.getId()));
-                }
-                bulk.execute().actionGet();
-                node.client().admin().indices().prepareRefresh().execute().actionGet();
-            }
-        }
+        indexingService.unindexAll(WikiIndexingServiceConnector.TYPE);
+        indexingService.unindexAll(WikiPageIndexingServiceConnector.TYPE);
+        indexingService.unindexAll(AttachmentIndexingServiceConnector.TYPE);
     }
 
     public void tearDown() {
