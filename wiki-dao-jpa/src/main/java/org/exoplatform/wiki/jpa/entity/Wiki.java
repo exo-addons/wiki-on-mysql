@@ -30,6 +30,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "WIKI_WIKIS")
+@NamedQuery(  name = "wiki.getAllIds", query = "SELECT w.id FROM Wiki w")
 public class Wiki {
   @Id
   @Column(name = "WIKI_ID")
@@ -58,47 +59,48 @@ public class Wiki {
     return id;
   }
 
-  public void setId(long id) {
-    this.id = id;
-  }
-
   public String getName() {
     return name;
   }
 
-  public void setName(String name) {
+  public Wiki setName(String name) {
     this.name = name;
+    return this;
   }
 
   public String getOwner() {
     return owner;
   }
 
-  public void setOwner(String owner) {
+  public Wiki setOwner(String owner) {
     this.owner = owner;
+    return this;
   }
 
   public String getType() {
     return type;
   }
 
-  public void setType(String type) {
+  public Wiki setType(String type) {
     this.type = type;
+    return this;
   }
 
   public Page getWikiHome() {
     return wikiHome;
   }
 
-  public void setWikiHome(Page wikiHome) {
+  public Wiki setWikiHome(Page wikiHome) {
     this.wikiHome = wikiHome;
+    return this;
   }
 
   public List<Permission> getPermissions() {
     return permissions;
   }
 
-  public void setPermissions(List<Permission> permissions) {
+  public Wiki setPermissions(List<Permission> permissions) {
     this.permissions = permissions;
+    return this;
   }
 }

@@ -16,6 +16,8 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
+import java.util.List;
+
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 import org.exoplatform.wiki.jpa.entity.Wiki;
 
@@ -27,4 +29,7 @@ import org.exoplatform.wiki.jpa.entity.Wiki;
  */
 public class WikiDAO  extends GenericDAOJPAImpl<Wiki, Long> {
 
+    public List<Long> findAllIds() {
+        return getEntityManager().createNamedQuery("wiki.getAllIds").getResultList();
+    }
 }

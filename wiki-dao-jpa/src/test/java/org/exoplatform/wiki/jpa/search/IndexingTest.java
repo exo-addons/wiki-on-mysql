@@ -19,15 +19,9 @@
 
 package org.exoplatform.wiki.jpa.search;
 
-import static org.junit.Assert.assertNotEquals;
-
 import java.io.IOException;
-import java.util.Collections;
 
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
-import org.exoplatform.wiki.jpa.entity.Page;
-import org.exoplatform.wiki.jpa.entity.Permission;
-import org.exoplatform.wiki.jpa.entity.PermissionType;
 import org.exoplatform.wiki.jpa.entity.Wiki;
 import org.exoplatform.wiki.service.search.WikiSearchData;
 
@@ -45,6 +39,24 @@ public class IndexingTest extends BaseWikiIntegrationTest {
         indexWiki("RDBMS Guidelines");
         //Then
         assertEquals(1, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
+    }
+
+    public void testReindexingWikiAndSearch() throws NoSuchFieldException, IllegalAccessException, IOException {
+        //Given
+        Wiki wiki = indexWiki("RDBMS Guidelines");
+        wiki.setName("Liquibase Guidelines");
+        wikiDAO.update(wiki);
+        wiki = indexWiki("RDBMS Stats");
+        wiki.setName("Liquibase Stats");
+        wikiDAO.update(wiki);
+        assertEquals(2, wikiDAO.findAll().size());
+        //When
+        indexingService.reindexAll(WikiIndexingServiceConnector.TYPE);
+        setIndexingOperationTimestamp();
+        indexingService.process();
+        node.client().admin().indices().prepareRefresh().execute().actionGet();
+        //Then
+        assertEquals(2, storage.search(new WikiSearchData("Liquibase", null, null, null)).getPageSize());
     }
 
     public void testIndexingAndSearchingOfWikiPage() throws NoSuchFieldException, IllegalAccessException {

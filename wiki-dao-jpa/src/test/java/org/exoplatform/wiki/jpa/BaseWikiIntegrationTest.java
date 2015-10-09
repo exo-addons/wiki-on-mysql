@@ -67,6 +67,7 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
     protected JPADataStorage storage;
 
     public void setUp() {
+        super.setUp();
         //Init ES
         ImmutableSettings.Builder elasticsearchSettings = ImmutableSettings.settingsBuilder()
                 .put(RestController.HTTP_JSON_ENABLE, true)
@@ -113,6 +114,7 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
     }
 
     public void tearDown() {
+        super.tearDown();
         node.close();
     }
 
@@ -124,6 +126,8 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
                 .createQuery("UPDATE IndexingOperation set timestamp = :now")
                 .setParameter("now", new Date(0L))
                 .executeUpdate();
+        //Refresh updated entities of the entity manager
+        emService.getEntityManager().clear();
     }
 
     protected Wiki indexWiki(String name) throws NoSuchFieldException, IllegalAccessException {
@@ -132,7 +136,6 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
         wiki.setOwner("BCH");
         wiki.setPermissions(Collections.singletonList(new Permission("publisher:/developers", PermissionType.VIEWPAGE)));
         wiki = wikiDAO.create(wiki);
-        assertEquals(1, wikiDAO.findAll().size());
         assertNotEquals(wiki.getId(), 0);
         indexingService.index(WikiIndexingServiceConnector.TYPE, Long.toString(wiki.getId()));
         setIndexingOperationTimestamp();

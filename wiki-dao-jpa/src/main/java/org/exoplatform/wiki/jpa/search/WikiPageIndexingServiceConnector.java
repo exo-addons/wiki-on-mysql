@@ -81,4 +81,9 @@ public class WikiPageIndexingServiceConnector extends ElasticIndexingServiceConn
         String[] result = new String[permissions.size()];
         return permissions.toArray(result);
     }
+
+    @Override
+    public List<String> getAllIds() {
+        throw new RuntimeException("Not implemented");
+    }
 }

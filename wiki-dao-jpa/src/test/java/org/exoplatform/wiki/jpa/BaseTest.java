@@ -35,7 +35,7 @@ public abstract class BaseTest extends BaseExoTestCase{
   protected void setUp(){
     begin();
   }
-  protected void tearDown() throws Exception {
+  protected void tearDown() {
     end();
   }
   public <T> T getService(Class<T> clazz) {

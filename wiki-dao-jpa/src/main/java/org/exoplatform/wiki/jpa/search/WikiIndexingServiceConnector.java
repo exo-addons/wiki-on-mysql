@@ -69,6 +69,22 @@ public class WikiIndexingServiceConnector extends ElasticIndexingServiceConnecto
         return create(id);
     }
 
+    @Override
+    public List<String> getAllIds() {
+        List<String> result;
+
+        List<Long> ids = this.dao.findAllIds();
+        if (ids==null) {
+            result = new ArrayList<>(0);
+        } else {
+            result = new ArrayList<>(ids.size());
+            for (Long id : ids) {
+                result.add(String.valueOf(id));
+            }
+        }
+        return result;
+    }
+
     private Date getCreatedDate(Wiki wiki) {
         //TODO
         return null;

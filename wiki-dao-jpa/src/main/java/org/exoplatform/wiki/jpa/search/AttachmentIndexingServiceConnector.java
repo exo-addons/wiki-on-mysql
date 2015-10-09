@@ -95,4 +95,9 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
                 "    }" +
                 "}";
     }
+
+    @Override
+    public List<String> getAllIds() {
+        throw new RuntimeException("Not implemented");
+    }
 }
