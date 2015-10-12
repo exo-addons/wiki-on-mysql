@@ -31,8 +31,6 @@ import org.exoplatform.services.security.Identity;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.mow.api.*;
 import org.exoplatform.wiki.service.DataStorage;
-import org.exoplatform.wiki.service.PermissionEntry;
-import org.exoplatform.wiki.service.PermissionType;
 import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.search.SearchResult;
 import org.exoplatform.wiki.service.search.TemplateSearchData;
@@ -71,7 +69,7 @@ public class JPADataStorage implements DataStorage {
     }
 
     @Override
-    public Wiki getWikiByTypeAndOwner(String s, String s1, boolean b) throws WikiException {
+    public Wiki getWikiByTypeAndOwner(String s, String s1) throws WikiException {
         throw new RuntimeException("Not implemented");
     }
 
@@ -107,6 +105,11 @@ public class JPADataStorage implements DataStorage {
 
     @Override
     public void createTemplatePage(Wiki wiki, Template template) throws WikiException {
+        throw new RuntimeException("Not implemented");
+    }
+
+    @Override
+    public void updateTemplatePage(Template template) throws WikiException {
         throw new RuntimeException("Not implemented");
     }
 
@@ -156,13 +159,8 @@ public class JPADataStorage implements DataStorage {
     }
 
     @Override
-    public List<String> getWikiDefaultPermissions(String s, String s1) throws WikiException {
-        throw new RuntimeException("Not implemented");
-    }
+    public void updateWikiPermission(String s, String s1, List<PermissionEntry> list) throws WikiException {
 
-    @Override
-    public void setWikiPermission(String s, String s1, List<PermissionEntry> list) throws WikiException {
-        throw new RuntimeException("Not implemented");
     }
 
     @Override
