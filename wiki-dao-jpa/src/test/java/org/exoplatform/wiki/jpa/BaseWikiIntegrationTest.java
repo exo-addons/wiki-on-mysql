@@ -34,6 +34,7 @@ import org.elasticsearch.node.internal.InternalNode;
 import org.elasticsearch.plugins.PluginsService;
 import org.elasticsearch.rest.RestController;
 
+import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.commons.persistence.impl.EntityManagerService;
@@ -58,6 +59,7 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
     protected PageDAO pageDAO = new PageDAO();
     protected AttachmentDAO attachmentDAO = new AttachmentDAO();
     protected IndexingService indexingService;
+    protected IndexingOperationProcessor indexingOperationProcessor;
     protected JPADataStorage storage;
 
     public void setUp() {
@@ -79,6 +81,7 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
         assertFalse(node.isClosed());
         SecurityUtils.setCurrentUser("BCH", "*:/admin");
         indexingService = PortalContainer.getInstance().getComponentInstanceOfType(IndexingService.class);
+        indexingOperationProcessor = PortalContainer.getInstance().getComponentInstanceOfType(IndexingOperationProcessor.class);
         storage = PortalContainer.getInstance().getComponentInstanceOfType(JPADataStorage.class);
         deleteAllDocumentsInES();
         cleanDB();
@@ -122,7 +125,7 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
         assertNotEquals(wiki.getId(), 0);
         indexingService.index(WikiIndexingServiceConnector.TYPE, Long.toString(wiki.getId()));
         setIndexingOperationTimestamp();
-        indexingService.process();
+        indexingOperationProcessor.process();
         node.client().admin().indices().prepareRefresh().execute().actionGet();
         return wiki;
     }
@@ -140,7 +143,7 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
         assertNotEquals(page.getId(), 0);
         indexingService.index(WikiPageIndexingServiceConnector.TYPE, Long.toString(page.getId()));
         setIndexingOperationTimestamp();
-        indexingService.process();
+        indexingOperationProcessor.process();
         node.client().admin().indices().prepareRefresh().execute().actionGet();
         return page;
     }
@@ -160,7 +163,7 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
         assertNotEquals(attachment.getId(), 0);
         indexingService.index(AttachmentIndexingServiceConnector.TYPE, Long.toString(attachment.getId()));
         setIndexingOperationTimestamp();
-        indexingService.process();
+        indexingOperationProcessor.process();
         node.client().admin().indices().prepareRefresh().execute().actionGet();
     }
 }

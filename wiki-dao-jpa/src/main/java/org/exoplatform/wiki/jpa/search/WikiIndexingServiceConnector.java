@@ -24,7 +24,7 @@ import java.util.*;
 import org.apache.commons.lang.StringUtils;
 
 import org.exoplatform.addons.es.domain.Document;
-import org.exoplatform.addons.es.index.elastic.ElasticIndexingServiceConnector;
+import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;

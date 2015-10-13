@@ -91,7 +91,7 @@
                     <property name="displayName" value="Wiki Attachment"/>
                     <property name="index" value="wiki"/>
                     <property name="titleField" value="title"/>
-                    <property name="searchFields" value="title,content"/>
+                    <property name="searchFields" value="title,file"/>
                 </properties-param>
             </init-params>
         </component-plugin>
@@ -99,7 +99,7 @@
 
     <!-- INDEXING -->
     <external-component-plugins>
-        <target-component>org.exoplatform.addons.es.index.IndexingService</target-component>
+        <target-component>org.exoplatform.addons.es.index.IndexingOperationProcessor</target-component>
         <component-plugin>
             <name>WikiIndexingConnector</name>
             <set-method>addConnector</set-method>
@@ -115,7 +115,7 @@
         </component-plugin>
     </external-component-plugins>
     <external-component-plugins>
-        <target-component>org.exoplatform.addons.es.index.IndexingService</target-component>
+        <target-component>org.exoplatform.addons.es.index.IndexingOperationProcessor</target-component>
         <component-plugin>
             <name>WikiPageIndexingConnector</name>
             <set-method>addConnector</set-method>
@@ -131,7 +131,7 @@
         </component-plugin>
     </external-component-plugins>
     <external-component-plugins>
-        <target-component>org.exoplatform.addons.es.index.IndexingService</target-component>
+        <target-component>org.exoplatform.addons.es.index.IndexingOperationProcessor</target-component>
         <component-plugin>
             <name>AttachmentIndexingConnector</name>
             <set-method>addConnector</set-method>

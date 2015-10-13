@@ -74,6 +74,11 @@ public class JPADataStorage implements DataStorage {
     }
 
     @Override
+    public List<Wiki> getWikisByType(String s) throws WikiException {
+        return null;
+    }
+
+    @Override
     public Wiki createWiki(Wiki wiki) throws WikiException {
         throw new RuntimeException("Not implemented");
     }
@@ -229,11 +234,6 @@ public class JPADataStorage implements DataStorage {
     }
 
     @Override
-    public Page getPageOfAttachment(Attachment attachment) throws WikiException {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
     public void addAttachmentToPage(Attachment attachment, Page page) throws WikiException {
         throw new RuntimeException("Not implemented");
     }
@@ -300,6 +300,26 @@ public class JPADataStorage implements DataStorage {
 
     @Override
     public void updatePage(Page page) throws WikiException {
+        throw new RuntimeException("Not implemented");
+    }
+
+    @Override
+    public List<String> getPreviousNamesOfPage(Page page) throws WikiException {
+        throw new RuntimeException("Not implemented");
+    }
+
+    @Override
+    public List<String> getWatchersOfPage(Page page) throws WikiException {
+        throw new RuntimeException("Not implemented");
+    }
+
+    @Override
+    public void addWatcherToPage(String s, Page page) throws WikiException {
+        throw new RuntimeException("Not implemented");
+    }
+
+    @Override
+    public void deleteWatcherOfPage(String s, Page page) throws WikiException {
         throw new RuntimeException("Not implemented");
     }
 }

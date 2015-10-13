@@ -27,7 +27,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 
 import org.exoplatform.addons.es.domain.Document;
-import org.exoplatform.addons.es.index.elastic.ElasticIndexingServiceConnector;
+import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -64,7 +64,7 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
         Map<String,String> fields = new HashMap<>();
         Document doc = new Document(TYPE, id, attachment.getDownloadURL(), attachment.getUpdatedDate(), computePermissions(attachment), fields);
         doc.addField("title", attachment.getTitle());
-        doc.addField("content", attachment.getContent());
+        doc.addField("file", attachment.getContent());
         return doc;
     }
 
@@ -84,11 +84,10 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
     @Override
     public String getMapping() {
         return "{\"properties\" : {\n" +
-                "      \"content\" : {\n" +
+                "      \"file\" : {\n" +
                 "        \"type\" : \"attachment\",\n" +
                 "        \"fields\" : {\n" +
-                "          \"title\" : { \"store\" : \"yes\" },\n" +
-                "          \"file\" : { \"term_vector\":\"with_positions_offsets\", \"store\":\"yes\" }\n" +
+                "          \"file\" : { \"term_vector\":\"with_positions_offsets\", \"store\":true }\n" +
                 "        }\n" +
                 "      },\n" +
                 "      \"permissions\" : {\"type\" : \"string\", \"index\" : \"not_analyzed\" }\n" +
