@@ -20,27 +20,32 @@
 package org.exoplatform.wiki.jpa.dao;
 
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-
-import java.util.List;
-
+import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
+import org.exoplatform.wiki.jpa.entity.Wiki;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.exoplatform.wiki.jpa.BaseTest;
-import org.exoplatform.wiki.jpa.entity.Wiki;
+import java.util.List;
+
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
  * 7/31/15
  */
-public class WikiDAOTest extends BaseTest {
+public class WikiDAOTest extends BaseWikiIntegrationTest {
   private final WikiDAO dao = new WikiDAO();
 
   @Before
   public void setUp() {
     super.setUp();
+    dao.deleteAll();
+  }
+
+  @After
+  public void tearDown()  {
     dao.deleteAll();
   }
 
@@ -53,5 +58,39 @@ public class WikiDAOTest extends BaseTest {
     List<Long> ids = dao.findAllIds();
     //Then
     assertThat(ids.size(), is(2));
+  }
+
+  @Test
+  public void testFindWikiByTypeAndOwner() {
+    //Given
+    dao.create(new Wiki().setName("My wiki #1").setType("portal").setOwner("wiki1"));
+    dao.create(new Wiki().setName("My wiki #2").setType("portal").setOwner("wiki2"));
+    //When
+    Wiki wiki1 = dao.getWikiByTypeAndOwner("portal", "wiki1");
+    Wiki wiki2 = dao.getWikiByTypeAndOwner("group", "wiki1");
+    Wiki wiki3 = dao.getWikiByTypeAndOwner("portal", "wiki3");
+    //Then
+    assertNotNull(wiki1);
+    assertNull(wiki2);
+    assertNull(wiki3);
+  }
+
+  @Test
+  public void testFindWikisByType() {
+    //Given
+    dao.create(new Wiki().setName("My wiki #1").setType("portal").setOwner("wiki1"));
+    dao.create(new Wiki().setName("My wiki #2").setType("portal").setOwner("wiki2"));
+    dao.create(new Wiki().setName("My wiki #3").setType("group").setOwner("wiki3"));
+    //When
+    List<Wiki> portalWikis = dao.getWikisByType("portal");
+    List<Wiki> groupWikis = dao.getWikisByType("group");
+    List<Wiki> userWikis = dao.getWikisByType("user");
+    //Then
+    assertNotNull(portalWikis);
+    assertEquals(2, portalWikis.size());
+    assertNotNull(groupWikis);
+    assertEquals(1, groupWikis.size());
+    assertNotNull(userWikis);
+    assertEquals(0, userWikis.size());
   }
 }

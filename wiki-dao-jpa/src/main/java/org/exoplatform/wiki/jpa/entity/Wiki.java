@@ -30,7 +30,11 @@ import java.util.List;
  */
 @Entity
 @Table(name = "WIKI_WIKIS")
-@NamedQuery(  name = "wiki.getAllIds", query = "SELECT w.id FROM Wiki w")
+@NamedQueries({
+        @NamedQuery(name = "wiki.getAllIds", query = "SELECT w.id FROM Wiki w"),
+        @NamedQuery(name = "wiki.getWikisByType", query = "SELECT w FROM Wiki w WHERE w.type = :type"),
+        @NamedQuery(name = "wiki.getWikiByTypeAndOwner", query = "SELECT w FROM Wiki w WHERE w.type = :type AND w.owner = :owner")
+})
 public class Wiki {
   @Id
   @Column(name = "WIKI_ID")

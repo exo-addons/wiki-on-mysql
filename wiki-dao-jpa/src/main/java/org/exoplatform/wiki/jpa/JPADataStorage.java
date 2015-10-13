@@ -29,7 +29,14 @@ import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.ValuesParam;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.wiki.WikiException;
+import org.exoplatform.wiki.jpa.dao.WikiDAO;
+import org.exoplatform.wiki.jpa.entity.*;
 import org.exoplatform.wiki.mow.api.*;
+import org.exoplatform.wiki.mow.api.Attachment;
+import org.exoplatform.wiki.mow.api.DraftPage;
+import org.exoplatform.wiki.mow.api.Page;
+import org.exoplatform.wiki.mow.api.PermissionType;
+import org.exoplatform.wiki.mow.api.Wiki;
 import org.exoplatform.wiki.service.DataStorage;
 import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.search.SearchResult;
@@ -45,8 +52,12 @@ import org.exoplatform.wiki.service.search.WikiSearchData;
  */
 public class JPADataStorage implements DataStorage {
 
+  private WikiDAO wikiDAO;
+
   @Override
   public PageList<SearchResult> search(WikiSearchData wikiSearchData) {
+    wikiDAO = new WikiDAO();
+
     List<SearchResult> searchResults = new ArrayList<>();
     Map<String, Collection<org.exoplatform.commons.api.search.data.SearchResult>> results;
     SearchService searchService = PortalContainer.getInstance().getComponentInstanceOfType(SearchService.class);
@@ -69,13 +80,17 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
-  public Wiki getWikiByTypeAndOwner(String s, String s1) throws WikiException {
-    throw new RuntimeException("Not implemented");
+  public Wiki getWikiByTypeAndOwner(String wikiType, String wikiOwner) throws WikiException {
+    return convertWikiEntityToWiki(wikiDAO.getWikiByTypeAndOwner(wikiType, wikiOwner));
   }
 
   @Override
-  public List<Wiki> getWikisByType(String s) throws WikiException {
-    return null;
+  public List<Wiki> getWikisByType(String wikiType) throws WikiException {
+    List<Wiki> wikis = new ArrayList();
+    for(org.exoplatform.wiki.jpa.entity.Wiki wikiEntity : wikiDAO.getWikisByType(wikiType)) {
+      wikis.add(convertWikiEntityToWiki(wikiEntity));
+    }
+    return wikis;
   }
 
   @Override
@@ -321,5 +336,19 @@ public class JPADataStorage implements DataStorage {
   @Override
   public void deleteWatcherOfPage(String s, Page page) throws WikiException {
     throw new RuntimeException("Not implemented");
+  }
+
+  private Wiki convertWikiEntityToWiki(org.exoplatform.wiki.jpa.entity.Wiki wikiEntity) {
+    Wiki wiki = null;
+    if(wikiEntity != null) {
+      wiki.setId(String.valueOf(wikiEntity.getId()));
+      wiki.setType(wikiEntity.getType());
+      wiki.setOwner(wikiEntity.getOwner());
+      //wiki.setWikiHome(wikiEntity.getWikiHome());
+      //wiki.setPermissions(wikiEntity.getPermissions());
+      //wiki.setDefaultPermissionsInited();
+      wiki.setPreferences(wiki.getPreferences());
+    }
+    return wiki;
   }
 }

@@ -19,17 +19,40 @@ package org.exoplatform.wiki.jpa.dao;
 import java.util.List;
 
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
+import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.jpa.entity.Wiki;
+
+import javax.persistence.NoResultException;
+import javax.persistence.TypedQuery;
 
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
- *          exo@exoplatform.com
- * Jun 24, 2015  
+ * exo@exoplatform.com
+ * Jun 24, 2015
  */
-public class WikiDAO  extends GenericDAOJPAImpl<Wiki, Long> {
+public class WikiDAO extends GenericDAOJPAImpl<Wiki, Long> {
 
-    public List<Long> findAllIds() {
-        return getEntityManager().createNamedQuery("wiki.getAllIds").getResultList();
+  public List<Long> findAllIds() {
+    return getEntityManager().createNamedQuery("wiki.getAllIds").getResultList();
+  }
+
+  public Wiki getWikiByTypeAndOwner(String wikiType, String wikiOwner) {
+    TypedQuery<Wiki> query = getEntityManager().createNamedQuery("wiki.getWikiByTypeAndOwner", Wiki.class)
+            .setParameter("type", wikiType)
+            .setParameter("owner", wikiOwner);
+
+    try {
+      return query.getSingleResult();
+    } catch (NoResultException e) {
+      return null;
     }
+  }
+
+  public List<Wiki> getWikisByType(String wikiType) {
+    TypedQuery<Wiki> query = getEntityManager().createNamedQuery("wiki.getWikisByType", Wiki.class)
+            .setParameter("type", wikiType);
+
+    return query.getResultList();
+  }
 }
