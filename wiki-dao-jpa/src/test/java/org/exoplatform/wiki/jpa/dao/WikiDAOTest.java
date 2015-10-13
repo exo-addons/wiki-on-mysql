@@ -93,4 +93,16 @@ public class WikiDAOTest extends BaseWikiIntegrationTest {
     assertNotNull(userWikis);
     assertEquals(0, userWikis.size());
   }
+
+  @Test
+  public void testCreateWiki() {
+    //Given
+    //When
+    Wiki wiki1 = dao.create(new Wiki().setType("portal").setOwner("wiki1"));
+    //Then
+    assertNotNull(wiki1);
+    assertEquals("portal", wiki1.getType());
+    assertEquals("wiki1", wiki1.getOwner());
+    assertNotNull(dao.getWikiByTypeAndOwner("portal", "wiki1"));
+  }
 }

@@ -95,7 +95,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public Wiki createWiki(Wiki wiki) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    return convertWikiEntityToWiki(wikiDAO.create(convertWikiToWikiEntity(wiki)));
   }
 
   @Override
@@ -350,5 +350,15 @@ public class JPADataStorage implements DataStorage {
       wiki.setPreferences(wiki.getPreferences());
     }
     return wiki;
+  }
+
+  private org.exoplatform.wiki.jpa.entity.Wiki convertWikiToWikiEntity(Wiki wiki) {
+    org.exoplatform.wiki.jpa.entity.Wiki wikiEntity = null;
+    if(wiki != null) {
+      wikiEntity.setType(wiki.getType());
+      wikiEntity.setOwner(wiki.getOwner());
+      //wikiEntity.setPermissions(wiki.getPermissions());
+    }
+    return wikiEntity;
   }
 }
