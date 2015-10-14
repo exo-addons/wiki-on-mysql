@@ -449,7 +449,7 @@ public class JPADataStorage implements DataStorage {
     pageEntity.setComment(page.getComment());
     pageEntity.setUrl(page.getUrl());
     //page.setPermissions(pageEntity.getPermissions());
-    //page.setActivityId(?);
+    pageEntity.setActivityId(page.getActivityId());
 
     pageDAO.update(pageEntity);
   }
@@ -523,7 +523,7 @@ public class JPADataStorage implements DataStorage {
       page.setComment(pageEntity.getComment());
       page.setUrl(pageEntity.getUrl());
       //page.setPermissions(pageEntity.getPermissions());
-      //page.setActivityId(?);
+      page.setActivityId(pageEntity.getActivityId());
     }
     return page;
   }
@@ -549,7 +549,7 @@ public class JPADataStorage implements DataStorage {
       pageEntity.setComment(page.getComment());
       pageEntity.setUrl(page.getUrl());
       //page.setPermissions(pageEntity.getPermissions());
-      //page.setActivityId(?);
+      pageEntity.setActivityId(page.getActivityId());
     }
     return pageEntity;
   }

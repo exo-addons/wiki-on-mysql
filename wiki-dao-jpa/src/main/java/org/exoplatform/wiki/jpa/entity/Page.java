@@ -99,6 +99,9 @@ public class Page extends BasePage {
   @Column(name = "IS_MINOR_EDIT")
   private boolean isMinorEdit;
 
+  @Column(name = "ACTIVITY_ID")
+  private String activityId;
+
   @OneToMany(cascade = CascadeType.ALL)
   @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
   private List<Permission> permissions;
@@ -189,6 +192,14 @@ public class Page extends BasePage {
 
   public void setMinorEdit(boolean isMinorEdit) {
     this.isMinorEdit = isMinorEdit;
+  }
+
+  public String getActivityId() {
+    return activityId;
+  }
+
+  public void setActivityId(String activityId) {
+    this.activityId = activityId;
   }
 
   public List<Permission> getPermissions() {
