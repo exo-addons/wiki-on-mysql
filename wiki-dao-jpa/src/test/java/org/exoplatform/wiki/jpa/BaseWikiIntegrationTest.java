@@ -36,8 +36,6 @@ import org.elasticsearch.rest.RestController;
 
 import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.IndexingService;
-import org.exoplatform.commons.api.persistence.ExoTransactional;
-import org.exoplatform.commons.persistence.impl.EntityManagerService;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.wiki.jpa.dao.AttachmentDAO;
 import org.exoplatform.wiki.jpa.dao.PageDAO;
@@ -104,27 +102,13 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
         node.close();
     }
 
-    // TODO This method MUST be removed : we MUST find a way to use exo-es-search Liquibase changelogs
-    @ExoTransactional
-    protected void setIndexingOperationTimestamp() throws NoSuchFieldException, IllegalAccessException {
-        EntityManagerService emService = PortalContainer.getInstance().getComponentInstanceOfType(EntityManagerService.class);
-        emService.getEntityManager()
-                .createQuery("UPDATE IndexingOperation set timestamp = :now")
-                .setParameter("now", new Date(0L))
-                .executeUpdate();
-        //Refresh updated entities of the entity manager
-        emService.getEntityManager().clear();
-    }
-
     protected Wiki indexWiki(String name) throws NoSuchFieldException, IllegalAccessException {
         Wiki wiki = new Wiki();
         wiki.setName(name);
         wiki.setOwner("BCH");
-        wiki.setPermissions(Collections.singletonList(new Permission("publisher:/developers", PermissionType.VIEWPAGE)));
         wiki = wikiDAO.create(wiki);
         assertNotEquals(wiki.getId(), 0);
         indexingService.index(WikiIndexingServiceConnector.TYPE, Long.toString(wiki.getId()));
-        setIndexingOperationTimestamp();
         indexingOperationProcessor.process();
         node.client().admin().indices().prepareRefresh().execute().actionGet();
         return wiki;
@@ -138,11 +122,9 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
         page.setContent(content);
         page.setComment(comment);
         page.setOwner("BCH");
-        page.setPermissions(Collections.singletonList(new Permission("publisher:/developers", PermissionType.VIEWPAGE)));
         page = pageDAO.create(page);
         assertNotEquals(page.getId(), 0);
         indexingService.index(WikiPageIndexingServiceConnector.TYPE, Long.toString(page.getId()));
-        setIndexingOperationTimestamp();
         indexingOperationProcessor.process();
         node.client().admin().indices().prepareRefresh().execute().actionGet();
         return page;
@@ -157,12 +139,10 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
         attachment.setCreatedDate(new Date());
         attachment.setUpdatedDate(new Date());
         attachment.setCreator("BCH");
-        attachment.setPermissions(Collections.singletonList(new Permission("publisher:/developers", PermissionType.VIEWPAGE)));
         attachment = attachmentDAO.create(attachment);
         assertEquals(1, attachmentDAO.findAll().size());
         assertNotEquals(attachment.getId(), 0);
         indexingService.index(AttachmentIndexingServiceConnector.TYPE, Long.toString(attachment.getId()));
-        setIndexingOperationTimestamp();
         indexingOperationProcessor.process();
         node.client().admin().indices().prepareRefresh().execute().actionGet();
     }
