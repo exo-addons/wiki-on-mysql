@@ -254,8 +254,26 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
-  public void movePage(WikiPageParams wikiPageParams, WikiPageParams wikiPageParams1) throws WikiException {
-    throw new RuntimeException("Not implemented");
+  public void movePage(WikiPageParams currentLocationParams, WikiPageParams newLocationParams) throws WikiException {
+    org.exoplatform.wiki.jpa.entity.Page pageEntity = pageDAO.getPageOfWikiByName(currentLocationParams.getType(),
+            currentLocationParams.getOwner(), currentLocationParams.getPageName());
+    if(pageEntity == null) {
+      throw new WikiException("Cannot move page " + currentLocationParams.getType() + ":"
+              + currentLocationParams.getOwner() + ":" + currentLocationParams.getPageName()
+              + " because page does not exist.");
+    }
+
+    org.exoplatform.wiki.jpa.entity.Page destinationPageEntity = pageDAO.getPageOfWikiByName(newLocationParams.getType(),
+            newLocationParams.getOwner(), newLocationParams.getPageName());
+    if(destinationPageEntity == null) {
+      throw new WikiException("Cannot move page " + currentLocationParams.getType() + ":"
+              + currentLocationParams.getOwner() + ":" + currentLocationParams.getPageName() + " to page "
+              + newLocationParams.getType() + ":" + newLocationParams.getOwner()
+              + ":" + newLocationParams.getPageName() + " because destination page does not exist.");
+    }
+
+    pageEntity.setParentPage(destinationPageEntity);
+    pageDAO.update(pageEntity);
   }
 
   @Override
