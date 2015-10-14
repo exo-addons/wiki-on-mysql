@@ -19,8 +19,6 @@
 
 package org.exoplatform.wiki.jpa;
 
-import java.util.*;
-
 import org.exoplatform.commons.api.search.SearchService;
 import org.exoplatform.commons.utils.ObjectPageList;
 import org.exoplatform.commons.utils.PageList;
@@ -29,16 +27,10 @@ import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.ValuesParam;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.wiki.WikiException;
+import org.exoplatform.wiki.jpa.dao.EmotionIconDAO;
 import org.exoplatform.wiki.jpa.dao.PageDAO;
 import org.exoplatform.wiki.jpa.dao.WikiDAO;
-import org.exoplatform.wiki.jpa.entity.*;
 import org.exoplatform.wiki.mow.api.*;
-import org.exoplatform.wiki.mow.api.Attachment;
-import org.exoplatform.wiki.mow.api.DraftPage;
-import org.exoplatform.wiki.mow.api.EmotionIcon;
-import org.exoplatform.wiki.mow.api.Page;
-import org.exoplatform.wiki.mow.api.PermissionType;
-import org.exoplatform.wiki.mow.api.Wiki;
 import org.exoplatform.wiki.service.DataStorage;
 import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.search.SearchResult;
@@ -46,6 +38,8 @@ import org.exoplatform.wiki.service.search.TemplateSearchData;
 import org.exoplatform.wiki.service.search.TemplateSearchResult;
 import org.exoplatform.wiki.service.search.WikiSearchData;
 import org.exoplatform.wiki.utils.WikiConstants;
+
+import java.util.*;
 
 /**
  * Created by The eXo Platform SAS
@@ -57,10 +51,12 @@ public class JPADataStorage implements DataStorage {
 
   private WikiDAO wikiDAO;
   private PageDAO pageDAO;
+  private EmotionIconDAO emotionIconDAO;
 
   public JPADataStorage() {
     wikiDAO = new WikiDAO();
     pageDAO = new PageDAO();
+    emotionIconDAO = new EmotionIconDAO();
   }
 
   @Override
@@ -377,17 +373,28 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void createEmotionIcon(EmotionIcon emotionIcon) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    org.exoplatform.wiki.jpa.entity.EmotionIcon emotionIconEntity = new org.exoplatform.wiki.jpa.entity.EmotionIcon();
+    emotionIconEntity.setName(emotionIcon.getName());
+    emotionIconEntity.setImage(emotionIcon.getImage());
+
+    emotionIconDAO.create(emotionIconEntity);
   }
 
   @Override
   public List<EmotionIcon> getEmotionIcons() throws WikiException {
-    throw new RuntimeException("Not implemented");
+    List<EmotionIcon> emotionIcons = new ArrayList<>();
+    List<org.exoplatform.wiki.jpa.entity.EmotionIcon> emotionIconsEntities = emotionIconDAO.findAll();
+    if(emotionIconsEntities != null) {
+      for (org.exoplatform.wiki.jpa.entity.EmotionIcon emotionIconEntity : emotionIconsEntities) {
+        emotionIcons.add(convertEmotionIconEntityToEmotionIcon(emotionIconEntity));
+      }
+    }
+    return emotionIcons;
   }
 
   @Override
-  public EmotionIcon getEmotionIconByName(String s) throws WikiException {
-    throw new RuntimeException("Not implemented");
+  public EmotionIcon getEmotionIconByName(String emotionIconName) throws WikiException {
+    return convertEmotionIconEntityToEmotionIcon(emotionIconDAO.getEmotionIconByName(emotionIconName));
   }
 
   @Override
@@ -554,4 +561,25 @@ public class JPADataStorage implements DataStorage {
     }
     return pageEntity;
   }
+
+  private EmotionIcon convertEmotionIconEntityToEmotionIcon(org.exoplatform.wiki.jpa.entity.EmotionIcon emotionIconEntity) {
+    EmotionIcon emotionIcon = null;
+    if(emotionIconEntity != null) {
+      emotionIcon = new EmotionIcon();
+      emotionIcon.setName(emotionIconEntity.getName());
+      emotionIcon.setImage(emotionIconEntity.getImage());
+    }
+    return emotionIcon;
+  }
+
+  private org.exoplatform.wiki.jpa.entity.EmotionIcon convertEmotionIconToEmotionIconEntity(EmotionIcon emotionIcon) {
+    org.exoplatform.wiki.jpa.entity.EmotionIcon emotionIconEntity = null;
+    if(emotionIcon != null) {
+      emotionIconEntity = new org.exoplatform.wiki.jpa.entity.EmotionIcon();
+      emotionIconEntity.setName(emotionIcon.getName());
+      emotionIconEntity.setImage(emotionIcon.getImage());
+    }
+    return emotionIconEntity;
+  }
+
 }

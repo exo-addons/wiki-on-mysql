@@ -6,10 +6,13 @@ import javax.persistence.*;
 
 @Entity
 @ExoEntity
-@Table(name = "WIKI_EMOTICONS")
+@Table(name = "WIKI_EMOTION_ICONS")
+@NamedQueries({
+        @NamedQuery(name = "emotionIcon.getEmotionIconByName", query = "SELECT e FROM EmotionIcon e WHERE e.name = :name")
+})
 public class EmotionIcon {
   @Id
-  @Column(name = "EMOTICON_ID")
+  @Column(name = "EMOTION_ICON_ID")
   @GeneratedValue(strategy = GenerationType.AUTO)
   private long id;
 
@@ -17,7 +20,7 @@ public class EmotionIcon {
   private String name;
 
   @Lob
-  @Column(name = "IMAGE")
+  @Column(name = "IMAGE", length = 20971520)
   private byte[] image;
 
   public String getName() {

@@ -21,6 +21,7 @@ package org.exoplatform.wiki.jpa;
 
 import org.exoplatform.commons.utils.PageList;
 import org.exoplatform.wiki.WikiException;
+import org.exoplatform.wiki.mow.api.EmotionIcon;
 import org.exoplatform.wiki.mow.api.Page;
 import org.exoplatform.wiki.mow.api.Wiki;
 import org.exoplatform.wiki.service.WikiPageParams;
@@ -28,6 +29,7 @@ import org.exoplatform.wiki.service.search.SearchResult;
 import org.exoplatform.wiki.service.search.WikiSearchData;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -303,5 +305,58 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertNotNull(renamedPage);
     assertEquals("newName", renamedPage.getName());
     assertEquals("New Title", renamedPage.getTitle());
+  }
+
+  @Test
+  public void testGetEmotionIcons() throws WikiException {
+    //Given
+    JPADataStorage storage = new JPADataStorage();
+
+    EmotionIcon emotionIcon1 = new EmotionIcon();
+    emotionIcon1.setName("emotionIcon1");
+    emotionIcon1.setImage("image1".getBytes());
+    storage.createEmotionIcon(emotionIcon1);
+
+    EmotionIcon emotionIcon2 = new EmotionIcon();
+    emotionIcon2.setName("emotionIcon2");
+    emotionIcon2.setImage("image2".getBytes());
+    storage.createEmotionIcon(emotionIcon2);
+
+    //When
+    List<EmotionIcon> emotionIcons = storage.getEmotionIcons();
+
+    //Then
+    assertNotNull(emotionIcons);
+    assertEquals(2, emotionIcons.size());
+  }
+
+  @Test
+  public void testGetEmotionIconByName() throws WikiException {
+    //Given
+    JPADataStorage storage = new JPADataStorage();
+
+    EmotionIcon emotionIcon1 = new EmotionIcon();
+    emotionIcon1.setName("emotionIcon1");
+    emotionIcon1.setImage("image1".getBytes());
+    storage.createEmotionIcon(emotionIcon1);
+
+    EmotionIcon emotionIcon2 = new EmotionIcon();
+    emotionIcon2.setName("emotionIcon2");
+    emotionIcon2.setImage("image2".getBytes());
+    storage.createEmotionIcon(emotionIcon2);
+
+    //When
+    EmotionIcon fetchedEmotionIcon1 = storage.getEmotionIconByName("emotionIcon1");
+    EmotionIcon fetchedEmotionIcon2 = storage.getEmotionIconByName("emotionIcon2");
+    EmotionIcon fetchedEmotionIcon3 = storage.getEmotionIconByName("emotionIcon3");
+
+    //Then
+    assertNotNull(fetchedEmotionIcon1);
+    assertEquals("emotionIcon1", fetchedEmotionIcon1.getName());
+    assertTrue(Arrays.equals("image1".getBytes(), fetchedEmotionIcon1.getImage()));
+    assertNotNull(fetchedEmotionIcon2);
+    assertEquals("emotionIcon2", fetchedEmotionIcon2.getName());
+    assertTrue(Arrays.equals("image2".getBytes(), fetchedEmotionIcon2.getImage()));
+    assertNull(fetchedEmotionIcon3);
   }
 }
