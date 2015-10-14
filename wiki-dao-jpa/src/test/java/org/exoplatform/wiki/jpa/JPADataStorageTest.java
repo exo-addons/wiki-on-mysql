@@ -145,4 +145,63 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertEquals(2, childrenPages.size());
   }
 
+  @Test
+  public void testDeletePage() throws WikiException {
+    //Given
+    JPADataStorage storage = new JPADataStorage();
+
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Page page1 = new Page();
+    page1.setWikiId(wiki.getId());
+    page1.setWikiType(wiki.getType());
+    page1.setWikiOwner(wiki.getOwner());
+    page1.setName("page1");
+    page1.setTitle("Page 1");
+
+    //When
+    storage.createPage(wiki, wiki.getWikiHome(), page1);
+    assertEquals(2, pageDAO.findAll().size());
+    storage.deletePage(wiki.getType(), wiki.getOwner(), page1.getName());
+
+    //Then
+    assertEquals(1, pageDAO.findAll().size());
+  }
+
+  @Test
+  public void testDeletePageTree() throws WikiException {
+    //Given
+    JPADataStorage storage = new JPADataStorage();
+
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Page page1 = new Page();
+    page1.setWikiId(wiki.getId());
+    page1.setWikiType(wiki.getType());
+    page1.setWikiOwner(wiki.getOwner());
+    page1.setName("page1");
+    page1.setTitle("Page 1");
+
+    Page page2 = new Page();
+    page2.setWikiId(wiki.getId());
+    page2.setWikiType(wiki.getType());
+    page2.setWikiOwner(wiki.getOwner());
+    page2.setName("page2");
+    page2.setTitle("Page 2");
+
+    //When
+    storage.createPage(wiki, wiki.getWikiHome(), page1);
+    storage.createPage(wiki, page1, page2);
+    assertEquals(3, pageDAO.findAll().size());
+    storage.deletePage(wiki.getType(), wiki.getOwner(), page1.getName());
+
+    //Then
+    assertEquals(1, pageDAO.findAll().size());
+  }
 }

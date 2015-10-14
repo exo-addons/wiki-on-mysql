@@ -76,6 +76,8 @@ public class PageDAOTest extends BaseWikiIntegrationTest {
     // Given
     Page parentPage = new Page();
     Page page = new Page();
+    page.setName("page1");
+    page.setTitle("Page 1");
     page.setParentPage(parentPage);
     page = pageDAO.create(page);
     parentPage = page.getParentPage(); //get persisted parentPage with generated ID
@@ -86,6 +88,8 @@ public class PageDAOTest extends BaseWikiIntegrationTest {
     List<Page> removedPages = pageDAO.findRemovedPages(parentPage);
     // Then
     assertEquals(1, removedPages.size());
+    assertEquals("page1", removedPages.get(0).getName());
+    assertEquals("Page 1", removedPages.get(0).getTitle());
   }
 
   @Test

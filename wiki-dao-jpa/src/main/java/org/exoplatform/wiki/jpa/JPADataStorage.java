@@ -187,6 +187,33 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
+  public void deletePage(String wikiType, String wikiOwner, String pageName) throws WikiException {
+    org.exoplatform.wiki.jpa.entity.Page pageEntity = pageDAO.getPageOfWikiByName(wikiType, wikiOwner, pageName);
+    if(pageEntity == null) {
+      throw new WikiException("Cannot delete page " + wikiType + ":" + wikiOwner + ":" + pageName
+              + " because page does not exist.");
+    }
+
+    // delete the page and all its children pages (listeners call on delete page event is done on service layer)
+    deletePageEntity(pageEntity);
+  }
+
+  /**
+   * Recursively deletes a page and all its children pages
+   * @param pageEntity the root page to delete
+   */
+  private void deletePageEntity(org.exoplatform.wiki.jpa.entity.Page pageEntity) {
+    List<org.exoplatform.wiki.jpa.entity.Page> childrenPages = pageDAO.getChildrenPages(pageEntity);
+    if(childrenPages != null) {
+      for (org.exoplatform.wiki.jpa.entity.Page childPage : childrenPages) {
+        deletePageEntity(childPage);
+      }
+    }
+
+    pageDAO.delete(pageEntity);
+  }
+
+  @Override
   public void createTemplatePage(Wiki wiki, Template template) throws WikiException {
     throw new RuntimeException("Not implemented");
   }
@@ -198,11 +225,6 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void deleteTemplatePage(String s, String s1, String s2) throws WikiException {
-    throw new RuntimeException("Not implemented");
-  }
-
-  @Override
-  public void deletePage(String s, String s1, String s2) throws WikiException {
     throw new RuntimeException("Not implemented");
   }
 
