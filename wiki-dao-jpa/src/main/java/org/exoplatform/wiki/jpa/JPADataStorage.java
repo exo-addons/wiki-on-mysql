@@ -249,8 +249,16 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
-  public void renamePage(String s, String s1, String s2, String s3, String s4) throws WikiException {
-    throw new RuntimeException("Not implemented");
+  public void renamePage(String wikiType, String wikiOwner, String pageName, String newName, String newTitle) throws WikiException {
+    org.exoplatform.wiki.jpa.entity.Page pageEntity = pageDAO.getPageOfWikiByName(wikiType, wikiOwner, pageName);
+    if(pageEntity == null) {
+      throw new WikiException("Cannot rename page " + wikiType + ":" + wikiOwner + ":" + pageName
+              + " because page does not exist.");
+    }
+
+    pageEntity.setName(newName);
+    pageEntity.setTitle(newTitle);
+    pageDAO.update(pageEntity);
   }
 
   @Override

@@ -274,4 +274,34 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertEquals("page1", updatedPage.getName());
     assertEquals("Page 1 updated", updatedPage.getTitle());
   }
+
+  @Test
+  public void testRenamePage() throws WikiException {
+    //Given
+    JPADataStorage storage = new JPADataStorage();
+
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Page page1 = new Page();
+    page1.setWikiId(wiki.getId());
+    page1.setWikiType(wiki.getType());
+    page1.setWikiOwner(wiki.getOwner());
+    page1.setName("page1");
+    page1.setTitle("Page 1");
+
+    //When
+    Page createdPage = storage.createPage(wiki, wiki.getWikiHome(), page1);
+    assertEquals(2, pageDAO.findAll().size());
+    storage.renamePage(wiki.getType(), wiki.getOwner(), page1.getName(), "newName", "New Title");
+
+    //Then
+    assertEquals(2, pageDAO.findAll().size());
+    Page renamedPage = storage.getPageById(createdPage.getId());
+    assertNotNull(renamedPage);
+    assertEquals("newName", renamedPage.getName());
+    assertEquals("New Title", renamedPage.getTitle());
+  }
 }
