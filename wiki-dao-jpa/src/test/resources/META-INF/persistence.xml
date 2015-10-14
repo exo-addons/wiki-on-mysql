@@ -11,6 +11,7 @@
         <class>org.exoplatform.wiki.jpa.entity.Page</class>
         <class>org.exoplatform.wiki.jpa.entity.Permission</class>
         <class>org.exoplatform.wiki.jpa.entity.Wiki</class>
+        <class>org.exoplatform.wiki.jpa.entity.EmotionIcon</class>
         <class>org.exoplatform.addons.es.domain.IndexingOperation</class>
 
         <properties>
