@@ -418,7 +418,32 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void updatePage(Page page) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    org.exoplatform.wiki.jpa.entity.Page pageEntity;
+    if(page.getId() != null && !page.getId().isEmpty()) {
+      pageEntity = pageDAO.find(Long.parseLong(page.getId()));
+    } else {
+      pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
+    }
+
+    if(pageEntity == null) {
+      throw new WikiException("Cannot update page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because page does not exist.");
+    }
+
+    pageEntity.setName(page.getName());
+    pageEntity.setTitle(page.getTitle());
+    pageEntity.setAuthor(page.getAuthor());
+    pageEntity.setContent(page.getContent());
+    pageEntity.setSyntax(page.getSyntax());
+    pageEntity.setCreatedDate(page.getCreatedDate());
+    pageEntity.setUpdatedDate(page.getUpdatedDate());
+    pageEntity.setMinorEdit(page.isMinorEdit());
+    pageEntity.setComment(page.getComment());
+    pageEntity.setUrl(page.getUrl());
+    //page.setPermissions(pageEntity.getPermissions());
+    //page.setActivityId(?);
+
+    pageDAO.update(pageEntity);
   }
 
   @Override

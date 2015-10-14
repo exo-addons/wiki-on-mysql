@@ -243,4 +243,35 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertEquals(1, storage.getChildrenPageOf(wiki.getWikiHome()).size());
     assertEquals(1, storage.getChildrenPageOf(page1).size());
   }
+
+  @Test
+  public void testUpdatePage() throws WikiException {
+    //Given
+    JPADataStorage storage = new JPADataStorage();
+
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Page page1 = new Page();
+    page1.setWikiId(wiki.getId());
+    page1.setWikiType(wiki.getType());
+    page1.setWikiOwner(wiki.getOwner());
+    page1.setName("page1");
+    page1.setTitle("Page 1");
+
+    //When
+    Page createdPage = storage.createPage(wiki, wiki.getWikiHome(), page1);
+    assertEquals(2, pageDAO.findAll().size());
+    createdPage.setTitle("Page 1 updated");
+    storage.updatePage(createdPage);
+
+    //Then
+    assertEquals(2, pageDAO.findAll().size());
+    Page updatedPage = storage.getPageById(createdPage.getId());
+    assertNotNull(updatedPage);
+    assertEquals("page1", updatedPage.getName());
+    assertEquals("Page 1 updated", updatedPage.getTitle());
+  }
 }
