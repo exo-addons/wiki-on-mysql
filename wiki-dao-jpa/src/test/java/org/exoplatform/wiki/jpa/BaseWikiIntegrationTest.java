@@ -27,10 +27,7 @@ import org.elasticsearch.rest.RestController;
 import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.container.PortalContainer;
-import org.exoplatform.wiki.jpa.dao.AttachmentDAO;
-import org.exoplatform.wiki.jpa.dao.EmotionIconDAO;
-import org.exoplatform.wiki.jpa.dao.PageDAO;
-import org.exoplatform.wiki.jpa.dao.WikiDAO;
+import org.exoplatform.wiki.jpa.dao.*;
 import org.exoplatform.wiki.jpa.entity.Attachment;
 import org.exoplatform.wiki.jpa.entity.Page;
 import org.exoplatform.wiki.jpa.entity.Wiki;
@@ -57,6 +54,7 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
   protected WikiDAO wikiDAO = new WikiDAO();
   protected PageDAO pageDAO = new PageDAO();
   protected AttachmentDAO attachmentDAO = new AttachmentDAO();
+  protected TemplateDAO templateDAO = new TemplateDAO();
   protected final EmotionIconDAO emotionIconDAO = new EmotionIconDAO();
   protected IndexingService indexingService;
   protected IndexingOperationProcessor indexingOperationProcessor;
@@ -89,6 +87,7 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
 
   private void cleanDB() {
     emotionIconDAO.deleteAll();
+    templateDAO.deleteAll();
     attachmentDAO.deleteAll();
     pageDAO.deleteAll();
     wikiDAO.deleteAll();

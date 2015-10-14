@@ -32,6 +32,10 @@ import javax.persistence.*;
 @Entity
 @ExoEntity
 @Table(name = "WIKI_TEMPLATES")
+@NamedQueries({
+        @NamedQuery(name = "template.getTemplatesOfWiki", query = "SELECT t FROM Template t JOIN t.wiki w WHERE w.type = :type AND w.owner = :owner"),
+        @NamedQuery(name = "template.getTemplateOfWikiByName", query = "SELECT t FROM Template t JOIN t.wiki w WHERE t.name = :name AND w.type = :type AND w.owner = :owner")
+})
 public class Template extends BasePage {
 
   @Id

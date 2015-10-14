@@ -23,6 +23,7 @@ import org.exoplatform.commons.utils.PageList;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.mow.api.EmotionIcon;
 import org.exoplatform.wiki.mow.api.Page;
+import org.exoplatform.wiki.mow.api.Template;
 import org.exoplatform.wiki.mow.api.Wiki;
 import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.search.SearchResult;
@@ -31,6 +32,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by The eXo Platform SAS
@@ -358,5 +360,136 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertEquals("emotionIcon2", fetchedEmotionIcon2.getName());
     assertTrue(Arrays.equals("image2".getBytes(), fetchedEmotionIcon2.getImage()));
     assertNull(fetchedEmotionIcon3);
+  }
+
+  @Test
+  public void testGetTemplate() throws WikiException {
+    //Given
+    JPADataStorage storage = new JPADataStorage();
+
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Template template1 = new Template();
+    template1.setName("template1");
+    template1.setTitle("Template 1");
+    template1.setContent("Template 1 Content");
+    storage.createTemplatePage(wiki, template1);
+
+    //When
+    Template fetchedTemplate1 = storage.getTemplatePage(new WikiPageParams("portal", "wiki1", null), "template1");
+    Template fetchedTemplate2 = storage.getTemplatePage(new WikiPageParams("portal", "wiki1", null), "template2");
+    Template fetchedTemplate1OfWiki2 = storage.getTemplatePage(new WikiPageParams("portal", "wiki2", null), "template1");
+
+    //Then
+    assertNotNull(fetchedTemplate1);
+    assertEquals("template1", fetchedTemplate1.getName());
+    assertNull(fetchedTemplate2);
+    assertNull(fetchedTemplate1OfWiki2);
+  }
+
+  @Test
+  public void testGetTemplates() throws WikiException {
+    //Given
+    JPADataStorage storage = new JPADataStorage();
+
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Template template1 = new Template();
+    template1.setName("template1");
+    template1.setTitle("Template 1");
+    template1.setContent("Template 1 Content");
+    storage.createTemplatePage(wiki, template1);
+
+    Template template2 = new Template();
+    template2.setName("template2");
+    template2.setTitle("Template 2");
+    template2.setContent("Template 2 Content");
+    storage.createTemplatePage(wiki, template2);
+
+    //When
+    Map<String, Template> fetchedTemplateWiki1 = storage.getTemplates(new WikiPageParams("portal", "wiki1", null));
+    Map<String, Template> fetchedTemplateWiki2 = storage.getTemplates(new WikiPageParams("portal", "wiki2", null));
+
+    //Then
+    assertNotNull(fetchedTemplateWiki1);
+    assertEquals(2, fetchedTemplateWiki1.size());
+    assertNotNull(fetchedTemplateWiki2);
+    assertEquals(0, fetchedTemplateWiki2.size());
+  }
+
+  @Test
+  public void testUpdateTemplate() throws WikiException {
+    //Given
+    JPADataStorage storage = new JPADataStorage();
+
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Template template1 = new Template();
+    template1.setName("template1");
+    template1.setTitle("Template 1");
+    template1.setContent("Template 1 Content");
+    storage.createTemplatePage(wiki, template1);
+
+    Template template2 = new Template();
+    template2.setName("template2");
+    template2.setTitle("Template 2");
+    template2.setContent("Template 2 Content");
+    storage.createTemplatePage(wiki, template2);
+
+    //When
+    Template fetchedTemplate1 = storage.getTemplatePage(new WikiPageParams("portal", "wiki1", null), "template1");
+    fetchedTemplate1.setTitle("Template 1 Updated");
+    fetchedTemplate1.setContent("Template 1 Content Updated");
+    storage.updateTemplatePage(fetchedTemplate1);
+    Template fetchedTemplate1AfterUpdate = storage.getTemplatePage(new WikiPageParams("portal", "wiki1", null), "template1");
+
+    //Then
+    assertNotNull(fetchedTemplate1AfterUpdate);
+    assertEquals("template1", fetchedTemplate1AfterUpdate.getName());
+    assertEquals("Template 1 Updated", fetchedTemplate1AfterUpdate.getTitle());
+    assertEquals("Template 1 Content Updated", fetchedTemplate1AfterUpdate.getContent());
+  }
+
+  @Test
+  public void testDeleteTemplate() throws WikiException {
+    //Given
+    JPADataStorage storage = new JPADataStorage();
+
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Template template1 = new Template();
+    template1.setName("template1");
+    template1.setTitle("Template 1");
+    template1.setContent("Template 1 Content");
+    storage.createTemplatePage(wiki, template1);
+
+    Template template2 = new Template();
+    template2.setName("template2");
+    template2.setTitle("Template 2");
+    template2.setContent("Template 2 Content");
+    storage.createTemplatePage(wiki, template2);
+
+    //When
+    Map<String, Template> fetchedTemplateWiki1 = storage.getTemplates(new WikiPageParams("portal", "wiki1", null));
+    storage.deleteTemplatePage("portal", "wiki1", "template2");
+    Map<String, Template> fetchedTemplateWiki1AfterDeletion = storage.getTemplates(new WikiPageParams("portal", "wiki1", null));
+
+    //Then
+    assertNotNull(fetchedTemplateWiki1);
+    assertEquals(2, fetchedTemplateWiki1.size());
+    assertNotNull(fetchedTemplateWiki1AfterDeletion);
+    assertEquals(1, fetchedTemplateWiki1AfterDeletion.size());
   }
 }

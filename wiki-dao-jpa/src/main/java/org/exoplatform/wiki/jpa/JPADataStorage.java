@@ -29,8 +29,17 @@ import org.exoplatform.services.security.Identity;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.jpa.dao.EmotionIconDAO;
 import org.exoplatform.wiki.jpa.dao.PageDAO;
+import org.exoplatform.wiki.jpa.dao.TemplateDAO;
 import org.exoplatform.wiki.jpa.dao.WikiDAO;
+import org.exoplatform.wiki.jpa.entity.*;
 import org.exoplatform.wiki.mow.api.*;
+import org.exoplatform.wiki.mow.api.Attachment;
+import org.exoplatform.wiki.mow.api.DraftPage;
+import org.exoplatform.wiki.mow.api.EmotionIcon;
+import org.exoplatform.wiki.mow.api.Page;
+import org.exoplatform.wiki.mow.api.PermissionType;
+import org.exoplatform.wiki.mow.api.Template;
+import org.exoplatform.wiki.mow.api.Wiki;
 import org.exoplatform.wiki.service.DataStorage;
 import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.search.SearchResult;
@@ -51,11 +60,13 @@ public class JPADataStorage implements DataStorage {
 
   private WikiDAO wikiDAO;
   private PageDAO pageDAO;
+  private TemplateDAO templateDAO;
   private EmotionIconDAO emotionIconDAO;
 
   public JPADataStorage() {
     wikiDAO = new WikiDAO();
     pageDAO = new PageDAO();
+    templateDAO = new TemplateDAO();
     emotionIconDAO = new EmotionIconDAO();
   }
 
@@ -212,27 +223,63 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void createTemplatePage(Wiki wiki, Template template) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    template.setWikiId(wiki.getId());
+    template.setWikiType(wiki.getType());
+    template.setWikiOwner(wiki.getOwner());
+    templateDAO.create(convertTemplateToTemplateEntity(template));
   }
 
   @Override
   public void updateTemplatePage(Template template) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    org.exoplatform.wiki.jpa.entity.Template templateEntity;
+    if(template.getId() != null && !template.getId().isEmpty()) {
+      templateEntity = templateDAO.find(Long.parseLong(template.getId()));
+    } else {
+      templateEntity = templateDAO.getTemplateOfWikiByName(template.getWikiType(), template.getWikiOwner(), template.getName());
+    }
+
+    if(templateEntity == null) {
+      throw new WikiException("Cannot update template " + template.getWikiType() + ":" + template.getWikiOwner() + ":"
+              + template.getName() + " because template does not exist.");
+    }
+
+    templateEntity.setName(template.getName());
+    templateEntity.setTitle(template.getTitle());
+    templateEntity.setContent(template.getContent());
+    templateEntity.setSyntax(template.getSyntax());
+
+    templateDAO.update(templateEntity);
   }
 
   @Override
-  public void deleteTemplatePage(String s, String s1, String s2) throws WikiException {
-    throw new RuntimeException("Not implemented");
+  public void deleteTemplatePage(String wikiType, String wikiOwner, String templateName) throws WikiException {
+    org.exoplatform.wiki.jpa.entity.Template templateEntity = templateDAO.getTemplateOfWikiByName(wikiType, wikiOwner, templateName);
+    if(templateEntity == null) {
+      throw new WikiException("Cannot delete template " + wikiType + ":" + wikiOwner + ":" + templateName
+              + " because template does not exist.");
+    }
+
+    templateDAO.delete(templateEntity);
   }
 
   @Override
-  public Template getTemplatePage(WikiPageParams wikiPageParams, String s) throws WikiException {
-    throw new RuntimeException("Not implemented");
+  public Template getTemplatePage(WikiPageParams params, String templateName) throws WikiException {
+    org.exoplatform.wiki.jpa.entity.Template templateEntity = templateDAO.getTemplateOfWikiByName(params.getType(), params.getOwner(), templateName);
+    return convertTemplateEntityToTemplate(templateEntity);
   }
 
   @Override
   public Map<String, Template> getTemplates(WikiPageParams wikiPageParams) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    Map<String, Template> templates = new HashMap<>();
+
+    List<org.exoplatform.wiki.jpa.entity.Template> templatesEntities = templateDAO.getTemplatesOfWiki(wikiPageParams.getType(), wikiPageParams.getOwner());
+    if(templatesEntities != null) {
+      for(org.exoplatform.wiki.jpa.entity.Template templateEntity : templatesEntities) {
+        templates.put(templateEntity.getName(), convertTemplateEntityToTemplate(templateEntity));
+      }
+    }
+
+    return templates;
   }
 
   @Override
@@ -560,6 +607,43 @@ public class JPADataStorage implements DataStorage {
       pageEntity.setActivityId(page.getActivityId());
     }
     return pageEntity;
+  }
+
+  private Template convertTemplateEntityToTemplate(org.exoplatform.wiki.jpa.entity.Template templateEntity) {
+    Template template = null;
+    if(templateEntity != null) {
+      template = new Template();
+      template.setId(String.valueOf(templateEntity.getId()));
+      template.setName(templateEntity.getName());
+      org.exoplatform.wiki.jpa.entity.Wiki wiki = templateEntity.getWiki();
+      if(wiki != null) {
+        template.setWikiId(String.valueOf(wiki.getId()));
+        template.setWikiType(wiki.getType());
+        template.setWikiOwner(wiki.getOwner());
+      }
+      template.setTitle(templateEntity.getTitle());
+      template.setContent(templateEntity.getContent());
+      template.setSyntax(templateEntity.getSyntax());
+    }
+    return template;
+  }
+
+  private org.exoplatform.wiki.jpa.entity.Template convertTemplateToTemplateEntity(Template template) {
+    org.exoplatform.wiki.jpa.entity.Template templateEntry = null;
+    if(template != null) {
+      templateEntry = new org.exoplatform.wiki.jpa.entity.Template();
+      templateEntry.setName(template.getName());
+      if(template.getWikiId() != null) {
+        org.exoplatform.wiki.jpa.entity.Wiki wiki = wikiDAO.find(Long.parseLong(template.getWikiId()));
+        if (wiki != null) {
+          templateEntry.setWiki(wiki);
+        }
+      }
+      templateEntry.setTitle(template.getTitle());
+      templateEntry.setContent(template.getContent());
+      templateEntry.setSyntax(template.getSyntax());
+    }
+    return templateEntry;
   }
 
   private EmotionIcon convertEmotionIconEntityToEmotionIcon(org.exoplatform.wiki.jpa.entity.EmotionIcon emotionIconEntity) {
