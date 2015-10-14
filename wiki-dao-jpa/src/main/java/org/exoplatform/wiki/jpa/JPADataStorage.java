@@ -29,6 +29,7 @@ import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.ValuesParam;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.wiki.WikiException;
+import org.exoplatform.wiki.jpa.dao.PageDAO;
 import org.exoplatform.wiki.jpa.dao.WikiDAO;
 import org.exoplatform.wiki.jpa.entity.*;
 import org.exoplatform.wiki.mow.api.*;
@@ -43,6 +44,7 @@ import org.exoplatform.wiki.service.search.SearchResult;
 import org.exoplatform.wiki.service.search.TemplateSearchData;
 import org.exoplatform.wiki.service.search.TemplateSearchResult;
 import org.exoplatform.wiki.service.search.WikiSearchData;
+import org.exoplatform.wiki.utils.WikiConstants;
 
 /**
  * Created by The eXo Platform SAS
@@ -53,11 +55,15 @@ import org.exoplatform.wiki.service.search.WikiSearchData;
 public class JPADataStorage implements DataStorage {
 
   private WikiDAO wikiDAO;
+  private PageDAO pageDAO;
+
+  public JPADataStorage() {
+    wikiDAO = new WikiDAO();
+    pageDAO = new PageDAO();
+  }
 
   @Override
   public PageList<SearchResult> search(WikiSearchData wikiSearchData) {
-    wikiDAO = new WikiDAO();
-
     List<SearchResult> searchResults = new ArrayList<>();
     Map<String, Collection<org.exoplatform.commons.api.search.data.SearchResult>> results;
     SearchService searchService = PortalContainer.getInstance().getComponentInstanceOfType(SearchService.class);
@@ -95,32 +101,89 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public Wiki createWiki(Wiki wiki) throws WikiException {
-    return convertWikiEntityToWiki(wikiDAO.create(convertWikiToWikiEntity(wiki)));
+    Wiki createdWiki = convertWikiEntityToWiki(wikiDAO.create(convertWikiToWikiEntity(wiki)));
+
+    // create wiki home page
+    Page wikiHomePage = new Page();
+    wikiHomePage.setWikiType(wiki.getType());
+    wikiHomePage.setWikiOwner(wiki.getOwner());
+    wikiHomePage.setName(WikiConstants.WIKI_HOME_NAME);
+    wikiHomePage.setTitle(WikiConstants.WIKI_HOME_TITLE);
+
+    Page createdWikiHomePage = createPage(createdWiki, null, wikiHomePage);
+    createdWiki.setWikiHome(createdWikiHomePage);
+
+    return createdWiki;
   }
 
   @Override
-  public Page createPage(Wiki wiki, Page page, Page page1) throws WikiException {
-    throw new RuntimeException("Not implemented");
+  public Page createPage(Wiki wiki, Page parentPage, Page page) throws WikiException {
+    org.exoplatform.wiki.jpa.entity.Wiki wikiEntity = wikiDAO.getWikiByTypeAndOwner(wiki.getType(), wiki.getOwner());
+    if(wikiEntity == null) {
+      throw new WikiException("Cannot create page " + wiki.getType() + ":" + wiki.getOwner() + ":"
+              + page.getName() + " because wiki does not exist.");
+    }
+
+    org.exoplatform.wiki.jpa.entity.Page parentPageEntity = null;
+    if(parentPage != null) {
+      parentPageEntity = pageDAO.getPageOfWikiByName(wiki.getType(), wiki.getOwner(), parentPage.getName());
+      if(parentPageEntity == null) {
+        throw new WikiException("Cannot create page " + wiki.getType() + ":" + wiki.getOwner() + ":"
+                + page.getName() + " because parent page " + parentPage.getName() + " does not exist.");
+      }
+    }
+    org.exoplatform.wiki.jpa.entity.Page pageEntity = convertPageToPageEntity(page);
+    pageEntity.setWiki(wikiEntity);
+    pageEntity.setParentPage(parentPageEntity);
+
+    return convertPageEntityToPage(pageDAO.create(pageEntity));
   }
 
   @Override
-  public Page getPageOfWikiByName(String s, String s1, String s2) throws WikiException {
-    throw new RuntimeException("Not implemented");
+  public Page getPageOfWikiByName(String wikiType, String wikiOwner, String pageName) throws WikiException {
+    return convertPageEntityToPage(pageDAO.getPageOfWikiByName(wikiType, wikiOwner, pageName));
   }
 
   @Override
-  public Page getPageById(String s) throws WikiException {
-    throw new RuntimeException("Not implemented");
+  public Page getPageById(String id) throws WikiException {
+    return convertPageEntityToPage(pageDAO.find(Long.parseLong(id)));
   }
 
   @Override
   public Page getParentPageOf(Page page) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    Page parentPage = null;
+
+    org.exoplatform.wiki.jpa.entity.Page childPageEntity = null;
+    if(page.getId() != null && !page.getId().isEmpty()) {
+      childPageEntity = pageDAO.find(Long.parseLong(page.getId()));
+    } else {
+      childPageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
+    }
+
+    if(childPageEntity != null) {
+      parentPage = convertPageEntityToPage(childPageEntity.getParentPage());
+    }
+
+    return parentPage;
   }
 
   @Override
   public List<Page> getChildrenPageOf(Page page) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    org.exoplatform.wiki.jpa.entity.Page pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
+    if(pageEntity == null) {
+      throw new WikiException("Cannot get children of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because page does not exist.");
+    }
+
+    List<Page> childrenPages = new ArrayList<>();
+    List<org.exoplatform.wiki.jpa.entity.Page> childrenPagesEntities = pageDAO.getChildrenPages(pageEntity);
+    if(childrenPagesEntities != null) {
+      for (org.exoplatform.wiki.jpa.entity.Page childPageEntity : childrenPagesEntities) {
+        childrenPages.add(convertPageEntityToPage(childPageEntity));
+      }
+    }
+
+    return childrenPages;
   }
 
   @Override
@@ -341,6 +404,7 @@ public class JPADataStorage implements DataStorage {
   private Wiki convertWikiEntityToWiki(org.exoplatform.wiki.jpa.entity.Wiki wikiEntity) {
     Wiki wiki = null;
     if(wikiEntity != null) {
+      wiki = new Wiki();
       wiki.setId(String.valueOf(wikiEntity.getId()));
       wiki.setType(wikiEntity.getType());
       wiki.setOwner(wikiEntity.getOwner());
@@ -355,10 +419,65 @@ public class JPADataStorage implements DataStorage {
   private org.exoplatform.wiki.jpa.entity.Wiki convertWikiToWikiEntity(Wiki wiki) {
     org.exoplatform.wiki.jpa.entity.Wiki wikiEntity = null;
     if(wiki != null) {
+      wikiEntity = new org.exoplatform.wiki.jpa.entity.Wiki();
       wikiEntity.setType(wiki.getType());
       wikiEntity.setOwner(wiki.getOwner());
+      wikiEntity.setWikiHome(convertPageToPageEntity(wiki.getWikiHome()));
       //wikiEntity.setPermissions(wiki.getPermissions());
     }
     return wikiEntity;
+  }
+
+  private Page convertPageEntityToPage(org.exoplatform.wiki.jpa.entity.Page pageEntity) {
+    Page page = null;
+    if(pageEntity != null) {
+      page = new Page();
+      page.setId(String.valueOf(pageEntity.getId()));
+      page.setName(pageEntity.getName());
+      org.exoplatform.wiki.jpa.entity.Wiki wiki = pageEntity.getWiki();
+      if(wiki != null) {
+        page.setWikiId(String.valueOf(wiki.getId()));
+        page.setWikiType(wiki.getType());
+        page.setWikiOwner(wiki.getOwner());
+      }
+      page.setTitle(pageEntity.getTitle());
+      page.setAuthor(pageEntity.getAuthor());
+      page.setContent(pageEntity.getContent());
+      page.setSyntax(pageEntity.getSyntax());
+      page.setCreatedDate(pageEntity.getCreatedDate());
+      page.setUpdatedDate(pageEntity.getUpdatedDate());
+      page.setMinorEdit(pageEntity.isMinorEdit());
+      page.setComment(pageEntity.getComment());
+      page.setUrl(pageEntity.getUrl());
+      //page.setPermissions(pageEntity.getPermissions());
+      //page.setActivityId(?);
+    }
+    return page;
+  }
+
+  private org.exoplatform.wiki.jpa.entity.Page convertPageToPageEntity(Page page) {
+    org.exoplatform.wiki.jpa.entity.Page pageEntity = null;
+    if(page != null) {
+      pageEntity = new org.exoplatform.wiki.jpa.entity.Page();
+      pageEntity.setName(page.getName());
+      if(page.getWikiId() != null) {
+        org.exoplatform.wiki.jpa.entity.Wiki wiki = wikiDAO.find(Long.parseLong(page.getWikiId()));
+        if (wiki != null) {
+          pageEntity.setWiki(wiki);
+        }
+      }
+      pageEntity.setTitle(page.getTitle());
+      pageEntity.setAuthor(page.getAuthor());
+      pageEntity.setContent(page.getContent());
+      pageEntity.setSyntax(page.getSyntax());
+      pageEntity.setCreatedDate(page.getCreatedDate());
+      pageEntity.setUpdatedDate(page.getUpdatedDate());
+      pageEntity.setMinorEdit(page.isMinorEdit());
+      pageEntity.setComment(page.getComment());
+      pageEntity.setUrl(page.getUrl());
+      //page.setPermissions(pageEntity.getPermissions());
+      //page.setActivityId(?);
+    }
+    return pageEntity;
   }
 }

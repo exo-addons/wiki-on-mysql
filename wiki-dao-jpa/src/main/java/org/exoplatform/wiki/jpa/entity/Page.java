@@ -38,171 +38,188 @@ import java.util.List;
 @ExoEntity
 @Audited
 @Table(name = "WIKI_PAGES")
-@NamedQuery(  name = "wikiPage.getAllIds", query = "SELECT p.id FROM Page p")
+@NamedQueries({
+        @NamedQuery(name = "wikiPage.getAllIds", query = "SELECT p.id FROM Page p"),
+        @NamedQuery(name = "wikiPage.getPageOfWikiByName", query = "SELECT p FROM Page p JOIN p.wiki w WHERE p.name = :name AND w.type = :type AND w.owner = :owner"),
+        @NamedQuery(name = "wikiPage.getChildrenPages", query = "SELECT p FROM Page p WHERE p.parentPage.id = :id")
+})
 public class Page extends BasePage {
 
-    @Id
-    @Column(name = "PAGE_ID")
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+  @Id
+  @Column(name = "PAGE_ID")
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private long id;
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "PARENT_PAGE_ID")
-    private Page parentPage;
+  @ManyToOne(cascade = CascadeType.PERSIST)
+  @JoinColumn(name = "WIKI_ID")
+  private Wiki wiki;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-    private List<Attachment> attachments;
-    
-    @Column(name = "AUTHOR")
-    private String author;
-    
-    public long getId() {
-      return id;
-    }
+  @ManyToOne(cascade = CascadeType.PERSIST)
+  @JoinColumn(name = "PARENT_PAGE_ID")
+  private Page parentPage;
 
-    @Column(name = "NAME")
-    private String name;
-    
-    @Column(name = "OWNER")
-    private String owner;
-    
-    @Column(name = "CREATE_DATE")
-    private Date createDate;
-    
-    @Column(name = "UPDATE_DATE")
-    private Date updateDate;
-    
-    @Column(name = "CONTENT")
-    private String content;
-    
-    @Column(name = "SYNTAX")
-    private String syntax;
-    
-    @Column(name = "TITLE")
-    private String title;
-    
-    @Column(name = "COMMENT")
-    private String comment;
-    
-    @Column(name = "URL")
-    private String url;
-    
-    @Column(name = "IS_MINOR_EDIT")
-    private boolean isMinorEdit;
-    
-    @OneToMany(cascade=CascadeType.ALL)
-    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-    private List<Permission> permissions;
+  @OneToMany(cascade = CascadeType.ALL)
+  @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+  private List<Attachment> attachments;
 
-    public String getAuthor() {
-      return author;
-    }
+  @Column(name = "AUTHOR")
+  private String author;
 
-    public void setAuthor(String author) {
-      this.author = author;
-    }
+  public long getId() {
+    return id;
+  }
 
-    public String getName() {
-      return name;
-    }
+  @Column(name = "NAME")
+  private String name;
 
-    public void setName(String name) {
-      this.name = name;
-    }
+  @Column(name = "OWNER")
+  private String owner;
 
-    public String getOwner() {
-      return owner;
-    }
+  @Column(name = "CREATED_DATE")
+  private Date createdDate;
 
-    public void setOwner(String owner) {
-      this.owner = owner;
-    }
+  @Column(name = "UPDATED_DATE")
+  private Date updatedDate;
 
-    public Date getCreateDate() {
-      return createDate;
-    }
+  @Column(name = "CONTENT")
+  private String content;
 
-    public void setCreateDate(Date createDate) {
-      this.createDate = createDate;
-    }
+  @Column(name = "SYNTAX")
+  private String syntax;
 
-    public Date getUpdateDate() {
-      return updateDate;
-    }
+  @Column(name = "TITLE")
+  private String title;
 
-    public void setUpdateDate(Date updateDate) {
-      this.updateDate = updateDate;
-    }
+  @Column(name = "COMMENT")
+  private String comment;
 
-    public String getContent() {
-      return content;
-    }
+  @Column(name = "URL")
+  private String url;
 
-    public void setContent(String content) {
-      this.content = content;
-    }
+  @Column(name = "IS_MINOR_EDIT")
+  private boolean isMinorEdit;
 
-    public String getSyntax() {
-      return syntax;
-    }
+  @OneToMany(cascade = CascadeType.ALL)
+  @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+  private List<Permission> permissions;
 
-    public void setSyntax(String syntax) {
-      this.syntax = syntax;
-    }
+  public String getAuthor() {
+    return author;
+  }
 
-    public String getTitle() {
-      return title;
-    }
+  public void setAuthor(String author) {
+    this.author = author;
+  }
 
-    public void setTitle(String title) {
-      this.title = title;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public String getComment() {
-      return comment;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public void setComment(String comment) {
-      this.comment = comment;
-    }
+  public String getOwner() {
+    return owner;
+  }
 
-    public String getUrl() {
-      return url;
-    }
+  public void setOwner(String owner) {
+    this.owner = owner;
+  }
 
-    public void setUrl(String url) {
-      this.url = url;
-    }
+  public Date getCreatedDate() {
+    return createdDate;
+  }
 
-    public boolean isMinorEdit() {
-      return isMinorEdit;
-    }
+  public void setCreatedDate(Date createdDate) {
+    this.createdDate = createdDate;
+  }
 
-    public void setMinorEdit(boolean isMinorEdit) {
-      this.isMinorEdit = isMinorEdit;
-    }
+  public Date getUpdatedDate() {
+    return updatedDate;
+  }
 
-    public List<Permission> getPermissions() {
-      return permissions;
-    }
+  public void setUpdatedDate(Date updatedDate) {
+    this.updatedDate = updatedDate;
+  }
 
-    public void setPermissions(List<Permission> permission) {
-      this.permissions = permission;
-    }
-    public Page getParentPage() {
-        return parentPage;
-    }
+  public String getContent() {
+    return content;
+  }
 
-    public void setParentPage(Page parentPage) {
-        this.parentPage = parentPage;
-    }
+  public void setContent(String content) {
+    this.content = content;
+  }
 
-    public List<Attachment> getAttachments() {
-        return attachments;
-    }
+  public String getSyntax() {
+    return syntax;
+  }
 
-    public void setAttachments(List<Attachment> attachments) {
-        this.attachments = attachments;
-    }
+  public void setSyntax(String syntax) {
+    this.syntax = syntax;
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
+  public String getComment() {
+    return comment;
+  }
+
+  public void setComment(String comment) {
+    this.comment = comment;
+  }
+
+  public String getUrl() {
+    return url;
+  }
+
+  public void setUrl(String url) {
+    this.url = url;
+  }
+
+  public boolean isMinorEdit() {
+    return isMinorEdit;
+  }
+
+  public void setMinorEdit(boolean isMinorEdit) {
+    this.isMinorEdit = isMinorEdit;
+  }
+
+  public List<Permission> getPermissions() {
+    return permissions;
+  }
+
+  public void setPermissions(List<Permission> permission) {
+    this.permissions = permission;
+  }
+
+  public Wiki getWiki() {
+    return wiki;
+  }
+
+  public void setWiki(Wiki wiki) {
+    this.wiki = wiki;
+  }
+
+  public Page getParentPage() {
+    return parentPage;
+  }
+
+  public void setParentPage(Page parentPage) {
+    this.parentPage = parentPage;
+  }
+
+  public List<Attachment> getAttachments() {
+    return attachments;
+  }
+
+  public void setAttachments(List<Attachment> attachments) {
+    this.attachments = attachments;
+  }
 }

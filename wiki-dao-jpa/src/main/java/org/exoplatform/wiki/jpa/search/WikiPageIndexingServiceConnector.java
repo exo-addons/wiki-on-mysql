@@ -66,7 +66,7 @@ public class WikiPageIndexingServiceConnector extends ElasticIndexingServiceConn
         fields.put("content", page.getContent());
         fields.put("title", page.getTitle());
         fields.put("comment", page.getComment());
-        return new Document(TYPE, id, page.getUrl(), page.getUpdateDate(), computePermissions(page), fields);
+        return new Document(TYPE, id, page.getUrl(), page.getUpdatedDate(), computePermissions(page), fields);
     }
 
     @Override

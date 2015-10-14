@@ -20,8 +20,14 @@
 package org.exoplatform.wiki.jpa;
 
 import org.exoplatform.commons.utils.PageList;
+import org.exoplatform.wiki.WikiException;
+import org.exoplatform.wiki.mow.api.Page;
+import org.exoplatform.wiki.mow.api.Wiki;
 import org.exoplatform.wiki.service.search.SearchResult;
 import org.exoplatform.wiki.service.search.WikiSearchData;
+import org.junit.Test;
+
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
@@ -31,29 +37,112 @@ import org.exoplatform.wiki.service.search.WikiSearchData;
  */
 public class JPADataStorageTest extends BaseWikiIntegrationTest {
 
-    public void testSearchWikiByName() throws Exception {
-        //Given
-        indexWiki("My Wiki");
-        JPADataStorage storage = new JPADataStorage();
-        WikiSearchData searchData = new WikiSearchData("My Wiki", null, null, null);
-        //When
-        PageList<SearchResult> results = storage.search(searchData);
-        //Then
-        assertEquals(1, results.getAll().size());
-    }
+  @Test
+  public void testSearchWikiByName() throws Exception {
+    //Given
+    indexWiki("My Wiki");
+    JPADataStorage storage = new JPADataStorage();
+    WikiSearchData searchData = new WikiSearchData("My Wiki", null, null, null);
+    //When
+    PageList<SearchResult> results = storage.search(searchData);
+    //Then
+    assertEquals(1, results.getAll().size());
+  }
 
-    public void testSearchPageByName() throws Exception {
-        //Given
-        indexPage("My Page", "My Page", "This is the content of my Page", "This is a comment");
-        JPADataStorage storage = new JPADataStorage();
-        WikiSearchData searchData = new WikiSearchData("Page", null, null, null);
-        //When
-        PageList<SearchResult> results = storage.search(searchData);
-        //Then
-        assertEquals(1, results.getAll().size());
-    }
+  @Test
+  public void testSearchPageByName() throws Exception {
+    //Given
+    indexPage("My Page", "My Page", "This is the content of my Page", "This is a comment");
+    JPADataStorage storage = new JPADataStorage();
+    WikiSearchData searchData = new WikiSearchData("Page", null, null, null);
+    //When
+    PageList<SearchResult> results = storage.search(searchData);
+    //Then
+    assertEquals(1, results.getAll().size());
+  }
 
-    //TODO test search on all the fields
-    //TODO test with wrong field in the configuration
+  //TODO test search on all the fields
+  //TODO test with wrong field in the configuration
+
+  @Test
+  public void testParentPageOfPage() throws WikiException {
+    //Given
+    JPADataStorage storage = new JPADataStorage();
+
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Page parentPage = new Page();
+    parentPage.setWikiId(wiki.getId());
+    parentPage.setWikiType(wiki.getType());
+    parentPage.setWikiOwner(wiki.getOwner());
+    parentPage.setName("page0");
+    parentPage.setTitle("Page 0");
+
+    Page page = new Page();
+    page.setWikiId(wiki.getId());
+    page.setWikiType(wiki.getType());
+    page.setWikiOwner(wiki.getOwner());
+    page.setName("page1");
+    page.setTitle("Page 1");
+
+    //When
+    storage.createPage(wiki, wiki.getWikiHome(), parentPage);
+    storage.createPage(wiki, parentPage, page);
+    Page pageOfWikiByName = storage.getPageOfWikiByName("portal", "wiki1", "page1");
+
+    // Then
+    assertEquals(3, pageDAO.findAll().size());
+    assertNotNull(pageOfWikiByName);
+    assertEquals("portal", pageOfWikiByName.getWikiType());
+    assertEquals("wiki1", pageOfWikiByName.getWikiOwner());
+    assertEquals("page1", pageOfWikiByName.getName());
+    assertEquals("Page 1", pageOfWikiByName.getTitle());
+  }
+
+  @Test
+  public void testChildrenPagesOfPage() throws WikiException {
+    //Given
+    JPADataStorage storage = new JPADataStorage();
+
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Page parentPage = new Page();
+    parentPage.setWikiId(wiki.getId());
+    parentPage.setWikiType(wiki.getType());
+    parentPage.setWikiOwner(wiki.getOwner());
+    parentPage.setName("page0");
+    parentPage.setTitle("Page 0");
+
+    Page page1 = new Page();
+    page1.setWikiId(wiki.getId());
+    page1.setWikiType(wiki.getType());
+    page1.setWikiOwner(wiki.getOwner());
+    page1.setName("page1");
+    page1.setTitle("Page 1");
+
+    Page page2 = new Page();
+    page2.setWikiId(wiki.getId());
+    page2.setWikiType(wiki.getType());
+    page2.setWikiOwner(wiki.getOwner());
+    page2.setName("page2");
+    page2.setTitle("Page 2");
+
+    //When
+    storage.createPage(wiki, wiki.getWikiHome(), parentPage);
+    storage.createPage(wiki, parentPage, page1);
+    storage.createPage(wiki, parentPage, page2);
+    List<Page> childrenPages = storage.getChildrenPageOf(parentPage);
+
+    // Then
+    assertEquals(4, pageDAO.findAll().size());
+    assertNotNull(childrenPages);
+    assertEquals(2, childrenPages.size());
+  }
 
 }

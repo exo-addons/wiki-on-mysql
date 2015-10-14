@@ -25,6 +25,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.exoplatform.wiki.jpa.BaseTest;
+import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
+import org.exoplatform.wiki.jpa.entity.Wiki;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,13 +39,37 @@ import org.exoplatform.wiki.jpa.entity.PermissionType;
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
  * 7/31/15
  */
-public class PageDAOTest extends BaseTest {
-  private final PageDAO dao = new PageDAO();
+public class PageDAOTest extends BaseWikiIntegrationTest {
+  private final WikiDAO wikiDAO = new WikiDAO();
 
-  @Before
-  public void clean() {
-    dao.deleteAll();
+  private final PageDAO pageDAO = new PageDAO();
+
+  @Test
+  public void testPageOfWikiByName() {
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = wikiDAO.create(wiki);
+    Page parentPage = new Page();
+
+    Page page = new Page();
+    page.setWiki(wiki);
+    page.setParentPage(parentPage);
+    page.setName("page1");
+    page.setTitle("Page 1");
+
+    pageDAO.create(page);
+
+    assertEquals(2, pageDAO.findAll().size());
+
+    Page pageOfWikiByName = pageDAO.getPageOfWikiByName("portal", "wiki1", "page1");
+    assertNotNull(pageOfWikiByName);
+    assertEquals("portal", pageOfWikiByName.getWiki().getType());
+    assertEquals("wiki1", pageOfWikiByName.getWiki().getOwner());
+    assertEquals("page1", pageOfWikiByName.getName());
+    assertEquals("Page 1", pageOfWikiByName.getTitle());
   }
+
 
   @Test
   public void testGetRemovedPages() {
@@ -50,17 +77,15 @@ public class PageDAOTest extends BaseTest {
     Page parentPage = new Page();
     Page page = new Page();
     page.setParentPage(parentPage);
-    page = dao.create(page);
+    page = pageDAO.create(page);
     parentPage = page.getParentPage(); //get persisted parentPage with generated ID
-    assertEquals(2, dao.findAll().size());
-    dao.delete(page);
-    assertEquals(1, dao.findAll().size());
+    assertEquals(2, pageDAO.findAll().size());
+    pageDAO.delete(page);
+    assertEquals(1, pageDAO.findAll().size());
     // When
-    List<Page> removedPages = dao.findRemovedPages(parentPage);
+    List<Page> removedPages = pageDAO.findRemovedPages(parentPage);
     // Then
     assertEquals(1, removedPages.size());
-    // Clean
-    dao.deleteAll();
   }
 
   @Test
@@ -77,7 +102,7 @@ public class PageDAOTest extends BaseTest {
     page.setAuthor("author");
     page.setContent("content");
     page.setComment("comment");
-    page.setCreateDate(new Date());
+    page.setCreatedDate(new Date());
     page.setName("name");
     page.setMinorEdit(true);
     page.setOwner("owner");
@@ -85,14 +110,12 @@ public class PageDAOTest extends BaseTest {
     page.setTitle("title");
     page.setUrl("url");
     // When
-    dao.create(page);
-    Page got = dao.find(page.getId());
+    pageDAO.create(page);
+    Page got = pageDAO.find(page.getId());
     // Then
     assertNotNull(got);
     if(got == null) return;
     assertEquals("name", got.getName());
-    // Clean
-    dao.deleteAll();
   }
 
   @Test
@@ -109,7 +132,7 @@ public class PageDAOTest extends BaseTest {
     page.setAuthor("author");
     page.setContent("content");
     page.setComment("comment");
-    page.setCreateDate(new Date());
+    page.setCreatedDate(new Date());
     page.setName("name");
     page.setMinorEdit(true);
     page.setOwner("owner");
@@ -117,17 +140,15 @@ public class PageDAOTest extends BaseTest {
     page.setTitle("title");
     page.setUrl("url");
     // When
-    dao.create(page);
-    int size1 = dao.getAllHistory(page).size();
-    int version1 = dao.getCurrentVersion(page);
-    Page got = dao.find(page.getId());
+    pageDAO.create(page);
+    int size1 = pageDAO.getAllHistory(page).size();
+    int version1 = pageDAO.getCurrentVersion(page);
+    Page got = pageDAO.find(page.getId());
     got.setName("name2");
-    dao.update(got);
-    assertEquals(size1 + 1, dao.getAllHistory(got).size());
+    pageDAO.update(got);
+    assertEquals(size1 + 1, pageDAO.getAllHistory(got).size());
     
-    Page oldVersion = dao.getPageAtRevision(got, version1);
+    Page oldVersion = pageDAO.getPageAtRevision(got, version1);
     assertEquals("name", oldVersion.getName());
-    // Clean
-    dao.deleteAll();
   }
 }
