@@ -281,12 +281,12 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void deleteDraftOfPage(Page page, String s) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
   }
 
   @Override
   public void deleteDraftByName(String s, String s1) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
   }
 
   @Override
@@ -327,62 +327,70 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public List<PermissionEntry> getWikiPermission(String s, String s1) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
+    return new ArrayList<>();
   }
 
   @Override
   public void updateWikiPermission(String s, String s1, List<PermissionEntry> list) throws WikiException {
-
+    // TODO Implement it !
   }
 
   @Override
   public List<Page> getRelatedPagesOfPage(Page page) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
+    return new ArrayList<>();
   }
 
   @Override
   public Page getRelatedPage(String s, String s1, String s2) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
+    return null;
   }
 
   @Override
   public void addRelatedPage(Page page, Page page1) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
   }
 
   @Override
   public void removeRelatedPage(Page page, Page page1) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
   }
 
   @Override
   public Page getExsitedOrNewDraftPageById(String s, String s1, String s2, String s3) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
+    return null;
   }
 
   @Override
   public DraftPage getDraft(WikiPageParams wikiPageParams, String s) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
+    return null;
   }
 
   @Override
   public DraftPage getLastestDraft(String s) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
+    return null;
   }
 
   @Override
   public DraftPage getDraft(String s, String s1) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
+    return null;
   }
 
   @Override
   public List<DraftPage> getDraftPagesOfUser(String s) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
+    return new ArrayList<>();
   }
 
   @Override
   public void createDraftPageForUser(DraftPage draftPage, String s) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
   }
 
   @Override
@@ -411,7 +419,8 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public List<SearchResult> searchRenamedPage(WikiSearchData wikiSearchData) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
+    return new ArrayList<>();
   }
 
   @Override
@@ -502,7 +511,8 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public Page getHelpSyntaxPage(String s, List<ValuesParam> list, ConfigurationManager configurationManager) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
+    return null;
   }
 
   @Override
@@ -533,37 +543,42 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public String getPortalOwner() throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
+    return "";
   }
 
   @Override
   public boolean hasPermissionOnPage(Page page, PermissionType permissionType, Identity identity) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
+    return true;
   }
 
   @Override
   public boolean hasAdminSpacePermission(String s, String s1, Identity identity) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
+    return true;
   }
 
   @Override
   public boolean hasAdminPagePermission(String s, String s1, Identity identity) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
+    return true;
   }
 
   @Override
   public List<PageVersion> getVersionsOfPage(Page page) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
+    return new ArrayList<>();
   }
 
   @Override
   public void addPageVersion(Page page) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
   }
 
   @Override
   public void restoreVersionOfPage(String s, Page page) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
   }
 
   @Override
@@ -598,22 +613,24 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public List<String> getPreviousNamesOfPage(Page page) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
+    return new ArrayList<>();
   }
 
   @Override
   public List<String> getWatchersOfPage(Page page) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
+    return new ArrayList<>();
   }
 
   @Override
   public void addWatcherToPage(String s, Page page) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
   }
 
   @Override
   public void deleteWatcherOfPage(String s, Page page) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    // TODO Implement it !
   }
 
   private Wiki convertWikiEntityToWiki(org.exoplatform.wiki.jpa.entity.Wiki wikiEntity) {
