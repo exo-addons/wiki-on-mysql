@@ -16,6 +16,7 @@
  */
 package org.exoplatform.wiki.jpa.entity;
 
+import org.exoplatform.commons.api.persistence.ExoEntity;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
@@ -29,6 +30,7 @@ import java.util.List;
  * Jun 23, 2015
  */
 @Entity
+@ExoEntity
 @Table(name = "WIKI_WIKIS")
 @NamedQueries({
         @NamedQuery(name = "wiki.getAllIds", query = "SELECT w.id FROM Wiki w ORDER BY w.id"),
