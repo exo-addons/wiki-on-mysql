@@ -24,6 +24,10 @@
         xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd">
 
     <component>
+        <type>org.exoplatform.commons.persistence.impl.EntityManagerService</type>
+    </component>
+    
+    <component>
         <key>org.exoplatform.wiki.service.DataStorage</key>
         <type>org.exoplatform.wiki.jpa.JPADataStorage</type>
     </component>
