@@ -21,10 +21,7 @@ package org.exoplatform.wiki.jpa;
 
 import org.exoplatform.commons.utils.PageList;
 import org.exoplatform.wiki.WikiException;
-import org.exoplatform.wiki.mow.api.EmotionIcon;
-import org.exoplatform.wiki.mow.api.Page;
-import org.exoplatform.wiki.mow.api.Template;
-import org.exoplatform.wiki.mow.api.Wiki;
+import org.exoplatform.wiki.mow.api.*;
 import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.search.SearchResult;
 import org.exoplatform.wiki.service.search.WikiSearchData;
@@ -308,6 +305,91 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertEquals("newName", renamedPage.getName());
     assertEquals("New Title", renamedPage.getTitle());
   }
+
+  @Test
+  public void testAttachmentsOfPage() throws WikiException {
+    //Given
+    JPADataStorage storage = new JPADataStorage();
+
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Page page1 = new Page();
+    page1.setWikiId(wiki.getId());
+    page1.setWikiType(wiki.getType());
+    page1.setWikiOwner(wiki.getOwner());
+    page1.setName("page1");
+    page1.setTitle("Page 1");
+
+    Page page2 = new Page();
+    page2.setWikiId(wiki.getId());
+    page2.setWikiType(wiki.getType());
+    page2.setWikiOwner(wiki.getOwner());
+    page2.setName("page2");
+    page2.setTitle("Page 2");
+
+    Attachment attachment1 = new Attachment();
+    attachment1.setName("attachment1");
+
+    Attachment attachment2 = new Attachment();
+    attachment1.setName("attachment2");
+
+    //When
+    storage.createPage(wiki, wiki.getWikiHome(), page1);
+    storage.createPage(wiki, wiki.getWikiHome(), page2);
+    storage.addAttachmentToPage(attachment1, page1);
+    storage.addAttachmentToPage(attachment2, page1);
+    List<Attachment> attachmentsOfPage1 = storage.getAttachmentsOfPage(page1);
+    List<Attachment> attachmentsOfPage2 = storage.getAttachmentsOfPage(page2);
+
+    // Then
+    assertEquals(2, attachmentDAO.findAll().size());
+    assertNotNull(attachmentsOfPage1);
+    assertEquals(2, attachmentsOfPage1.size());
+    assertNotNull(attachmentsOfPage2);
+    assertEquals(0, attachmentsOfPage2.size());
+  }
+
+  @Test
+  public void testDeleteAttachmentOfPage() throws WikiException {
+    //Given
+    JPADataStorage storage = new JPADataStorage();
+
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Page page1 = new Page();
+    page1.setWikiId(wiki.getId());
+    page1.setWikiType(wiki.getType());
+    page1.setWikiOwner(wiki.getOwner());
+    page1.setName("page1");
+    page1.setTitle("Page 1");
+
+    Attachment attachment1 = new Attachment();
+    attachment1.setName("attachment1");
+
+    Attachment attachment2 = new Attachment();
+    attachment2.setName("attachment2");
+
+    //When
+    storage.createPage(wiki, wiki.getWikiHome(), page1);
+    storage.addAttachmentToPage(attachment1, page1);
+    storage.addAttachmentToPage(attachment2, page1);
+    List<Attachment> attachmentsOfPage = storage.getAttachmentsOfPage(page1);
+    storage.deleteAttachmentOfPage("attachment1", page1);
+    List<Attachment> attachmentsOfPageAfterDeletion = storage.getAttachmentsOfPage(page1);
+
+    // Then
+    assertNotNull(attachmentsOfPage);
+    assertEquals(2, attachmentsOfPage.size());
+    assertNotNull(attachmentsOfPageAfterDeletion);
+    assertEquals(1, attachmentsOfPageAfterDeletion.size());
+  }
+
 
   @Test
   public void testGetEmotionIcons() throws WikiException {

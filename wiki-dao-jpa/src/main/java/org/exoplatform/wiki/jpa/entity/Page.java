@@ -58,7 +58,7 @@ public class Page extends BasePage {
   @JoinColumn(name = "PARENT_PAGE_ID")
   private Page parentPage;
 
-  @OneToMany(cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "page", cascade = CascadeType.ALL)
   @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
   private List<Attachment> attachments;
 

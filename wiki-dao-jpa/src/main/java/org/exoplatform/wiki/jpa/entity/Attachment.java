@@ -22,6 +22,8 @@ import java.util.List;
 import javax.persistence.*;
 
 import org.exoplatform.commons.api.persistence.ExoEntity;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
 
 /**
  * Created by The eXo Platform SAS
@@ -37,6 +39,9 @@ public class Attachment {
   @Column(name = "ATTACHMENT_ID")
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
+
+  @Column(name = "NAME")
+  private String name;
 
   @Column(name = "CREATOR")
   private String creator;
@@ -59,6 +64,10 @@ public class Attachment {
   @Column(name = "CONTENT")
   private byte[] content;
 
+  @ManyToOne
+  @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+  private Page page;
+
   @OneToMany(cascade=CascadeType.ALL)
   private List<Permission> permissions;
 
@@ -66,6 +75,14 @@ public class Attachment {
 
   public void setId(Long id) {
     this.id = id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 
   public long getWeightInBytes(){
@@ -118,6 +135,14 @@ public class Attachment {
 
   public void setContent(byte[] content) {
     this.content = content;
+  }
+
+  public Page getPage() {
+    return page;
+  }
+
+  public void setPage(Page page) {
+    this.page = page;
   }
 
   public List<Permission> getPermissions(){

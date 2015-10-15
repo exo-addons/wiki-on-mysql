@@ -27,10 +27,7 @@ import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.ValuesParam;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.wiki.WikiException;
-import org.exoplatform.wiki.jpa.dao.EmotionIconDAO;
-import org.exoplatform.wiki.jpa.dao.PageDAO;
-import org.exoplatform.wiki.jpa.dao.TemplateDAO;
-import org.exoplatform.wiki.jpa.dao.WikiDAO;
+import org.exoplatform.wiki.jpa.dao.*;
 import org.exoplatform.wiki.jpa.entity.*;
 import org.exoplatform.wiki.mow.api.*;
 import org.exoplatform.wiki.mow.api.Attachment;
@@ -60,12 +57,14 @@ public class JPADataStorage implements DataStorage {
 
   private WikiDAO wikiDAO;
   private PageDAO pageDAO;
+  private AttachmentDAO attachmentDAO;
   private TemplateDAO templateDAO;
   private EmotionIconDAO emotionIconDAO;
 
   public JPADataStorage() {
     wikiDAO = new WikiDAO();
     pageDAO = new PageDAO();
+    attachmentDAO = new AttachmentDAO();
     templateDAO = new TemplateDAO();
     emotionIconDAO = new EmotionIconDAO();
   }
@@ -400,17 +399,88 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public List<Attachment> getAttachmentsOfPage(Page page) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    org.exoplatform.wiki.jpa.entity.Page pageEntity;
+    if(page.getId() != null && !page.getId().isEmpty()) {
+      pageEntity = pageDAO.find(Long.parseLong(page.getId()));
+    } else {
+      pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
+    }
+
+    if(pageEntity == null) {
+      throw new WikiException("Cannot get attachments of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because page does not exist.");
+    }
+
+    List<Attachment> attachments = new ArrayList<>();
+    List<org.exoplatform.wiki.jpa.entity.Attachment> attachmentsEntities = pageEntity.getAttachments();
+    if(attachmentsEntities != null) {
+      for(org.exoplatform.wiki.jpa.entity.Attachment attachmentEntity : attachmentsEntities) {
+        attachments.add(convertAttachmentEntityToAttachment(attachmentEntity));
+      }
+    }
+
+    return attachments;
   }
 
   @Override
   public void addAttachmentToPage(Attachment attachment, Page page) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    org.exoplatform.wiki.jpa.entity.Page pageEntity;
+    if(page.getId() != null && !page.getId().isEmpty()) {
+      pageEntity = pageDAO.find(Long.parseLong(page.getId()));
+    } else {
+      pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
+    }
+
+    if(pageEntity == null) {
+      throw new WikiException("Cannot add an attachment to page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because page does not exist.");
+    }
+
+    org.exoplatform.wiki.jpa.entity.Attachment attachmentEntity = attachmentDAO.create(convertAttachmentToAttachmentEntity(attachment));
+
+    List<org.exoplatform.wiki.jpa.entity.Attachment> attachmentsEntities = pageEntity.getAttachments();
+    if(attachmentsEntities == null) {
+      attachmentsEntities = new ArrayList<>();
+    }
+    attachmentsEntities.add(attachmentEntity);
+    pageEntity.setAttachments(attachmentsEntities);
+    pageDAO.update(pageEntity);
   }
 
   @Override
-  public void deleteAttachmentOfPage(String s, Page page) throws WikiException {
-    throw new RuntimeException("Not implemented");
+  public void deleteAttachmentOfPage(String attachmentName, Page page) throws WikiException {
+    org.exoplatform.wiki.jpa.entity.Page pageEntity;
+    if(page.getId() != null && !page.getId().isEmpty()) {
+      pageEntity = pageDAO.find(Long.parseLong(page.getId()));
+    } else {
+      pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
+    }
+
+    if(pageEntity == null) {
+      throw new WikiException("Cannot delete an attachment of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because page does not exist.");
+    }
+
+    boolean attachmentFound = false;
+    List<org.exoplatform.wiki.jpa.entity.Attachment> attachmentsEntities = pageEntity.getAttachments();
+    if(attachmentsEntities != null) {
+      for (int i = 0; i < attachmentsEntities.size(); i++) {
+        org.exoplatform.wiki.jpa.entity.Attachment attachmentEntity = attachmentsEntities.get(i);
+        if (attachmentEntity.getName() != null && attachmentEntity.getName().equals(attachmentName)) {
+          attachmentFound = true;
+          attachmentsEntities.remove(i);
+          attachmentDAO.delete(attachmentEntity);
+          pageEntity.setAttachments(attachmentsEntities);
+          pageDAO.update(pageEntity);
+          break;
+        }
+      }
+    }
+
+    if(!attachmentFound) {
+      throw new WikiException("Cannot delete the attachment " + attachmentName + " of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because attachment does not exist.");
+    }
   }
 
   @Override
@@ -607,6 +677,53 @@ public class JPADataStorage implements DataStorage {
       pageEntity.setActivityId(page.getActivityId());
     }
     return pageEntity;
+  }
+
+  private Attachment convertAttachmentEntityToAttachment(org.exoplatform.wiki.jpa.entity.Attachment attachmentEntity) {
+    Attachment attachment = null;
+    if(attachmentEntity != null) {
+      attachment = new Attachment();
+      attachment.setName(attachmentEntity.getName());
+      attachment.setTitle(attachmentEntity.getTitle());
+      attachment.setCreator(attachmentEntity.getCreator());
+      if(attachmentEntity.getCreatedDate() != null) {
+        Calendar createdDate = Calendar.getInstance();
+        createdDate.setTime(attachmentEntity.getCreatedDate());
+        attachment.setCreatedDate(createdDate);
+      }
+      if(attachmentEntity.getUpdatedDate() != null) {
+        Calendar updatedDate = Calendar.getInstance();
+        updatedDate.setTime(attachmentEntity.getUpdatedDate());
+        attachment.setUpdatedDate(updatedDate);
+      }
+      attachment.setContent(attachmentEntity.getContent());
+      //attachment.setMimeType(?);
+      attachment.setDownloadURL(attachmentEntity.getDownloadURL());
+      attachment.setWeightInBytes(attachmentEntity.getWeightInBytes());
+      //attachment.setPermissions(?);
+    }
+    return attachment;
+  }
+
+  private org.exoplatform.wiki.jpa.entity.Attachment convertAttachmentToAttachmentEntity(Attachment attachment) {
+    org.exoplatform.wiki.jpa.entity.Attachment attachmentEntity = null;
+    if(attachment != null) {
+      attachmentEntity = new org.exoplatform.wiki.jpa.entity.Attachment();
+      attachmentEntity.setName(attachment.getName());
+      attachmentEntity.setTitle(attachment.getTitle());
+      attachmentEntity.setCreator(attachment.getCreator());
+      attachmentEntity.setContent(attachment.getContent());
+      if(attachment.getCreatedDate() != null) {
+        attachmentEntity.setCreatedDate(attachment.getCreatedDate().getTime());
+      }
+      if(attachment.getUpdatedDate() != null) {
+        attachmentEntity.setUpdatedDate(attachment.getUpdatedDate().getTime());
+      }
+      attachmentEntity.setContent(attachment.getContent());
+      attachmentEntity.setDownloadURL(attachment.getDownloadURL());
+      //page.setPermissions(pageEntity.getPermissions());
+    }
+    return attachmentEntity;
   }
 
   private Template convertTemplateEntityToTemplate(org.exoplatform.wiki.jpa.entity.Template templateEntity) {
