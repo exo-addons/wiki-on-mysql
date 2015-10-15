@@ -100,4 +100,41 @@ public class TemplateDAOTest extends BaseWikiIntegrationTest {
     assertEquals(0, templatesWiki2.size());
   }
 
+  @Test
+  public void testSearchTemplates() {
+    //Given
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = wikiDAO.create(wiki);
+
+    Template template1 = new Template();
+    template1.setWiki(wiki);
+    template1.setName("template1");
+    template1.setTitle("Template with Title 1");
+    template1.setContent("Template 1 Content");
+    templateDAO.create(template1);
+
+    Template template2 = new Template();
+    template2.setWiki(wiki);
+    template2.setName("template2");
+    template2.setTitle("Template with Title 2");
+    template2.setContent("Template 2 Content");
+    templateDAO.create(template2);
+
+    //When
+    List<Template> templatesWiki1 = templateDAO.searchTemplatesByTitle("portal", "wiki1", "with Title");
+    List<Template> templatesWiki2 = templateDAO.searchTemplatesByTitle("portal", "wiki1", "Title 1");
+    List<Template> templatesWiki3 = templateDAO.searchTemplatesByTitle("portal", "wiki1", "No Result");
+
+    //Then
+    assertEquals(2, templateDAO.findAll().size());
+    assertNotNull(templatesWiki1);
+    assertEquals(2, templatesWiki1.size());
+    assertNotNull(templatesWiki2);
+    assertEquals(1, templatesWiki2.size());
+    assertNotNull(templatesWiki3);
+    assertEquals(0, templatesWiki3.size());
+  }
+
 }

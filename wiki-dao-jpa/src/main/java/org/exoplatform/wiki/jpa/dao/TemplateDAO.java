@@ -45,4 +45,12 @@ public class TemplateDAO extends GenericDAOJPAImpl<Template, Long> {
     }
   }
 
+  public List<Template> searchTemplatesByTitle(String wikiType, String wikiOwner, String searchText) {
+    TypedQuery<Template> query = getEntityManager().createNamedQuery("template.searchTemplatesByTitle", Template.class)
+            .setParameter("type", wikiType)
+            .setParameter("owner", wikiOwner)
+            .setParameter("searchText", "%" + searchText + "%");
+    return query.getResultList();
+  }
+
 }

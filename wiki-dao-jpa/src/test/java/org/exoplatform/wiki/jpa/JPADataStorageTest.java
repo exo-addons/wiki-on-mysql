@@ -24,6 +24,8 @@ import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.mow.api.*;
 import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.search.SearchResult;
+import org.exoplatform.wiki.service.search.TemplateSearchData;
+import org.exoplatform.wiki.service.search.TemplateSearchResult;
 import org.exoplatform.wiki.service.search.WikiSearchData;
 import org.junit.Test;
 
@@ -542,4 +544,39 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertNotNull(fetchedTemplateWiki1AfterDeletion);
     assertEquals(1, fetchedTemplateWiki1AfterDeletion.size());
   }
+
+  @Test
+  public void testSearchTemplates() throws WikiException {
+    //Given
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Template template1 = new Template();
+    template1.setName("template1");
+    template1.setTitle("Template with Title 1");
+    template1.setContent("Template 1 Content");
+    storage.createTemplatePage(wiki, template1);
+
+    Template template2 = new Template();
+    template2.setName("template2");
+    template2.setTitle("Template with Title 2");
+    template2.setContent("Template 2 Content");
+    storage.createTemplatePage(wiki, template2);
+
+    //When
+    List<TemplateSearchResult> searchResults1 = storage.searchTemplate(new TemplateSearchData("Template", wiki.getType(), wiki.getOwner()));
+    List<TemplateSearchResult> searchResults2 = storage.searchTemplate(new TemplateSearchData("Title 1", wiki.getType(), wiki.getOwner()));
+    List<TemplateSearchResult> searchResults3 = storage.searchTemplate(new TemplateSearchData("No Result", wiki.getType(), wiki.getOwner()));
+
+    //Then
+    assertNotNull(searchResults1);
+    assertEquals(2, searchResults1.size());
+    assertNotNull(searchResults2);
+    assertEquals(1, searchResults2.size());
+    assertNotNull(searchResults3);
+    assertEquals(0, searchResults3.size());
+  }
+
 }

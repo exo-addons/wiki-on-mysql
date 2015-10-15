@@ -39,10 +39,7 @@ import org.exoplatform.wiki.mow.api.Template;
 import org.exoplatform.wiki.mow.api.Wiki;
 import org.exoplatform.wiki.service.DataStorage;
 import org.exoplatform.wiki.service.WikiPageParams;
-import org.exoplatform.wiki.service.search.SearchResult;
-import org.exoplatform.wiki.service.search.TemplateSearchData;
-import org.exoplatform.wiki.service.search.TemplateSearchResult;
-import org.exoplatform.wiki.service.search.WikiSearchData;
+import org.exoplatform.wiki.service.search.*;
 import org.exoplatform.wiki.utils.WikiConstants;
 
 import java.util.*;
@@ -390,7 +387,26 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public List<TemplateSearchResult> searchTemplate(TemplateSearchData templateSearchData) throws WikiException {
-    throw new RuntimeException("Not implemented");
+    List<org.exoplatform.wiki.jpa.entity.Template> templates = templateDAO.searchTemplatesByTitle(templateSearchData.getWikiType(),
+            templateSearchData.getWikiOwner(), templateSearchData.getTitle());
+
+    List<TemplateSearchResult> searchResults = new ArrayList<>();
+    if(templates != null) {
+      for (org.exoplatform.wiki.jpa.entity.Template templateEntity : templates) {
+        TemplateSearchResult templateSearchResult = new TemplateSearchResult(templateEntity.getWiki().getType(),
+                templateEntity.getWiki().getOwner(),
+                templateEntity.getName(),
+                templateEntity.getTitle(),
+                null,
+                SearchResultType.TEMPLATE,
+                null,
+                null,
+                null);
+        searchResults.add(templateSearchResult);
+      }
+    }
+
+    return searchResults;
   }
 
   @Override
