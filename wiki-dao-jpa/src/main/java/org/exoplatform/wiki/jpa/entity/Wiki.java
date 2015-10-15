@@ -41,7 +41,6 @@ public class Wiki {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private long id;
 
-
   @Column(name = "NAME")
   private String name;
 
@@ -56,7 +55,6 @@ public class Wiki {
   private Page wikiHome;
 
   @OneToMany(cascade=CascadeType.ALL)
-  @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
   private List<Permission> permissions;
 
   public long getId() {

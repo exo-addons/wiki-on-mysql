@@ -52,6 +52,7 @@ public class Page extends BasePage {
 
   @ManyToOne(cascade = CascadeType.PERSIST)
   @JoinColumn(name = "WIKI_ID")
+  @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
   private Wiki wiki;
 
   @ManyToOne(cascade = CascadeType.PERSIST)
