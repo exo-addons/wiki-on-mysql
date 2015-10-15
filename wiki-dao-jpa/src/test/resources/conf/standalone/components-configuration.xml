@@ -2,6 +2,26 @@
                xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"
                xmlns="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd">
     <component>
+        <key>org.exoplatform.wiki.service.DataStorage</key>
+        <type>org.exoplatform.wiki.jpa.JPADataStorage</type>
+    </component>
+    <component>
+        <type>org.exoplatform.wiki.jpa.dao.WikiDAO</type>
+    </component>
+    <component>
+        <type>org.exoplatform.wiki.jpa.dao.PageDAO</type>
+    </component>
+    <component>
+        <type>org.exoplatform.wiki.jpa.dao.AttachmentDAO</type>
+    </component>
+    <component>
+        <type>org.exoplatform.wiki.jpa.dao.TemplateDAO</type>
+    </component>
+    <component>
+        <type>org.exoplatform.wiki.jpa.dao.EmotionIconDAO</type>
+    </component>
+
+    <component>
         <key>org.exoplatform.commons.api.search.SearchService</key>
         <type>org.exoplatform.commons.search.driver.jcr.JcrSearchDriver</type>
         <init-params>

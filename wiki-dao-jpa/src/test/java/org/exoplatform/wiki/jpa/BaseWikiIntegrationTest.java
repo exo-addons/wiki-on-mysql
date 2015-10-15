@@ -51,11 +51,11 @@ import static org.junit.Assert.assertNotEquals;
  */
 public abstract class BaseWikiIntegrationTest extends BaseTest {
   protected Node node;
-  protected WikiDAO wikiDAO = new WikiDAO();
-  protected PageDAO pageDAO = new PageDAO();
-  protected AttachmentDAO attachmentDAO = new AttachmentDAO();
-  protected TemplateDAO templateDAO = new TemplateDAO();
-  protected final EmotionIconDAO emotionIconDAO = new EmotionIconDAO();
+  protected WikiDAO wikiDAO;
+  protected PageDAO pageDAO;
+  protected AttachmentDAO attachmentDAO;
+  protected TemplateDAO templateDAO;
+  protected EmotionIconDAO emotionIconDAO;
   protected IndexingService indexingService;
   protected IndexingOperationProcessor indexingOperationProcessor;
   protected JPADataStorage storage;
@@ -80,6 +80,11 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
     SecurityUtils.setCurrentUser("BCH", "*:/admin");
     indexingService = PortalContainer.getInstance().getComponentInstanceOfType(IndexingService.class);
     indexingOperationProcessor = PortalContainer.getInstance().getComponentInstanceOfType(IndexingOperationProcessor.class);
+    wikiDAO = PortalContainer.getInstance().getComponentInstanceOfType(WikiDAO.class);
+    pageDAO = PortalContainer.getInstance().getComponentInstanceOfType(PageDAO.class);
+    attachmentDAO = PortalContainer.getInstance().getComponentInstanceOfType(AttachmentDAO.class);
+    templateDAO = PortalContainer.getInstance().getComponentInstanceOfType(TemplateDAO.class);
+    emotionIconDAO = PortalContainer.getInstance().getComponentInstanceOfType(EmotionIconDAO.class);
     storage = PortalContainer.getInstance().getComponentInstanceOfType(JPADataStorage.class);
     deleteAllDocumentsInES();
     cleanDB();

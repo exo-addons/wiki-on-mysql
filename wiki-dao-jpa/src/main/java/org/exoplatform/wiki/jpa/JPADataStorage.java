@@ -61,12 +61,13 @@ public class JPADataStorage implements DataStorage {
   private TemplateDAO templateDAO;
   private EmotionIconDAO emotionIconDAO;
 
-  public JPADataStorage() {
-    wikiDAO = new WikiDAO();
-    pageDAO = new PageDAO();
-    attachmentDAO = new AttachmentDAO();
-    templateDAO = new TemplateDAO();
-    emotionIconDAO = new EmotionIconDAO();
+  public JPADataStorage(WikiDAO wikiDAO, PageDAO pageDAO, AttachmentDAO attachmentDAO,
+                        TemplateDAO templateDAO, EmotionIconDAO emotionIconDAO) {
+    this.wikiDAO = wikiDAO;
+    this.pageDAO = pageDAO;
+    this.attachmentDAO = attachmentDAO;
+    this.templateDAO = templateDAO;
+    this.emotionIconDAO = emotionIconDAO;
   }
 
   @Override

@@ -43,7 +43,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   public void testSearchWikiByName() throws Exception {
     //Given
     indexWiki("My Wiki");
-    JPADataStorage storage = new JPADataStorage();
     WikiSearchData searchData = new WikiSearchData("My Wiki", null, null, null);
     //When
     PageList<SearchResult> results = storage.search(searchData);
@@ -55,7 +54,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   public void testSearchPageByName() throws Exception {
     //Given
     indexPage("My Page", "My Page", "This is the content of my Page", "This is a comment");
-    JPADataStorage storage = new JPADataStorage();
     WikiSearchData searchData = new WikiSearchData("Page", null, null, null);
     //When
     PageList<SearchResult> results = storage.search(searchData);
@@ -69,8 +67,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   @Test
   public void testParentPageOfPage() throws WikiException {
     //Given
-    JPADataStorage storage = new JPADataStorage();
-
     Wiki wiki = new Wiki();
     wiki.setType("portal");
     wiki.setOwner("wiki1");
@@ -107,8 +103,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   @Test
   public void testChildrenPagesOfPage() throws WikiException {
     //Given
-    JPADataStorage storage = new JPADataStorage();
-
     Wiki wiki = new Wiki();
     wiki.setType("portal");
     wiki.setOwner("wiki1");
@@ -150,8 +144,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   @Test
   public void testDeletePage() throws WikiException {
     //Given
-    JPADataStorage storage = new JPADataStorage();
-
     Wiki wiki = new Wiki();
     wiki.setType("portal");
     wiki.setOwner("wiki1");
@@ -176,8 +168,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   @Test
   public void testDeletePageTree() throws WikiException {
     //Given
-    JPADataStorage storage = new JPADataStorage();
-
     Wiki wiki = new Wiki();
     wiki.setType("portal");
     wiki.setOwner("wiki1");
@@ -210,8 +200,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   @Test
   public void testMovePage() throws WikiException {
     //Given
-    JPADataStorage storage = new JPADataStorage();
-
     Wiki wiki = new Wiki();
     wiki.setType("portal");
     wiki.setOwner("wiki1");
@@ -248,8 +236,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   @Test
   public void testUpdatePage() throws WikiException {
     //Given
-    JPADataStorage storage = new JPADataStorage();
-
     Wiki wiki = new Wiki();
     wiki.setType("portal");
     wiki.setOwner("wiki1");
@@ -279,8 +265,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   @Test
   public void testRenamePage() throws WikiException {
     //Given
-    JPADataStorage storage = new JPADataStorage();
-
     Wiki wiki = new Wiki();
     wiki.setType("portal");
     wiki.setOwner("wiki1");
@@ -309,8 +293,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   @Test
   public void testAttachmentsOfPage() throws WikiException {
     //Given
-    JPADataStorage storage = new JPADataStorage();
-
     Wiki wiki = new Wiki();
     wiki.setType("portal");
     wiki.setOwner("wiki1");
@@ -355,8 +337,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   @Test
   public void testDeleteAttachmentOfPage() throws WikiException {
     //Given
-    JPADataStorage storage = new JPADataStorage();
-
     Wiki wiki = new Wiki();
     wiki.setType("portal");
     wiki.setOwner("wiki1");
@@ -394,8 +374,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   @Test
   public void testGetEmotionIcons() throws WikiException {
     //Given
-    JPADataStorage storage = new JPADataStorage();
-
     EmotionIcon emotionIcon1 = new EmotionIcon();
     emotionIcon1.setName("emotionIcon1");
     emotionIcon1.setImage("image1".getBytes());
@@ -417,8 +395,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   @Test
   public void testGetEmotionIconByName() throws WikiException {
     //Given
-    JPADataStorage storage = new JPADataStorage();
-
     EmotionIcon emotionIcon1 = new EmotionIcon();
     emotionIcon1.setName("emotionIcon1");
     emotionIcon1.setImage("image1".getBytes());
@@ -447,8 +423,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   @Test
   public void testGetTemplate() throws WikiException {
     //Given
-    JPADataStorage storage = new JPADataStorage();
-
     Wiki wiki = new Wiki();
     wiki.setType("portal");
     wiki.setOwner("wiki1");
@@ -475,8 +449,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   @Test
   public void testGetTemplates() throws WikiException {
     //Given
-    JPADataStorage storage = new JPADataStorage();
-
     Wiki wiki = new Wiki();
     wiki.setType("portal");
     wiki.setOwner("wiki1");
@@ -508,8 +480,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   @Test
   public void testUpdateTemplate() throws WikiException {
     //Given
-    JPADataStorage storage = new JPADataStorage();
-
     Wiki wiki = new Wiki();
     wiki.setType("portal");
     wiki.setOwner("wiki1");
@@ -544,8 +514,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   @Test
   public void testDeleteTemplate() throws WikiException {
     //Given
-    JPADataStorage storage = new JPADataStorage();
-
     Wiki wiki = new Wiki();
     wiki.setType("portal");
     wiki.setOwner("wiki1");
