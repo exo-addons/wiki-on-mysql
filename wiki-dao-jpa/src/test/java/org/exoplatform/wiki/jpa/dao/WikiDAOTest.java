@@ -20,16 +20,17 @@
 package org.exoplatform.wiki.jpa.dao;
 
 
-import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
-import org.exoplatform.wiki.jpa.entity.Wiki;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
-
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
+import org.exoplatform.wiki.jpa.entity.Wiki;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
@@ -55,7 +56,7 @@ public class WikiDAOTest extends BaseWikiIntegrationTest {
     dao.create(new Wiki().setName("My wiki #1"));
     dao.create(new Wiki().setName("My wiki #2"));
     //When
-    List<Long> ids = dao.findAllIds();
+    List<Long> ids = dao.findAllIds(0, 10);
     //Then
     assertThat(ids.size(), is(2));
   }

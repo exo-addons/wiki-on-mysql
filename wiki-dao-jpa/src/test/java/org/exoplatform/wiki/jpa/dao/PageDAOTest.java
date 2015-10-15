@@ -24,16 +24,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.exoplatform.wiki.jpa.BaseTest;
-import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
-import org.exoplatform.wiki.jpa.entity.Wiki;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
+import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
 import org.exoplatform.wiki.jpa.entity.Page;
 import org.exoplatform.wiki.jpa.entity.Permission;
 import org.exoplatform.wiki.jpa.entity.PermissionType;
+import org.exoplatform.wiki.jpa.entity.Wiki;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com

@@ -39,7 +39,7 @@ import java.util.List;
 @Audited
 @Table(name = "WIKI_PAGES")
 @NamedQueries({
-        @NamedQuery(name = "wikiPage.getAllIds", query = "SELECT p.id FROM Page p"),
+        @NamedQuery(name = "wikiPage.getAllIds", query = "SELECT p.id FROM Page p ORDER BY p.id"),
         @NamedQuery(name = "wikiPage.getPageOfWikiByName", query = "SELECT p FROM Page p JOIN p.wiki w WHERE p.name = :name AND w.type = :type AND w.owner = :owner"),
         @NamedQuery(name = "wikiPage.getChildrenPages", query = "SELECT p FROM Page p WHERE p.parentPage.id = :id")
 })

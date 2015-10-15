@@ -70,10 +70,10 @@ public class WikiIndexingServiceConnector extends ElasticIndexingServiceConnecto
     }
 
     @Override
-    public List<String> getAllIds() {
+    public List<String> getAllIds(int offset, int limit) {
         List<String> result;
 
-        List<Long> ids = this.dao.findAllIds();
+        List<Long> ids = this.dao.findAllIds(offset, limit);
         if (ids==null) {
             result = new ArrayList<>(0);
         } else {
