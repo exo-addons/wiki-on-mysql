@@ -19,6 +19,7 @@
 
 package org.exoplatform.wiki.jpa;
 
+import org.apache.commons.lang.StringUtils;
 import org.exoplatform.commons.api.search.SearchService;
 import org.exoplatform.commons.utils.ObjectPageList;
 import org.exoplatform.commons.utils.PageList;
@@ -55,15 +56,17 @@ public class JPADataStorage implements DataStorage {
   private WikiDAO wikiDAO;
   private PageDAO pageDAO;
   private AttachmentDAO attachmentDAO;
+  private DraftPageDAO draftPageDAO;
   private TemplateDAO templateDAO;
   private EmotionIconDAO emotionIconDAO;
   private WatcherDAO watcherDAO;
 
-  public JPADataStorage(WikiDAO wikiDAO, PageDAO pageDAO, AttachmentDAO attachmentDAO,
+  public JPADataStorage(WikiDAO wikiDAO, PageDAO pageDAO, AttachmentDAO attachmentDAO, DraftPageDAO draftPageDAO,
                         TemplateDAO templateDAO, EmotionIconDAO emotionIconDAO, WatcherDAO watcherDAO) {
     this.wikiDAO = wikiDAO;
     this.pageDAO = pageDAO;
     this.attachmentDAO = attachmentDAO;
+    this.draftPageDAO = draftPageDAO;
     this.templateDAO = templateDAO;
     this.emotionIconDAO = emotionIconDAO;
     this.watcherDAO = watcherDAO;
@@ -398,14 +401,22 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
-  public List<DraftPage> getDraftPagesOfUser(String s) throws WikiException {
-    // TODO Implement it !
-    return new ArrayList<>();
+  public List<DraftPage> getDraftPagesOfUser(String username) throws WikiException {
+    List<DraftPage> draftPages = new ArrayList<>();
+    List<org.exoplatform.wiki.jpa.entity.DraftPage> draftPagesEntities = draftPageDAO.findDraftPagesByUser(username);
+    if(draftPagesEntities != null) {
+      for(org.exoplatform.wiki.jpa.entity.DraftPage draftPageEntity : draftPagesEntities) {
+        draftPages.add(convertDraftPageEntityToDraftPage(draftPageEntity));
+      }
+    }
+    return draftPages;
   }
 
   @Override
-  public void createDraftPageForUser(DraftPage draftPage, String s) throws WikiException {
-    // TODO Implement it !
+  public void createDraftPageForUser(DraftPage draftPage, String username) throws WikiException {
+    org.exoplatform.wiki.jpa.entity.DraftPage draftPageEntity = convertDraftPageToDraftPageEntity(draftPage);
+    draftPageEntity.setAuthor(username);
+    draftPageDAO.create(draftPageEntity);
   }
 
   @Override
@@ -823,6 +834,43 @@ public class JPADataStorage implements DataStorage {
     }
     return attachmentEntity;
   }
+
+  private DraftPage convertDraftPageEntityToDraftPage(org.exoplatform.wiki.jpa.entity.DraftPage draftPageEntity) {
+    DraftPage draftPage = null;
+    if(draftPageEntity != null) {
+      draftPage = new DraftPage();
+      draftPage.setId(String.valueOf(draftPageEntity.getId()));
+      draftPage.setTitle(draftPageEntity.getTitle());
+      draftPage.setAuthor(draftPageEntity.getAuthor());
+      draftPage.setContent(draftPageEntity.getContent());
+      draftPage.setSyntax(draftPageEntity.getSyntax());
+      draftPage.setCreatedDate(draftPageEntity.getCreatedDate());
+      draftPage.setUpdatedDate(draftPageEntity.getUpdatedDate());
+      draftPage.setTargetPageId(String.valueOf(draftPageEntity.getTargetPage().getId()));
+      draftPage.setTargetPageRevision(draftPageEntity.getTargetRevision());
+    }
+    return draftPage;
+  }
+
+  private org.exoplatform.wiki.jpa.entity.DraftPage convertDraftPageToDraftPageEntity(DraftPage draftPage) {
+    org.exoplatform.wiki.jpa.entity.DraftPage draftPageEntity = null;
+    if(draftPage != null) {
+      draftPageEntity = new org.exoplatform.wiki.jpa.entity.DraftPage();
+      draftPageEntity.setTitle(draftPage.getTitle());
+      draftPageEntity.setAuthor(draftPage.getAuthor());
+      draftPageEntity.setContent(draftPage.getContent());
+      draftPageEntity.setSyntax(draftPage.getSyntax());
+      draftPageEntity.setCreatedDate(draftPage.getCreatedDate());
+      draftPageEntity.setUpdatedDate(draftPage.getUpdatedDate());
+      String targetPageId = draftPage.getTargetPageId();
+      if(StringUtils.isNotEmpty(targetPageId)) {
+        draftPageEntity.setTargetPage(pageDAO.find(Long.valueOf(targetPageId)));
+      }
+      draftPageEntity.setTargetRevision(draftPage.getTargetPageRevision());
+    }
+    return draftPageEntity;
+  }
+
 
   private Template convertTemplateEntityToTemplate(org.exoplatform.wiki.jpa.entity.Template templateEntity) {
     Template template = null;

@@ -18,8 +18,9 @@ package org.exoplatform.wiki.jpa.dao;
 
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 import org.exoplatform.wiki.jpa.entity.DraftPage;
-import org.exoplatform.wiki.jpa.entity.Page;
-import org.exoplatform.wiki.jpa.entity.Wiki;
+
+import javax.persistence.TypedQuery;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
@@ -27,10 +28,11 @@ import org.exoplatform.wiki.jpa.entity.Wiki;
  *          exo@exoplatform.com
  * Jun 24, 2015  
  */
-public class DraftPageDAO  extends GenericDAOJPAImpl<DraftPage, Long> {
+public class DraftPageDAO extends GenericDAOJPAImpl<DraftPage, Long> {
 
-  public Page getPage(DraftPage page){
-    PageDAO pageDAO = new PageDAO();
-    return pageDAO.getPageAtRevision(page.getTargetPage(),page.getTargetRevision());
+  public List<DraftPage> findDraftPagesByUser(String username) {
+    TypedQuery<DraftPage> query = getEntityManager().createNamedQuery("wikiDraftPage.findDraftPageByUser", DraftPage.class)
+            .setParameter("username", username);
+    return query.getResultList();
   }
 }

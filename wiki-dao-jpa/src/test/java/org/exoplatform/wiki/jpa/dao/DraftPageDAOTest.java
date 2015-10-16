@@ -22,6 +22,8 @@ import org.junit.Test;
 import org.exoplatform.wiki.jpa.entity.DraftPage;
 import org.exoplatform.wiki.jpa.entity.Page;
 
+import java.util.List;
+
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
@@ -43,7 +45,7 @@ public class DraftPageDAOTest extends BaseTest {
     assertNotNull(dao.find(dp.getId()));
     assertNotNull(pageDAO.find(page.getId()));
     
-    DraftPage got =dao.find(dp.getId());
+    DraftPage got = dao.find(dp.getId());
     got.getTargetPage().setName("name1");
     dao.update(got);
     assertEquals("name1",page.getName());
@@ -51,5 +53,26 @@ public class DraftPageDAOTest extends BaseTest {
     pageDAO.deleteAll();
     
     assertNull(dao.find(dp.getId()));
+  }
+
+  @Test
+  public void testFindDraftPagesByUser(){
+    DraftPageDAO dao = new DraftPageDAO();
+    PageDAO pageDAO = new PageDAO();
+    DraftPage dp = new DraftPage();
+    Page page = new Page();
+    page.setName("name");
+    dp.setTargetPage(page);
+    dp.setAuthor("user1");
+    dao.create(dp);
+
+    assertNotNull(dao.find(dp.getId()));
+    assertNotNull(pageDAO.find(page.getId()));
+    List<DraftPage> user1DraftPages = dao.findDraftPagesByUser("user1");
+    assertNotNull(user1DraftPages);
+    assertEquals(1, user1DraftPages.size());
+    List<DraftPage> user2DraftPages = dao.findDraftPagesByUser("user2");
+    assertNotNull(user2DraftPages);
+    assertEquals(0, user2DraftPages.size());
   }
 }

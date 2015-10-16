@@ -54,6 +54,7 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
   protected WikiDAO wikiDAO;
   protected PageDAO pageDAO;
   protected AttachmentDAO attachmentDAO;
+  protected DraftPageDAO draftPageDAO;
   protected TemplateDAO templateDAO;
   protected EmotionIconDAO emotionIconDAO;
   protected WatcherDAO watcherDAO;
@@ -84,6 +85,7 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
     wikiDAO = PortalContainer.getInstance().getComponentInstanceOfType(WikiDAO.class);
     pageDAO = PortalContainer.getInstance().getComponentInstanceOfType(PageDAO.class);
     attachmentDAO = PortalContainer.getInstance().getComponentInstanceOfType(AttachmentDAO.class);
+    draftPageDAO = PortalContainer.getInstance().getComponentInstanceOfType(DraftPageDAO.class);
     templateDAO = PortalContainer.getInstance().getComponentInstanceOfType(TemplateDAO.class);
     emotionIconDAO = PortalContainer.getInstance().getComponentInstanceOfType(EmotionIconDAO.class);
     watcherDAO = PortalContainer.getInstance().getComponentInstanceOfType(WatcherDAO.class);
@@ -96,6 +98,7 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
     watcherDAO.deleteAll();
     emotionIconDAO.deleteAll();
     templateDAO.deleteAll();
+    draftPageDAO.deleteAll();
     attachmentDAO.deleteAll();
     pageDAO.deleteAll();
     wikiDAO.deleteAll();

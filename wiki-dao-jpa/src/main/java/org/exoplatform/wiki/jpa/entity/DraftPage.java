@@ -19,59 +19,128 @@ package org.exoplatform.wiki.jpa.entity;
 import org.exoplatform.commons.api.persistence.ExoEntity;
 
 import javax.persistence.*;
+import java.util.Date;
 
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
- *          exo@exoplatform.com
- * Jun 23, 2015  
+ * exo@exoplatform.com
+ * Jun 23, 2015
  */
 @Entity
 @ExoEntity
 @Table(name = "WIKI_DRAFT_PAGES")
+@NamedQueries({
+        @NamedQuery(name = "wikiDraftPage.findDraftPageByUser", query = "SELECT d FROM DraftPage d WHERE d.author = :username")
+})
 public class DraftPage extends BasePage {
 
-    @Id
-    @Column(name="DRAFT_PAGE_ID")
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
-    
-    @OneToOne(cascade=CascadeType.ALL)
-    private Page targetPage;
-    
-    @Column(name="TARGET_REVISION")
-    private int targetRevision;
-    
-    @Column(name="IS_NEW_PAGE")
-    private Boolean isNewPage;
+  @Id
+  @Column(name = "DRAFT_PAGE_ID")
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private long id;
 
-    public Page getTargetPage() {
-      return targetPage;
-    }
+  @ManyToOne(cascade = CascadeType.ALL)
+  @JoinColumn(name = "TARGET_PAGE_ID")
+  private Page targetPage;
 
-    public void setTargetPage(Page targetPage) {
-      this.targetPage = targetPage;
-    }
+  @Column(name = "TARGET_PAGE_REVISION")
+  private String targetRevision;
 
-    public int getTargetRevision() {
-      return targetRevision;
-    }
+  @Column(name = "NEW_PAGE")
+  private boolean newPage;
 
-    public void setTargetRevision(int targetRevision) {
-      this.targetRevision = targetRevision;
-    }
+  @Column(name = "AUTHOR")
+  private String author;
 
-    public Boolean isNewPage() {
-      return isNewPage;
-    }
+  @Column(name = "TITLE")
+  private String title;
 
-    public void setNewPage(Boolean isNewPage) {
-      this.isNewPage = isNewPage;
-    }
+  @Column(name = "CONTENT")
+  private String content;
 
-    public long getId() {
-      return id;
-    }
-    
-    
+  @Column(name = "SYNTAX")
+  private String syntax;
+
+  @Column(name = "CREATED_DATE")
+  private Date createdDate;
+
+  @Column(name = "UPDATED_DATE")
+  private Date updatedDate;
+
+  public Page getTargetPage() {
+    return targetPage;
+  }
+
+  public void setTargetPage(Page targetPage) {
+    this.targetPage = targetPage;
+  }
+
+  public String getTargetRevision() {
+    return targetRevision;
+  }
+
+  public void setTargetRevision(String targetRevision) {
+    this.targetRevision = targetRevision;
+  }
+
+  public boolean isNewPage() {
+    return newPage;
+  }
+
+  public void setNewPage(boolean newPage) {
+    this.newPage = newPage;
+  }
+
+  public long getId() {
+    return id;
+  }
+
+  public String getAuthor() {
+    return author;
+  }
+
+  public void setAuthor(String author) {
+    this.author = author;
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
+  public String getContent() {
+    return content;
+  }
+
+  public void setContent(String content) {
+    this.content = content;
+  }
+
+  public String getSyntax() {
+    return syntax;
+  }
+
+  public void setSyntax(String syntax) {
+    this.syntax = syntax;
+  }
+
+  public Date getCreatedDate() {
+    return createdDate;
+  }
+
+  public void setCreatedDate(Date createdDate) {
+    this.createdDate = createdDate;
+  }
+
+  public Date getUpdatedDate() {
+    return updatedDate;
+  }
+
+  public void setUpdatedDate(Date updatedDate) {
+    this.updatedDate = updatedDate;
+  }
 }
