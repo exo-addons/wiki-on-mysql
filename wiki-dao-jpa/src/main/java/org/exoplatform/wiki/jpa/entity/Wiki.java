@@ -52,7 +52,7 @@ public class Wiki {
   @Column(name = "TYPE")
   private String type;
 
-  @OneToOne
+  @OneToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "WIKI_HOME")
   private Page wikiHome;
 

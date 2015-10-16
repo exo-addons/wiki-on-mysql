@@ -106,7 +106,8 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public Wiki createWiki(Wiki wiki) throws WikiException {
-    Wiki createdWiki = convertWikiEntityToWiki(wikiDAO.create(convertWikiToWikiEntity(wiki)));
+    org.exoplatform.wiki.jpa.entity.Wiki createdWikiEntity = wikiDAO.create(convertWikiToWikiEntity(wiki));
+    Wiki createdWiki = convertWikiEntityToWiki(createdWikiEntity);
 
     // create wiki home page
     Page wikiHomePage = new Page();
@@ -114,6 +115,10 @@ public class JPADataStorage implements DataStorage {
     wikiHomePage.setWikiOwner(wiki.getOwner());
     wikiHomePage.setName(WikiConstants.WIKI_HOME_NAME);
     wikiHomePage.setTitle(WikiConstants.WIKI_HOME_TITLE);
+    Date now = Calendar.getInstance().getTime();
+    wikiHomePage.setCreatedDate(now);
+    wikiHomePage.setUpdatedDate(now);
+    wikiHomePage.setContent("= Welcome to " + wiki.getOwner() + " =");
 
     Page createdWikiHomePage = createPage(createdWiki, null, wikiHomePage);
     createdWiki.setWikiHome(createdWikiHomePage);
@@ -141,7 +146,15 @@ public class JPADataStorage implements DataStorage {
     pageEntity.setWiki(wikiEntity);
     pageEntity.setParentPage(parentPageEntity);
 
-    return convertPageEntityToPage(pageDAO.create(pageEntity));
+    org.exoplatform.wiki.jpa.entity.Page createdPageEntity = pageDAO.create(pageEntity);
+
+    // if the page to create is the wiki home, update the wiki
+    if(parentPage == null) {
+      wikiEntity.setWikiHome(createdPageEntity);
+      wikiDAO.update(wikiEntity);
+    }
+
+    return convertPageEntityToPage(createdPageEntity);
   }
 
   @Override
@@ -640,7 +653,10 @@ public class JPADataStorage implements DataStorage {
       wiki.setId(String.valueOf(wikiEntity.getId()));
       wiki.setType(wikiEntity.getType());
       wiki.setOwner(wikiEntity.getOwner());
-      //wiki.setWikiHome(wikiEntity.getWikiHome());
+      org.exoplatform.wiki.jpa.entity.Page wikiHomePageEntity = wikiEntity.getWikiHome();
+      if(wikiHomePageEntity != null) {
+        wiki.setWikiHome(convertPageEntityToPage(wikiHomePageEntity));
+      }
       //wiki.setPermissions(wikiEntity.getPermissions());
       //wiki.setDefaultPermissionsInited();
       wiki.setPreferences(wiki.getPreferences());

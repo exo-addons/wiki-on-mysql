@@ -19,6 +19,7 @@
 
 package org.exoplatform.wiki.jpa;
 
+import org.apache.commons.lang.StringUtils;
 import org.exoplatform.commons.utils.PageList;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.mow.api.*;
@@ -27,6 +28,7 @@ import org.exoplatform.wiki.service.search.SearchResult;
 import org.exoplatform.wiki.service.search.TemplateSearchData;
 import org.exoplatform.wiki.service.search.TemplateSearchResult;
 import org.exoplatform.wiki.service.search.WikiSearchData;
+import org.exoplatform.wiki.utils.WikiConstants;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -40,6 +42,30 @@ import java.util.Map;
  * 9/8/15
  */
 public class JPADataStorageTest extends BaseWikiIntegrationTest {
+
+  @Test
+  public void testCreateWiki() throws Exception {
+    //Given
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+
+    //When
+    storage.createWiki(wiki);
+    Wiki createdWiki = storage.getWikiByTypeAndOwner("portal", "wiki1");
+    Page wikiHomePage = createdWiki.getWikiHome();
+
+    // Then
+    assertNotNull(createdWiki);
+    assertEquals("portal", createdWiki.getType());
+    assertEquals("wiki1", createdWiki.getOwner());
+    assertNotNull(wikiHomePage);
+    assertEquals(WikiConstants.WIKI_HOME_NAME, wikiHomePage.getName());
+    assertEquals(WikiConstants.WIKI_HOME_TITLE, wikiHomePage.getTitle());
+    assertNotNull(wikiHomePage.getCreatedDate());
+    assertNotNull(wikiHomePage.getUpdatedDate());
+    assertTrue(StringUtils.isNotEmpty(wikiHomePage.getContent()));
+  }
 
   @Test
   public void testSearchWikiByName() throws Exception {
