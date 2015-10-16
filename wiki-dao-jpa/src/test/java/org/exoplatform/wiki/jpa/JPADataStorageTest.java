@@ -22,6 +22,7 @@ package org.exoplatform.wiki.jpa;
 import org.apache.commons.lang.StringUtils;
 import org.exoplatform.commons.utils.PageList;
 import org.exoplatform.wiki.WikiException;
+import org.exoplatform.wiki.jpa.entity.Watcher;
 import org.exoplatform.wiki.mow.api.*;
 import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.search.SearchResult;
@@ -605,4 +606,43 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertEquals(0, searchResults3.size());
   }
 
+  @Test
+  public void testGetWatchers() throws WikiException {
+    //Given
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Page page1 = new Page();
+    page1.setWikiId(wiki.getId());
+    page1.setWikiType(wiki.getType());
+    page1.setWikiOwner(wiki.getOwner());
+    page1.setName("page1");
+    page1.setTitle("Page 1");
+
+
+    //When
+    Page createdPage = storage.createPage(wiki, wiki.getWikiHome(), page1);
+    List<String> initialWatchers = storage.getWatchersOfPage(page1);
+    storage.addWatcherToPage("user1", page1);
+    List<String> step1Watchers = storage.getWatchersOfPage(page1);
+    storage.addWatcherToPage("user2", page1);
+    List<String> step2Watchers = storage.getWatchersOfPage(page1);
+    storage.deleteWatcherOfPage("user1", page1);
+    List<String> step3Watchers = storage.getWatchersOfPage(page1);
+
+    //Then
+    assertNotNull(initialWatchers);
+    assertEquals(0, initialWatchers.size());
+    assertNotNull(step1Watchers);
+    assertEquals(1, step1Watchers.size());
+    assertTrue(step1Watchers.contains("user1"));
+    assertNotNull(step2Watchers);
+    assertEquals(2, step2Watchers.size());
+    assertTrue(step2Watchers.contains("user1"));
+    assertTrue(step2Watchers.contains("user2"));
+    assertEquals(1, step3Watchers.size());
+    assertTrue(step3Watchers.contains("user2"));
+  }
 }

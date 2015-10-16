@@ -103,6 +103,10 @@ public class Page extends BasePage {
   @Column(name = "ACTIVITY_ID")
   private String activityId;
 
+  @ManyToMany(cascade = CascadeType.ALL)
+  @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+  private List<Watcher> watchers;
+
   @OneToMany(cascade = CascadeType.ALL)
   @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
   private List<Permission> permissions;
@@ -233,5 +237,13 @@ public class Page extends BasePage {
 
   public void setAttachments(List<Attachment> attachments) {
     this.attachments = attachments;
+  }
+
+  public List<Watcher> getWatchers() {
+    return watchers;
+  }
+
+  public void setWatchers(List<Watcher> watchers) {
+    this.watchers = watchers;
   }
 }

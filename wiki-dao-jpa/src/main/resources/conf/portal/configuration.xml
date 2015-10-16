@@ -46,6 +46,9 @@
     <component>
         <type>org.exoplatform.wiki.jpa.dao.EmotionIconDAO</type>
     </component>
+    <component>
+        <type>org.exoplatform.wiki.jpa.dao.WatcherDAO</type>
+    </component>
 
     <!-- SEARCH -->
     <external-component-plugins>

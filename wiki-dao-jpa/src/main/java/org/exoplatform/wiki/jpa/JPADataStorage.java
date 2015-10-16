@@ -57,14 +57,16 @@ public class JPADataStorage implements DataStorage {
   private AttachmentDAO attachmentDAO;
   private TemplateDAO templateDAO;
   private EmotionIconDAO emotionIconDAO;
+  private WatcherDAO watcherDAO;
 
   public JPADataStorage(WikiDAO wikiDAO, PageDAO pageDAO, AttachmentDAO attachmentDAO,
-                        TemplateDAO templateDAO, EmotionIconDAO emotionIconDAO) {
+                        TemplateDAO templateDAO, EmotionIconDAO emotionIconDAO, WatcherDAO watcherDAO) {
     this.wikiDAO = wikiDAO;
     this.pageDAO = pageDAO;
     this.attachmentDAO = attachmentDAO;
     this.templateDAO = templateDAO;
     this.emotionIconDAO = emotionIconDAO;
+    this.watcherDAO = watcherDAO;
   }
 
   @Override
@@ -632,18 +634,80 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public List<String> getWatchersOfPage(Page page) throws WikiException {
-    // TODO Implement it !
-    return new ArrayList<>();
+    org.exoplatform.wiki.jpa.entity.Page pageEntity;
+    if(page.getId() != null && !page.getId().isEmpty()) {
+      pageEntity = pageDAO.find(Long.parseLong(page.getId()));
+    } else {
+      pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
+    }
+
+    if(pageEntity == null) {
+      throw new WikiException("Cannot get watchers of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because page does not exist.");
+    }
+
+    List<String> watchers = new ArrayList<>();
+
+    List<Watcher> watchersEntities = pageEntity.getWatchers();
+    if(watchersEntities != null) {
+      for(Watcher watcherEntity : watchersEntities) {
+        watchers.add(watcherEntity.getUsername());
+      }
+    }
+
+    return watchers;
   }
 
   @Override
-  public void addWatcherToPage(String s, Page page) throws WikiException {
-    // TODO Implement it !
+  public void addWatcherToPage(String username, Page page) throws WikiException {
+    org.exoplatform.wiki.jpa.entity.Page pageEntity;
+    if(page.getId() != null && !page.getId().isEmpty()) {
+      pageEntity = pageDAO.find(Long.parseLong(page.getId()));
+    } else {
+      pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
+    }
+
+    if(pageEntity == null) {
+      throw new WikiException("Cannot add a watcher on page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because page does not exist.");
+    }
+
+    Watcher watcher = new Watcher(username);
+    watcherDAO.create(watcher);
+
+    List<Watcher> watchers = pageEntity.getWatchers();
+    if(watchers == null) {
+      watchers = new ArrayList<>();
+    }
+    watchers.add(watcher);
+    pageEntity.setWatchers(watchers);
+    pageDAO.update(pageEntity);
   }
 
   @Override
-  public void deleteWatcherOfPage(String s, Page page) throws WikiException {
-    // TODO Implement it !
+  public void deleteWatcherOfPage(String username, Page page) throws WikiException {
+    org.exoplatform.wiki.jpa.entity.Page pageEntity;
+    if(page.getId() != null && !page.getId().isEmpty()) {
+      pageEntity = pageDAO.find(Long.parseLong(page.getId()));
+    } else {
+      pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
+    }
+
+    if(pageEntity == null) {
+      throw new WikiException("Cannot delete a watcher of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because page does not exist.");
+    }
+
+    Watcher watcherToRemove = new Watcher(username);
+    List<Watcher> watchers = pageEntity.getWatchers();
+    if(watchers != null && watchers.contains(watcherToRemove)) {
+      watchers.remove(watcherToRemove);
+      pageEntity.setWatchers(watchers);
+      pageDAO.update(pageEntity);
+    } else {
+      throw new WikiException("Cannot remove watcher " + username + " of page " + page.getWikiType()
+              + ":" + page.getWikiOwner() + ":" + page.getName() + " because watcher does not exist.");
+    }
   }
 
   private Wiki convertWikiEntityToWiki(org.exoplatform.wiki.jpa.entity.Wiki wikiEntity) {

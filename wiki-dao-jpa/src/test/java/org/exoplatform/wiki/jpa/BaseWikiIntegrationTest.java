@@ -56,6 +56,7 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
   protected AttachmentDAO attachmentDAO;
   protected TemplateDAO templateDAO;
   protected EmotionIconDAO emotionIconDAO;
+  protected WatcherDAO watcherDAO;
   protected IndexingService indexingService;
   protected IndexingOperationProcessor indexingOperationProcessor;
   protected JPADataStorage storage;
@@ -85,12 +86,14 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
     attachmentDAO = PortalContainer.getInstance().getComponentInstanceOfType(AttachmentDAO.class);
     templateDAO = PortalContainer.getInstance().getComponentInstanceOfType(TemplateDAO.class);
     emotionIconDAO = PortalContainer.getInstance().getComponentInstanceOfType(EmotionIconDAO.class);
+    watcherDAO = PortalContainer.getInstance().getComponentInstanceOfType(WatcherDAO.class);
     storage = PortalContainer.getInstance().getComponentInstanceOfType(JPADataStorage.class);
     deleteAllDocumentsInES();
     cleanDB();
   }
 
   private void cleanDB() {
+    watcherDAO.deleteAll();
     emotionIconDAO.deleteAll();
     templateDAO.deleteAll();
     attachmentDAO.deleteAll();
