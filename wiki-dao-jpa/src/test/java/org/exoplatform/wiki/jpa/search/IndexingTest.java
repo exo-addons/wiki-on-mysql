@@ -20,6 +20,7 @@
 package org.exoplatform.wiki.jpa.search;
 
 import java.io.IOException;
+import java.net.URL;
 
 import org.exoplatform.addons.es.index.impl.ElasticIndexingOperationProcessor;
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
@@ -137,8 +138,9 @@ public class IndexingTest extends BaseWikiIntegrationTest {
 
   public void testIndexingAndSearchingOfAttachment() throws NoSuchFieldException, IllegalAccessException, IOException {
     // Given
+    URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
     // When
-    indexAttachment("Scrum @eXo - Collector", "src/test/resources/AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf", "www.exo.com");
+    indexAttachment("Scrum @eXo - Collector", fileResource.getPath(), "www.exo.com");
     // Then
     assertEquals(1, storage.search(new WikiSearchData("Collector", null, null, null)).getPageSize()); // Title
     assertEquals(1, storage.search(new WikiSearchData("Agile", null, null, null)).getPageSize()); // Content

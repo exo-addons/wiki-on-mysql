@@ -16,18 +16,20 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
+import org.exoplatform.wiki.jpa.BaseTest;
+import org.exoplatform.wiki.jpa.entity.Attachment;
+import org.exoplatform.wiki.jpa.entity.Permission;
+import org.exoplatform.wiki.jpa.entity.PermissionType;
+
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import org.exoplatform.wiki.jpa.entity.Attachment;
-import org.exoplatform.wiki.jpa.entity.Permission;
-import org.exoplatform.wiki.jpa.entity.PermissionType;
-import org.exoplatform.wiki.jpa.BaseTest;
 
 /**
  * Created by The eXo Platform SAS
@@ -37,28 +39,30 @@ import org.exoplatform.wiki.jpa.BaseTest;
  */
 public class AttachmentDAOTest extends BaseTest {
 
-  public void testInsertDelete() throws IOException {
+  public void testInsertDelete() throws IOException, URISyntaxException {
     //Given
+    URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
     AttachmentDAO attachmentDAO = getService(AttachmentDAO.class);
     Attachment att = new Attachment();
-    att.setContent(Files.readAllBytes(Paths.get("src/test/resources/AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf")));
+    att.setContent(Files.readAllBytes(Paths.get(fileResource.toURI())));
     //When
     attachmentDAO.create(att);
     Long id = att.getId();
     //Then
     Attachment got = attachmentDAO.find(id);
     assertNotNull(got.getContent());
-    assertEquals(new File("src/test/resources/AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf").length(), got.getWeightInBytes());
+    assertEquals(new File(fileResource.toURI()).length(), got.getWeightInBytes());
     //Delete
     attachmentDAO.delete(att);
     assertNull(attachmentDAO.find(id));
   }
 
-  public void testUpdate() throws IOException {
+  public void testUpdate() throws IOException, URISyntaxException {
     //Given
+    URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
     AttachmentDAO attachmentDAO = getService(AttachmentDAO.class);
     Attachment att = new Attachment();
-    att.setContent(Files.readAllBytes(Paths.get("src/test/resources/AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf")));
+    att.setContent(Files.readAllBytes(Paths.get(fileResource.toURI())));
     //When
     attachmentDAO.create(att);
     Long id = att.getId();
