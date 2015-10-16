@@ -418,7 +418,8 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
 
     DraftPage draftPage = new DraftPage();
     draftPage.setAuthor("user1");
-    draftPage.setTitle("Page 1");
+    draftPage.setName("DraftPage1");
+    draftPage.setTitle("DraftPage 1");
     draftPage.setContent("Content Page 1 Updated");
     draftPage.setTargetPageId(createdPage.getId());
     draftPage.setTargetPageRevision("1");
@@ -431,11 +432,52 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     // Then
     assertNotNull(draftPagesOfUser1);
     assertEquals(1, draftPagesOfUser1.size());
+    assertEquals("DraftPage1", draftPagesOfUser1.get(0).getName());
     assertEquals(createdPage.getId(), draftPagesOfUser1.get(0).getTargetPageId());
     assertEquals("Content Page 1 Updated", draftPagesOfUser1.get(0).getContent());
     assertNotNull(draftPagesOfUser2);
     assertEquals(0, draftPagesOfUser2.size());
   }
+
+  @Test
+  public void testDraftPageOfUserByName() throws WikiException {
+    //Given
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Page page = new Page();
+    page.setWikiId(wiki.getId());
+    page.setWikiType(wiki.getType());
+    page.setWikiOwner(wiki.getOwner());
+    page.setName("page1");
+    page.setTitle("Page 1");
+    page.setContent("Content Page 1");
+    Page createdPage = storage.createPage(wiki, wiki.getWikiHome(), page);
+
+    DraftPage draftPage = new DraftPage();
+    draftPage.setAuthor("user1");
+    draftPage.setName("DraftPage1");
+    draftPage.setTitle("DraftPage 1");
+    draftPage.setContent("Content Page 1 Updated");
+    draftPage.setTargetPageId(createdPage.getId());
+    draftPage.setTargetPageRevision("1");
+
+    //When
+    storage.createDraftPageForUser(draftPage, "user1");
+    DraftPage draftPage1OfUser1 = storage.getDraft("DraftPage1", "user1");
+    DraftPage draftPage2OfUser1 = storage.getDraft("DraftPage2", "user1");
+    DraftPage draftPage1OfUser2 = storage.getDraft("DraftPage1", "user2");
+
+    // Then
+    assertNotNull(draftPage1OfUser1);
+    assertEquals(createdPage.getId(), draftPage1OfUser1.getTargetPageId());
+    assertEquals("Content Page 1 Updated", draftPage1OfUser1.getContent());
+    assertNull(draftPage2OfUser1);
+    assertNull(draftPage1OfUser2);
+  }
+
 
   @Test
   public void testGetEmotionIcons() throws WikiException {

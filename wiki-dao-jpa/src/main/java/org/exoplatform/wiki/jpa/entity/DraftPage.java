@@ -53,6 +53,9 @@ public class DraftPage extends BasePage {
   @Column(name = "AUTHOR")
   private String author;
 
+  @Column(name = "NAME")
+  private String name;
+
   @Column(name = "TITLE")
   private String title;
 
@@ -110,6 +113,14 @@ public class DraftPage extends BasePage {
 
   public void setTitle(String title) {
     this.title = title;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 
   public String getContent() {

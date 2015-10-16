@@ -395,9 +395,18 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
-  public DraftPage getDraft(String s, String s1) throws WikiException {
-    // TODO Implement it !
-    return null;
+  public DraftPage getDraft(String draftName, String username) throws WikiException {
+    DraftPage draftPageOfUser = null;
+    List<DraftPage> draftPages = getDraftPagesOfUser(username);
+    if(draftPages != null) {
+      for(DraftPage draftPage : draftPages) {
+        if(draftPage.getName() != null && draftPage.getName().equals(draftName)) {
+          draftPageOfUser = draftPage;
+          break;
+        }
+      }
+    }
+    return draftPageOfUser;
   }
 
   @Override
@@ -840,6 +849,7 @@ public class JPADataStorage implements DataStorage {
     if(draftPageEntity != null) {
       draftPage = new DraftPage();
       draftPage.setId(String.valueOf(draftPageEntity.getId()));
+      draftPage.setName(draftPageEntity.getName());
       draftPage.setTitle(draftPageEntity.getTitle());
       draftPage.setAuthor(draftPageEntity.getAuthor());
       draftPage.setContent(draftPageEntity.getContent());
@@ -856,6 +866,7 @@ public class JPADataStorage implements DataStorage {
     org.exoplatform.wiki.jpa.entity.DraftPage draftPageEntity = null;
     if(draftPage != null) {
       draftPageEntity = new org.exoplatform.wiki.jpa.entity.DraftPage();
+      draftPageEntity.setName(draftPage.getName());
       draftPageEntity.setTitle(draftPage.getTitle());
       draftPageEntity.setAuthor(draftPage.getAuthor());
       draftPageEntity.setContent(draftPage.getContent());
