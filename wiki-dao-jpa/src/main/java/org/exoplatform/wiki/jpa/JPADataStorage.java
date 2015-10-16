@@ -440,12 +440,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public List<Attachment> getAttachmentsOfPage(Page page) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity;
-    if(page.getId() != null && !page.getId().isEmpty()) {
-      pageEntity = pageDAO.find(Long.parseLong(page.getId()));
-    } else {
-      pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
-    }
+    org.exoplatform.wiki.jpa.entity.Page pageEntity = fetchPageEntity(page);
 
     if(pageEntity == null) {
       throw new WikiException("Cannot get attachments of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
@@ -465,12 +460,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void addAttachmentToPage(Attachment attachment, Page page) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity;
-    if(page.getId() != null && !page.getId().isEmpty()) {
-      pageEntity = pageDAO.find(Long.parseLong(page.getId()));
-    } else {
-      pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
-    }
+    org.exoplatform.wiki.jpa.entity.Page pageEntity = fetchPageEntity(page);
 
     if(pageEntity == null) {
       throw new WikiException("Cannot add an attachment to page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
@@ -490,12 +480,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void deleteAttachmentOfPage(String attachmentName, Page page) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity;
-    if(page.getId() != null && !page.getId().isEmpty()) {
-      pageEntity = pageDAO.find(Long.parseLong(page.getId()));
-    } else {
-      pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
-    }
+    org.exoplatform.wiki.jpa.entity.Page pageEntity = fetchPageEntity(page);
 
     if(pageEntity == null) {
       throw new WikiException("Cannot delete an attachment of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
@@ -598,12 +583,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void updatePage(Page page) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity;
-    if(page.getId() != null && !page.getId().isEmpty()) {
-      pageEntity = pageDAO.find(Long.parseLong(page.getId()));
-    } else {
-      pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
-    }
+    org.exoplatform.wiki.jpa.entity.Page pageEntity = fetchPageEntity(page);
 
     if(pageEntity == null) {
       throw new WikiException("Cannot update page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
@@ -634,12 +614,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public List<String> getWatchersOfPage(Page page) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity;
-    if(page.getId() != null && !page.getId().isEmpty()) {
-      pageEntity = pageDAO.find(Long.parseLong(page.getId()));
-    } else {
-      pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
-    }
+    org.exoplatform.wiki.jpa.entity.Page pageEntity = fetchPageEntity(page);
 
     if(pageEntity == null) {
       throw new WikiException("Cannot get watchers of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
@@ -660,12 +635,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void addWatcherToPage(String username, Page page) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity;
-    if(page.getId() != null && !page.getId().isEmpty()) {
-      pageEntity = pageDAO.find(Long.parseLong(page.getId()));
-    } else {
-      pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
-    }
+    org.exoplatform.wiki.jpa.entity.Page pageEntity = fetchPageEntity(page);
 
     if(pageEntity == null) {
       throw new WikiException("Cannot add a watcher on page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
@@ -686,12 +656,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void deleteWatcherOfPage(String username, Page page) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity;
-    if(page.getId() != null && !page.getId().isEmpty()) {
-      pageEntity = pageDAO.find(Long.parseLong(page.getId()));
-    } else {
-      pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
-    }
+    org.exoplatform.wiki.jpa.entity.Page pageEntity = fetchPageEntity(page);
 
     if(pageEntity == null) {
       throw new WikiException("Cannot delete a watcher of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
@@ -709,6 +674,25 @@ public class JPADataStorage implements DataStorage {
               + ":" + page.getWikiOwner() + ":" + page.getName() + " because watcher does not exist.");
     }
   }
+
+
+  /**
+   * Fecth Page Entity from a Page domain object
+   * @param page The page domain object
+   * @return The page entity
+   */
+  private org.exoplatform.wiki.jpa.entity.Page fetchPageEntity(Page page) {
+    org.exoplatform.wiki.jpa.entity.Page pageEntity;
+    if(page.getId() != null && !page.getId().isEmpty()) {
+      pageEntity = pageDAO.find(Long.parseLong(page.getId()));
+    } else {
+      pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
+    }
+    return pageEntity;
+  }
+
+
+  /*************** Entity converters ***************/
 
   private Wiki convertWikiEntityToWiki(org.exoplatform.wiki.jpa.entity.Wiki wikiEntity) {
     Wiki wiki = null;
