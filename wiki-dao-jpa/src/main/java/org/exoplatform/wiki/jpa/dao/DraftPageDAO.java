@@ -19,6 +19,7 @@ package org.exoplatform.wiki.jpa.dao;
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 import org.exoplatform.wiki.jpa.entity.DraftPage;
 
+import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
@@ -34,5 +35,17 @@ public class DraftPageDAO extends GenericDAOJPAImpl<DraftPage, Long> {
     TypedQuery<DraftPage> query = getEntityManager().createNamedQuery("wikiDraftPage.findDraftPageByUser", DraftPage.class)
             .setParameter("username", username);
     return query.getResultList();
+  }
+
+  public DraftPage findDraftPagesByUserAndTargetPage(String username, long targetPageId) {
+    TypedQuery<DraftPage> query = getEntityManager().createNamedQuery("wikiDraftPage.findDraftPageByUserAndTargetPage", DraftPage.class)
+            .setParameter("username", username)
+            .setParameter("targetPageId", targetPageId);
+
+    try {
+      return query.getSingleResult();
+    } catch (NoResultException e) {
+      return null;
+    }
   }
 }

@@ -95,13 +95,13 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
   }
 
   private void cleanDB() {
-    watcherDAO.deleteAll();
     emotionIconDAO.deleteAll();
     templateDAO.deleteAll();
     draftPageDAO.deleteAll();
     attachmentDAO.deleteAll();
     pageDAO.deleteAll();
     wikiDAO.deleteAll();
+    watcherDAO.deleteAll();
   }
 
   private void deleteAllDocumentsInES() {

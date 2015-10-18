@@ -377,9 +377,27 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
-  public Page getExsitedOrNewDraftPageById(String s, String s1, String s2, String s3) throws WikiException {
-    // TODO Implement it !
-    return null;
+  public Page getExsitedOrNewDraftPageById(String wikiType, String wikiOwner, String pageName, String username) throws WikiException {
+    Page page;
+
+    org.exoplatform.wiki.jpa.entity.Page pageEntity = pageDAO.getPageOfWikiByName(wikiType, wikiOwner, pageName);
+    if(pageEntity == null) {
+      // create page for non existing page
+      DraftPage draftPage = new DraftPage();
+      draftPage.setWikiType(wikiType);
+      draftPage.setWikiOwner(wikiOwner);
+      draftPage.setName(pageName);
+      draftPage.setAuthor(username);
+      draftPage.setNewPage(true);
+      draftPage.setTargetPageId(null);
+      draftPage.setTargetPageRevision("1");
+      createDraftPageForUser(draftPage, username);
+      page = draftPage;
+    } else {
+      page = convertPageEntityToPage(pageEntity);
+    }
+
+    return page;
   }
 
   @Override

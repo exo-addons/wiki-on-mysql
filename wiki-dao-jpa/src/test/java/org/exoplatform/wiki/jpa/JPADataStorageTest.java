@@ -478,6 +478,51 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertNull(draftPage1OfUser2);
   }
 
+  @Test
+  public void testDraftPageOfUserByNameAndTargetPage() throws WikiException {
+    //Given
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Page page = new Page();
+    page.setWikiId(wiki.getId());
+    page.setWikiType(wiki.getType());
+    page.setWikiOwner(wiki.getOwner());
+    page.setName("page1");
+    page.setTitle("Page 1");
+    page.setContent("Content Page 1");
+    Page createdPage = storage.createPage(wiki, wiki.getWikiHome(), page);
+
+    //When
+    Page page1 = storage.getExsitedOrNewDraftPageById("portal", "wiki1", "page1", "user1");
+    Page page2 = storage.getExsitedOrNewDraftPageById("portal", "wiki2", "page1", "user1");
+    Page page3 = storage.getExsitedOrNewDraftPageById("portal", "wiki1", "page2", "user1");
+    Page page4 = storage.getExsitedOrNewDraftPageById("portal", "wiki1", "page1", "user2");
+
+    // Then
+    assertNotNull(page1);
+    assertTrue(page1 instanceof Page);
+    assertEquals("portal", page1.getWikiType());
+    assertEquals("wiki1", page1.getWikiOwner());
+    assertEquals("page1", page1.getName());
+    assertNotNull(page2);
+    assertTrue(page2 instanceof DraftPage);
+    assertEquals("portal", page2.getWikiType());
+    assertEquals("wiki2", page2.getWikiOwner());
+    assertEquals("page1", page2.getName());
+    assertNotNull(page3);
+    assertTrue(page3 instanceof DraftPage);
+    assertEquals("portal", page3.getWikiType());
+    assertEquals("wiki1", page3.getWikiOwner());
+    assertEquals("page2", page3.getName());
+    assertNotNull(page4);
+    assertTrue(page4 instanceof Page);
+    assertEquals("portal", page4.getWikiType());
+    assertEquals("wiki1", page4.getWikiOwner());
+    assertEquals("page1", page4.getName());
+  }
 
   @Test
   public void testGetEmotionIcons() throws WikiException {
