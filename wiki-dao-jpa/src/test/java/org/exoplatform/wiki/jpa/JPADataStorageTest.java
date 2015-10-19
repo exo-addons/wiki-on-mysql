@@ -397,6 +397,97 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   }
 
   @Test
+  public void testRelatedPagesOfPage() throws WikiException {
+    //Given
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Page page = new Page();
+    page.setWikiId(wiki.getId());
+    page.setWikiType(wiki.getType());
+    page.setWikiOwner(wiki.getOwner());
+    page.setName("page0");
+    page.setTitle("Page 0");
+
+    Page page1 = new Page();
+    page1.setWikiId(wiki.getId());
+    page1.setWikiType(wiki.getType());
+    page1.setWikiOwner(wiki.getOwner());
+    page1.setName("page1");
+    page1.setTitle("Page 1");
+
+    Page page2 = new Page();
+    page2.setWikiId(wiki.getId());
+    page2.setWikiType(wiki.getType());
+    page2.setWikiOwner(wiki.getOwner());
+    page2.setName("page2");
+    page2.setTitle("Page 2");
+
+
+    //When
+    Page createdPage = storage.createPage(wiki, wiki.getWikiHome(), page);
+    Page createdPage1 = storage.createPage(wiki, wiki.getWikiHome(), page1);
+    Page createdPage2 = storage.createPage(wiki, wiki.getWikiHome(), page2);
+    storage.addRelatedPage(createdPage, page1);
+    storage.addRelatedPage(createdPage, page2);
+
+    // Then
+    assertEquals(4, pageDAO.findAll().size());
+    assertNotNull(createdPage);
+    assertNotNull(storage.getRelatedPagesOfPage(createdPage));
+    assertEquals(2, storage.getRelatedPagesOfPage(createdPage).size());
+  }
+
+  @Test
+  public void testRemoveRelatedPagesOfPage() throws WikiException {
+    //Given
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Page page = new Page();
+    page.setWikiId(wiki.getId());
+    page.setWikiType(wiki.getType());
+    page.setWikiOwner(wiki.getOwner());
+    page.setName("page0");
+    page.setTitle("Page 0");
+
+    Page page1 = new Page();
+    page1.setWikiId(wiki.getId());
+    page1.setWikiType(wiki.getType());
+    page1.setWikiOwner(wiki.getOwner());
+    page1.setName("page1");
+    page1.setTitle("Page 1");
+
+    Page page2 = new Page();
+    page2.setWikiId(wiki.getId());
+    page2.setWikiType(wiki.getType());
+    page2.setWikiOwner(wiki.getOwner());
+    page2.setName("page2");
+    page2.setTitle("Page 2");
+
+
+    //When
+    Page createdPage = storage.createPage(wiki, wiki.getWikiHome(), page);
+    Page createdPage1 = storage.createPage(wiki, wiki.getWikiHome(), page1);
+    Page createdPage2 = storage.createPage(wiki, wiki.getWikiHome(), page2);
+    storage.addRelatedPage(createdPage, page1);
+    storage.addRelatedPage(createdPage, page2);
+    List<Page> relatedPagesBeforeDeletion = storage.getRelatedPagesOfPage(page);
+    storage.removeRelatedPage(createdPage, createdPage1);
+    List<Page> relatedPagesAfterDeletion = storage.getRelatedPagesOfPage(page);
+
+    // Then
+    assertNotNull(relatedPagesBeforeDeletion);
+    assertEquals(2, relatedPagesBeforeDeletion.size());
+    assertNotNull(relatedPagesAfterDeletion);
+    assertEquals(1, relatedPagesAfterDeletion.size());
+  }
+
+  @Test
   public void testDraftPagesOfUser() throws WikiException {
     //Given
     Wiki wiki = new Wiki();

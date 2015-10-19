@@ -57,6 +57,10 @@ public class PageEntity extends BasePageEntity {
   @OneToMany(mappedBy = "page", cascade = CascadeType.ALL)
   private List<AttachmentEntity> attachments;
 
+  @ManyToMany(cascade = CascadeType.PERSIST)
+  @JoinColumn(name = "RELATED_PAGE_ID")
+  private List<PageEntity> relatedPages;
+
   @Column(name = "AUTHOR")
   private String author;
 
@@ -237,5 +241,13 @@ public class PageEntity extends BasePageEntity {
 
   public void setWatchers(List<WatcherEntity> watchers) {
     this.watchers = watchers;
+  }
+
+  public List<PageEntity> getRelatedPages() {
+    return relatedPages;
+  }
+
+  public void setRelatedPages(List<PageEntity> relatedPages) {
+    this.relatedPages = relatedPages;
   }
 }

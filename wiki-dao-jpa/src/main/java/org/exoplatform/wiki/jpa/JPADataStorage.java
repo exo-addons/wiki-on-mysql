@@ -356,24 +356,85 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public List<Page> getRelatedPagesOfPage(Page page) throws WikiException {
-    // TODO Implement it !
-    return new ArrayList<>();
+    PageEntity pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
+
+    if(pageEntity == null) {
+      throw new WikiException("Cannot get related pages of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because page does not exist.");
+    }
+
+    List<Page> relatedPages = new ArrayList<>();
+    List<PageEntity> relatedPagesEntities = pageEntity.getRelatedPages();
+    if(relatedPagesEntities != null) {
+      for(PageEntity relatedPageEntity : relatedPagesEntities) {
+        relatedPages.add(convertPageEntityToPage(relatedPageEntity));
+      }
+    }
+
+    return relatedPages;
   }
 
   @Override
-  public Page getRelatedPage(String s, String s1, String s2) throws WikiException {
+  public Page getRelatedPage(String wikiType, String wikiOwner, String pageId) throws WikiException {
     // TODO Implement it !
     return null;
   }
 
   @Override
-  public void addRelatedPage(Page page, Page page1) throws WikiException {
-    // TODO Implement it !
+  public void addRelatedPage(Page page, Page relatedPage) throws WikiException {
+    PageEntity pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
+
+    if(pageEntity == null) {
+      throw new WikiException("Cannot add related page to page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because page does not exist.");
+    }
+
+    PageEntity relatedPageEntity = pageDAO.getPageOfWikiByName(relatedPage.getWikiType(), relatedPage.getWikiOwner(), relatedPage.getName());
+
+    if(relatedPageEntity == null) {
+      throw new WikiException("Cannot add related page " + relatedPage.getWikiType() + ":" + relatedPage.getWikiOwner() + ":"
+              + relatedPage.getName() + " of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because related page does not exist.");
+    }
+
+    List<PageEntity> relatedPages = pageEntity.getRelatedPages();
+    if(relatedPages == null) {
+      relatedPages = new ArrayList<>();
+    }
+    relatedPages.add(relatedPageEntity);
+    pageEntity.setRelatedPages(relatedPages);
+
+    pageDAO.update(pageEntity);
   }
 
   @Override
-  public void removeRelatedPage(Page page, Page page1) throws WikiException {
-    // TODO Implement it !
+  public void removeRelatedPage(Page page, Page relatedPage) throws WikiException {
+    PageEntity pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
+
+    if(pageEntity == null) {
+      throw new WikiException("Cannot remove related page to page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because page does not exist.");
+    }
+
+    PageEntity relatedPageEntity = pageDAO.getPageOfWikiByName(relatedPage.getWikiType(), relatedPage.getWikiOwner(), relatedPage.getName());
+
+    if(relatedPageEntity == null) {
+      throw new WikiException("Cannot remove related page " + relatedPage.getWikiType() + ":" + relatedPage.getWikiOwner() + ":"
+              + relatedPage.getName() + " of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because related page does not exist.");
+    }
+
+    List<PageEntity> relatedPages = pageEntity.getRelatedPages();
+    if(relatedPages != null) {
+      for(int i=0; i<relatedPages.size(); i++) {
+        if(relatedPages.get(i).getId() == relatedPageEntity.getId()) {
+          relatedPages.remove(i);
+          break;
+        }
+      }
+      pageEntity.setRelatedPages(relatedPages);
+      pageDAO.update(pageEntity);
+    }
   }
 
   @Override
