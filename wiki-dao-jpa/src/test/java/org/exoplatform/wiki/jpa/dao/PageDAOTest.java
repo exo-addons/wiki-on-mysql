@@ -23,8 +23,8 @@ package org.exoplatform.wiki.jpa.dao;
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.jpa.entity.PermissionEntity;
-import org.exoplatform.wiki.jpa.entity.PermissionType;
 import org.exoplatform.wiki.jpa.entity.WikiEntity;
+import org.exoplatform.wiki.mow.api.PermissionType;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -71,8 +71,8 @@ public class PageDAOTest extends BaseWikiIntegrationTest {
     //Given
     PageEntity page = new PageEntity();
     PermissionEntity per = new PermissionEntity();
-    per.setUser("user");
-    per.setType(PermissionType.EDITPAGE);
+    per.setIdentity("user");
+    per.setPermissionType(PermissionType.EDITPAGE);
     List<PermissionEntity> permissions = new ArrayList<PermissionEntity>();
     permissions.add(per);
     page.setPermissions(permissions);

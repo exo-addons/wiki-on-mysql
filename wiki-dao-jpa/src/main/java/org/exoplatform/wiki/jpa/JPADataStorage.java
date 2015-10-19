@@ -39,6 +39,7 @@ import org.exoplatform.wiki.mow.api.PermissionType;
 import org.exoplatform.wiki.mow.api.Template;
 import org.exoplatform.wiki.mow.api.Wiki;
 import org.exoplatform.wiki.service.DataStorage;
+import org.exoplatform.wiki.service.IDType;
 import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.search.*;
 import org.exoplatform.wiki.utils.WikiConstants;
@@ -344,14 +345,41 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
-  public List<PermissionEntry> getWikiPermission(String s, String s1) throws WikiException {
-    // TODO Implement it !
-    return new ArrayList<>();
+  public List<PermissionEntry> getWikiPermission(String wikiType, String wikiOwner) throws WikiException {
+    WikiEntity wikiEntity = wikiDAO.getWikiByTypeAndOwner(wikiType, wikiOwner);
+
+    if(wikiEntity == null) {
+      throw new WikiException("Cannot get permissions of wiki " + wikiType + ":" + wikiOwner + " because wiki does not exist.");
+    }
+
+    List<PermissionEntry> permissionEntries = new ArrayList<>();
+    if(wikiEntity.getPermissions() != null) {
+      for(PermissionEntity permissionEntity : wikiEntity.getPermissions()) {
+        permissionEntries.add(convertPermissionEntityToPermissionEntry(permissionEntity));
+      }
+    }
+
+    return permissionEntries;
   }
 
   @Override
-  public void updateWikiPermission(String s, String s1, List<PermissionEntry> list) throws WikiException {
-    // TODO Implement it !
+  public void updateWikiPermission(String wikiType, String wikiOwner, List<PermissionEntry> permissionEntries) throws WikiException {
+    WikiEntity wikiEntity = wikiDAO.getWikiByTypeAndOwner(wikiType, wikiOwner);
+
+    if(wikiEntity == null) {
+      throw new WikiException("Cannot update permissions of wiki " + wikiType + ":" + wikiOwner + " because wiki does not exist.");
+    }
+
+    List<PermissionEntity> permissionEntities = new ArrayList<>();
+    for(PermissionEntry permissionEntry : permissionEntries) {
+      for(Permission permission : permissionEntry.getPermissions()) {
+        permissionEntities.add(new PermissionEntity(permissionEntry.getId(),
+                permissionEntry.getIdType().toString(), permission.getPermissionType()));
+      }
+    }
+    wikiEntity.setPermissions(permissionEntities);
+
+    wikiDAO.update(wikiEntity);
   }
 
   @Override
@@ -1032,4 +1060,14 @@ public class JPADataStorage implements DataStorage {
     return emotionIconEntity;
   }
 
+  private PermissionEntry convertPermissionEntityToPermissionEntry(PermissionEntity permissionEntity) {
+    PermissionEntry permissionEntry = null;
+    if(permissionEntity != null) {
+      permissionEntry = new PermissionEntry();
+      permissionEntry.setId(permissionEntity.getIdentity());
+      permissionEntry.setIdType(IDType.valueOf(permissionEntity.getIdentityType().toUpperCase()));
+      permissionEntry.setPermissions(new Permission[]{new Permission(permissionEntity.getPermissionType(), true)});
+    }
+    return permissionEntry;
+  }
 }

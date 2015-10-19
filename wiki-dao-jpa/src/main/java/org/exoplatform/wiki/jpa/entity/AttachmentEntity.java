@@ -17,6 +17,7 @@
 package org.exoplatform.wiki.jpa.entity;
 
 import org.exoplatform.commons.api.persistence.ExoEntity;
+import org.exoplatform.wiki.mow.api.PermissionType;
 
 import javax.persistence.*;
 import java.util.Date;

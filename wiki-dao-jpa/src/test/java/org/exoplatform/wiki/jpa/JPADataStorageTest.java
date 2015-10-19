@@ -23,6 +23,7 @@ import org.apache.commons.lang.StringUtils;
 import org.exoplatform.commons.utils.PageList;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.mow.api.*;
+import org.exoplatform.wiki.service.IDType;
 import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.search.SearchResult;
 import org.exoplatform.wiki.service.search.TemplateSearchData;
@@ -63,6 +64,37 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertNotNull(wikiHomePage.getCreatedDate());
     assertNotNull(wikiHomePage.getUpdatedDate());
     assertTrue(StringUtils.isNotEmpty(wikiHomePage.getContent()));
+  }
+
+  @Test
+  public void testWikiPermissions() throws Exception {
+    //Given
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+
+    List<PermissionEntry> initialPermissions = new ArrayList<>();
+    initialPermissions.add(new PermissionEntry("john", "", IDType.USER, new Permission[]{
+            new Permission(PermissionType.VIEWPAGE, true)
+    }));
+    List<PermissionEntry> updatedPermissions = new ArrayList<>();
+    updatedPermissions.add(new PermissionEntry("john", "", IDType.USER, new Permission[]{
+            new Permission(PermissionType.VIEWPAGE, true),
+            new Permission(PermissionType.EDITPAGE, true)
+    }));
+
+    //When
+    storage.createWiki(wiki);
+    storage.updateWikiPermission("portal", "wiki1", initialPermissions);
+    List<PermissionEntry> fetchedInitialPermissions = storage.getWikiPermission("portal", "wiki1");
+    storage.updateWikiPermission("portal", "wiki1", updatedPermissions);
+    List<PermissionEntry> fetchedUpdatedPermissions = storage.getWikiPermission("portal", "wiki1");
+
+    // Then
+    assertNotNull(fetchedInitialPermissions);
+    assertEquals(1, fetchedInitialPermissions.size());
+    assertNotNull(fetchedUpdatedPermissions);
+    assertEquals(2, fetchedUpdatedPermissions.size());
   }
 
   @Test

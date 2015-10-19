@@ -16,9 +16,10 @@
  */
 package org.exoplatform.wiki.jpa.entity;
 
-import javax.persistence.*;
-
 import org.exoplatform.commons.api.persistence.ExoEntity;
+import org.exoplatform.wiki.mow.api.PermissionType;
+
+import javax.persistence.*;
 
 /**
  * Created by The eXo Platform SAS
@@ -39,21 +40,25 @@ public class PermissionEntity {
   /**
    * User or Group
    */
-  @Column(name = "USER")
-  private String user;
+  @Column(name = "IDENTITY")
+  private String identity;
 
-  @Column(name="TYPE")
+  @Column(name = "IDENTITY_TYPE")
+  private String identityType;
+
+  @Column(name="PERMISSION")
   @Enumerated
-  private PermissionType type;
+  private PermissionType permissionType;
 
 
   public PermissionEntity() {
     //Default constructor
   }
 
-  public PermissionEntity(String user, PermissionType type) {
-    this.user = user;
-    this.type = type;
+  public PermissionEntity(String identity, String identityType, PermissionType permissionType) {
+    this.identity = identity;
+    this.identityType = identityType;
+    this.permissionType = permissionType;
   }
 
   public long getId(){
@@ -64,19 +69,27 @@ public class PermissionEntity {
     this.id = id;
   }
 
-  public String getUser() {
-    return user;
+  public String getIdentity() {
+    return identity;
   }
 
-  public void setUser(String user) {
-    this.user = user;
+  public void setIdentity(String user) {
+    this.identity = user;
   }
 
-  public PermissionType getType() {
-    return type;
+  public String getIdentityType() {
+    return identityType;
   }
 
-  public void setType(PermissionType type) {
-    this.type = type;
+  public void setIdentityType(String identityType) {
+    this.identityType = identityType;
+  }
+
+  public PermissionType getPermissionType() {
+    return permissionType;
+  }
+
+  public void setPermissionType(PermissionType permissionType) {
+    this.permissionType = permissionType;
   }
 }
