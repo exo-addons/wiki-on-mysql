@@ -17,10 +17,9 @@
 package org.exoplatform.wiki.jpa.dao;
 
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
-import org.exoplatform.wiki.jpa.entity.DraftPage;
+import org.exoplatform.wiki.jpa.entity.DraftPageEntity;
 
 import javax.persistence.EntityTransaction;
-import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.util.List;
@@ -31,23 +30,23 @@ import java.util.List;
  *          exo@exoplatform.com
  * Jun 24, 2015  
  */
-public class DraftPageDAO extends GenericDAOJPAImpl<DraftPage, Long> {
+public class DraftPageDAO extends GenericDAOJPAImpl<DraftPageEntity, Long> {
 
-  public List<DraftPage> findDraftPagesByUser(String username) {
-    TypedQuery<DraftPage> query = getEntityManager().createNamedQuery("wikiDraftPage.findDraftPagesByUser", DraftPage.class)
+  public List<DraftPageEntity> findDraftPagesByUser(String username) {
+    TypedQuery<DraftPageEntity> query = getEntityManager().createNamedQuery("wikiDraftPage.findDraftPagesByUser", DraftPageEntity.class)
             .setParameter("username", username);
     return query.getResultList();
   }
 
-  public DraftPage findLatestDraftPageByUser(String username) {
-    TypedQuery<DraftPage> query = getEntityManager().createNamedQuery("wikiDraftPage.findDraftPagesByUser", DraftPage.class)
+  public DraftPageEntity findLatestDraftPageByUser(String username) {
+    TypedQuery<DraftPageEntity> query = getEntityManager().createNamedQuery("wikiDraftPage.findDraftPagesByUser", DraftPageEntity.class)
             .setParameter("username", username).setMaxResults(1);
-    List<DraftPage> draftPages = query.getResultList();
+    List<DraftPageEntity> draftPages = query.getResultList();
     return draftPages.size() > 0 ? draftPages.get(0) : null;
   }
 
-  public List<DraftPage> findDraftPagesByUserAndTargetPage(String username, long targetPageId) {
-    TypedQuery<DraftPage> query = getEntityManager().createNamedQuery("wikiDraftPage.findDraftPageByUserAndTargetPage", DraftPage.class)
+  public List<DraftPageEntity> findDraftPagesByUserAndTargetPage(String username, long targetPageId) {
+    TypedQuery<DraftPageEntity> query = getEntityManager().createNamedQuery("wikiDraftPage.findDraftPageByUserAndTargetPage", DraftPageEntity.class)
             .setParameter("username", username)
             .setParameter("targetPageId", targetPageId);
     return query.getResultList();

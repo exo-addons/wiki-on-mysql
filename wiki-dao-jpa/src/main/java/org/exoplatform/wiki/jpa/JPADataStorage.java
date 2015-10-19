@@ -407,10 +407,10 @@ public class JPADataStorage implements DataStorage {
     Page page = getPageOfWikiByName(wikiPageParams.getType(), wikiPageParams.getOwner(), wikiPageParams.getPageName());
 
     if(page != null) {
-      List<org.exoplatform.wiki.jpa.entity.DraftPage> draftPagesOfUser = draftPageDAO.findDraftPagesByUserAndTargetPage(username, Long.valueOf(page.getId()));
+      List<DraftPageEntity> draftPagesOfUser = draftPageDAO.findDraftPagesByUserAndTargetPage(username, Long.valueOf(page.getId()));
 
-      org.exoplatform.wiki.jpa.entity.DraftPage latestDraftEntity = null;
-      for (org.exoplatform.wiki.jpa.entity.DraftPage draft : draftPagesOfUser) {
+      DraftPageEntity latestDraftEntity = null;
+      for (DraftPageEntity draft : draftPagesOfUser) {
         // Compare and get the latest draft
         if ((latestDraftEntity == null) || (latestDraftEntity.getUpdatedDate().getTime() < draft.getUpdatedDate().getTime())) {
           latestDraftEntity = draft;
@@ -427,7 +427,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public DraftPage getLastestDraft(String username) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.DraftPage draftPagEntity = draftPageDAO.findLatestDraftPageByUser(username);
+    DraftPageEntity draftPagEntity = draftPageDAO.findLatestDraftPageByUser(username);
     return convertDraftPageEntityToDraftPage(draftPagEntity);
   }
 
@@ -449,9 +449,9 @@ public class JPADataStorage implements DataStorage {
   @Override
   public List<DraftPage> getDraftPagesOfUser(String username) throws WikiException {
     List<DraftPage> draftPages = new ArrayList<>();
-    List<org.exoplatform.wiki.jpa.entity.DraftPage> draftPagesEntities = draftPageDAO.findDraftPagesByUser(username);
+    List<DraftPageEntity> draftPagesEntities = draftPageDAO.findDraftPagesByUser(username);
     if(draftPagesEntities != null) {
-      for(org.exoplatform.wiki.jpa.entity.DraftPage draftPageEntity : draftPagesEntities) {
+      for(DraftPageEntity draftPageEntity : draftPagesEntities) {
         draftPages.add(convertDraftPageEntityToDraftPage(draftPageEntity));
       }
     }
@@ -460,7 +460,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void createDraftPageForUser(DraftPage draftPage, String username) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.DraftPage draftPageEntity = convertDraftPageToDraftPageEntity(draftPage);
+    DraftPageEntity draftPageEntity = convertDraftPageToDraftPageEntity(draftPage);
     draftPageEntity.setAuthor(username);
     draftPageDAO.create(draftPageEntity);
   }
@@ -875,7 +875,7 @@ public class JPADataStorage implements DataStorage {
     return attachmentEntity;
   }
 
-  private DraftPage convertDraftPageEntityToDraftPage(org.exoplatform.wiki.jpa.entity.DraftPage draftPageEntity) {
+  private DraftPage convertDraftPageEntityToDraftPage(DraftPageEntity draftPageEntity) {
     DraftPage draftPage = null;
     if(draftPageEntity != null) {
       draftPage = new DraftPage();
@@ -893,10 +893,10 @@ public class JPADataStorage implements DataStorage {
     return draftPage;
   }
 
-  private org.exoplatform.wiki.jpa.entity.DraftPage convertDraftPageToDraftPageEntity(DraftPage draftPage) {
-    org.exoplatform.wiki.jpa.entity.DraftPage draftPageEntity = null;
+  private DraftPageEntity convertDraftPageToDraftPageEntity(DraftPage draftPage) {
+    DraftPageEntity draftPageEntity = null;
     if(draftPage != null) {
-      draftPageEntity = new org.exoplatform.wiki.jpa.entity.DraftPage();
+      draftPageEntity = new DraftPageEntity();
       draftPageEntity.setName(draftPage.getName());
       draftPageEntity.setTitle(draftPage.getTitle());
       draftPageEntity.setAuthor(draftPage.getAuthor());

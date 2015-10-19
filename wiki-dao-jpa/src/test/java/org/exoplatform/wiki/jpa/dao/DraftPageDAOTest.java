@@ -19,7 +19,7 @@ package org.exoplatform.wiki.jpa.dao;
 import org.exoplatform.wiki.jpa.BaseTest;
 import org.junit.Test;
 
-import org.exoplatform.wiki.jpa.entity.DraftPage;
+import org.exoplatform.wiki.jpa.entity.DraftPageEntity;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
 
 import java.util.Calendar;
@@ -38,7 +38,7 @@ public class DraftPageDAOTest extends BaseTest {
   public void testInsert(){
     DraftPageDAO dao = new DraftPageDAO();
     PageDAO pageDAO = new PageDAO();
-    DraftPage dp = new DraftPage();
+    DraftPageEntity dp = new DraftPageEntity();
     PageEntity page = new PageEntity();
     page.setName("name");
     dp.setTargetPage(page);
@@ -47,7 +47,7 @@ public class DraftPageDAOTest extends BaseTest {
     assertNotNull(dao.find(dp.getId()));
     assertNotNull(pageDAO.find(page.getId()));
     
-    DraftPage got = dao.find(dp.getId());
+    DraftPageEntity got = dao.find(dp.getId());
     got.getTargetPage().setName("name1");
     dao.update(got);
     assertEquals("name1",page.getName());
@@ -61,7 +61,7 @@ public class DraftPageDAOTest extends BaseTest {
   public void testFindDraftPagesByUser(){
     DraftPageDAO dao = new DraftPageDAO();
     PageDAO pageDAO = new PageDAO();
-    DraftPage dp = new DraftPage();
+    DraftPageEntity dp = new DraftPageEntity();
     PageEntity page = new PageEntity();
     page.setName("name");
     dp.setTargetPage(page);
@@ -70,10 +70,10 @@ public class DraftPageDAOTest extends BaseTest {
 
     assertNotNull(dao.find(dp.getId()));
     assertNotNull(pageDAO.find(page.getId()));
-    List<DraftPage> user1DraftPages = dao.findDraftPagesByUser("user1");
+    List<DraftPageEntity> user1DraftPages = dao.findDraftPagesByUser("user1");
     assertNotNull(user1DraftPages);
     assertEquals(1, user1DraftPages.size());
-    List<DraftPage> user2DraftPages = dao.findDraftPagesByUser("user2");
+    List<DraftPageEntity> user2DraftPages = dao.findDraftPagesByUser("user2");
     assertNotNull(user2DraftPages);
     assertEquals(0, user2DraftPages.size());
 
@@ -93,13 +93,13 @@ public class DraftPageDAOTest extends BaseTest {
 
     PageEntity page = new PageEntity();
     page.setName("page1");
-    DraftPage dp1 = new DraftPage();
+    DraftPageEntity dp1 = new DraftPageEntity();
     dp1.setTargetPage(page);
     dp1.setAuthor("user1");
     dp1.setUpdatedDate(oneYearAgo);
     dp1.setTargetRevision("1");
     dao.create(dp1);
-    DraftPage dp2 = new DraftPage();
+    DraftPageEntity dp2 = new DraftPageEntity();
     dp2.setTargetPage(page);
     dp2.setAuthor("user1");
     dp2.setUpdatedDate(now);
@@ -108,10 +108,10 @@ public class DraftPageDAOTest extends BaseTest {
 
     assertNotNull(dao.find(dp2.getId()));
     assertNotNull(pageDAO.find(page.getId()));
-    DraftPage user1DraftPage = dao.findLatestDraftPageByUser("user1");
+    DraftPageEntity user1DraftPage = dao.findLatestDraftPageByUser("user1");
     assertNotNull(user1DraftPage);
     assertEquals("2", user1DraftPage.getTargetRevision());
-    DraftPage user2DraftPage = dao.findLatestDraftPageByUser("user2");
+    DraftPageEntity user2DraftPage = dao.findLatestDraftPageByUser("user2");
     assertNull(user2DraftPage);
 
     dao.deleteAll();
@@ -123,7 +123,7 @@ public class DraftPageDAOTest extends BaseTest {
     //Given
     DraftPageDAO dao = new DraftPageDAO();
     PageDAO pageDAO = new PageDAO();
-    DraftPage dp = new DraftPage();
+    DraftPageEntity dp = new DraftPageEntity();
     PageEntity page = new PageEntity();
     page.setName("page1");
     dp.setTargetPage(page);
@@ -132,9 +132,9 @@ public class DraftPageDAOTest extends BaseTest {
     dao.create(dp);
 
     //When
-    List<DraftPage> drafts1 = dao.findDraftPagesByUserAndTargetPage("user1", createdPage.getId());
-    List<DraftPage> drafts2 = dao.findDraftPagesByUserAndTargetPage("user2", createdPage.getId());
-    List<DraftPage> drafts3 = dao.findDraftPagesByUserAndTargetPage("user1", createdPage.getId() + 1);
+    List<DraftPageEntity> drafts1 = dao.findDraftPagesByUserAndTargetPage("user1", createdPage.getId());
+    List<DraftPageEntity> drafts2 = dao.findDraftPagesByUserAndTargetPage("user2", createdPage.getId());
+    List<DraftPageEntity> drafts3 = dao.findDraftPagesByUserAndTargetPage("user1", createdPage.getId() + 1);
 
     //Then
     assertNotNull(dao.find(dp.getId()));
@@ -165,14 +165,14 @@ public class DraftPageDAOTest extends BaseTest {
     PageEntity page2 = new PageEntity();
     page1.setName("page2");
 
-    DraftPage dp1 = new DraftPage();
+    DraftPageEntity dp1 = new DraftPageEntity();
     dp1.setTargetPage(page1);
     dp1.setAuthor("user1");
     dp1.setName("draft1");
     dp1.setUpdatedDate(oneYearAgo);
     dp1.setTargetRevision("1");
     dao.create(dp1);
-    DraftPage dp2 = new DraftPage();
+    DraftPageEntity dp2 = new DraftPageEntity();
     dp2.setTargetPage(page2);
     dp2.setAuthor("user1");
     dp2.setName("draft2");
@@ -209,14 +209,14 @@ public class DraftPageDAOTest extends BaseTest {
     PageEntity page2 = new PageEntity();
     page1.setName("page2");
 
-    DraftPage dp1 = new DraftPage();
+    DraftPageEntity dp1 = new DraftPageEntity();
     dp1.setTargetPage(page1);
     dp1.setAuthor("user1");
     dp1.setName("draft1");
     dp1.setUpdatedDate(oneYearAgo);
     dp1.setTargetRevision("1");
     dao.create(dp1);
-    DraftPage dp2 = new DraftPage();
+    DraftPageEntity dp2 = new DraftPageEntity();
     dp2.setTargetPage(page2);
     dp2.setAuthor("user1");
     dp2.setName("draft2");
