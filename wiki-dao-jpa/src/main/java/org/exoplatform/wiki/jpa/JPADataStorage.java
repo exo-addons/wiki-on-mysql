@@ -298,8 +298,8 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
-  public void deleteDraftOfPage(Page page, String s) throws WikiException {
-    // TODO Implement it !
+  public void deleteDraftOfPage(Page page, String username) throws WikiException {
+    draftPageDAO.deleteDraftPagesByUserAndTargetPage(username, Long.valueOf(page.getId()));
   }
 
   @Override

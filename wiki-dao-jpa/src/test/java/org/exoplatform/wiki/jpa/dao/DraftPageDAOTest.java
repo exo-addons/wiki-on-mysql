@@ -16,6 +16,7 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
+import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.wiki.jpa.BaseTest;
 import org.junit.Test;
 
@@ -145,6 +146,50 @@ public class DraftPageDAOTest extends BaseTest {
     assertEquals(0, drafts2.size());
     assertNotNull(drafts3);
     assertEquals(0, drafts3.size());
+
+    dao.deleteAll();
+    pageDAO.deleteAll();
+  }
+
+  @Test
+  public void testDeleteDraftPageByUserAndTargetPage(){
+    DraftPageDAO dao = new DraftPageDAO();
+    PageDAO pageDAO = new PageDAO();
+
+    Calendar calendar = Calendar.getInstance();
+    Date now = calendar.getTime();
+    calendar.roll(Calendar.YEAR, 1);
+    Date oneYearAgo = calendar.getTime();
+
+    Page page1 = new Page();
+    page1.setName("page1");
+    Page page2 = new Page();
+    page1.setName("page2");
+
+    DraftPage dp1 = new DraftPage();
+    dp1.setTargetPage(page1);
+    dp1.setAuthor("user1");
+    dp1.setName("draft1");
+    dp1.setUpdatedDate(oneYearAgo);
+    dp1.setTargetRevision("1");
+    dao.create(dp1);
+    DraftPage dp2 = new DraftPage();
+    dp2.setTargetPage(page2);
+    dp2.setAuthor("user1");
+    dp2.setName("draft2");
+    dp2.setUpdatedDate(now);
+    dp2.setTargetRevision("1");
+    dao.create(dp2);
+
+    assertEquals(2, dao.findAll().size());
+    assertEquals(2, pageDAO.findAll().size());
+    dao.deleteDraftPagesByUserAndTargetPage("user1", page1.getId());
+    assertEquals(1, dao.findAll().size());
+    assertEquals("draft2", dao.findAll().get(0).getName());
+    assertEquals(2, pageDAO.findAll().size());
+    dao.deleteDraftPagesByUserAndTargetPage("user1", page2.getId());
+    assertEquals(0, dao.findAll().size());
+    assertEquals(2, pageDAO.findAll().size());
 
     dao.deleteAll();
     pageDAO.deleteAll();

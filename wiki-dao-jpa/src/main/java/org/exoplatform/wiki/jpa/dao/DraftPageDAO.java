@@ -19,7 +19,9 @@ package org.exoplatform.wiki.jpa.dao;
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 import org.exoplatform.wiki.jpa.entity.DraftPage;
 
+import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
@@ -49,5 +51,23 @@ public class DraftPageDAO extends GenericDAOJPAImpl<DraftPage, Long> {
             .setParameter("username", username)
             .setParameter("targetPageId", targetPageId);
     return query.getResultList();
+  }
+
+  public void deleteDraftPagesByUserAndTargetPage(String username, long targetPageId) {
+    EntityTransaction trans = getEntityManager().getTransaction();
+    boolean active = false;
+    if (!trans.isActive()) {
+      trans.begin();
+      active = true;
+    }
+
+    Query query = getEntityManager().createNamedQuery("wikiDraftPage.deleteDraftPagesByUserAndTargetPage")
+            .setParameter("username", username)
+            .setParameter("targetPageId", targetPageId);
+    query.executeUpdate();
+
+    if (active) {
+      trans.commit();
+    }
   }
 }

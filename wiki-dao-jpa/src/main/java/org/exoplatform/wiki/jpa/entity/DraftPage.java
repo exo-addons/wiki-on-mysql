@@ -32,7 +32,8 @@ import java.util.Date;
 @Table(name = "WIKI_DRAFT_PAGES")
 @NamedQueries({
         @NamedQuery(name = "wikiDraftPage.findDraftPagesByUser", query = "SELECT d FROM DraftPage d WHERE d.author = :username ORDER BY d.updatedDate DESC"),
-        @NamedQuery(name = "wikiDraftPage.findDraftPageByUserAndTargetPage", query = "SELECT d FROM DraftPage d WHERE d.author = :username AND d.targetPage.id = :targetPageId")
+        @NamedQuery(name = "wikiDraftPage.findDraftPageByUserAndTargetPage", query = "SELECT d FROM DraftPage d WHERE d.author = :username AND d.targetPage.id = :targetPageId"),
+        @NamedQuery(name = "wikiDraftPage.deleteDraftPagesByUserAndTargetPage", query = "DELETE FROM DraftPage d WHERE d.author = :username AND d.targetPage.id = :targetPageId")
 })
 public class DraftPage extends BasePage {
 
