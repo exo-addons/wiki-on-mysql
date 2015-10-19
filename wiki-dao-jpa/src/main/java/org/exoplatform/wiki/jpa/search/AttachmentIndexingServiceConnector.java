@@ -32,7 +32,7 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.wiki.jpa.dao.AttachmentDAO;
-import org.exoplatform.wiki.jpa.entity.Attachment;
+import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
 
 /**
  * Created by The eXo Platform SAS
@@ -56,7 +56,7 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
             throw new IllegalArgumentException("Id is null");
         }
         //Get the wiki object from BD
-        Attachment attachment = dao.find(Long.parseLong(id));
+        AttachmentEntity attachment = dao.find(Long.parseLong(id));
         if (attachment==null) {
             LOGGER.info("The attachment entity with id {} doesn't exist.", id);
             return null;
@@ -73,7 +73,7 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
         return create(id);
     }
 
-    private String[] computePermissions(Attachment attachment) {
+    private String[] computePermissions(AttachmentEntity attachment) {
         List<String> permissions = new ArrayList<>();
         permissions.add(attachment.getCreator());
         //TODO Add the permissions

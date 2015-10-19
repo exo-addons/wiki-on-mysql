@@ -34,7 +34,7 @@ import org.hibernate.envers.RelationTargetAuditMode;
 @Entity
 @ExoEntity
 @Table(name = "WIKI_ATTACHMENTS")
-public class Attachment {
+public class AttachmentEntity {
   @Id 
   @Column(name = "ATTACHMENT_ID")
   @GeneratedValue(strategy = GenerationType.AUTO)

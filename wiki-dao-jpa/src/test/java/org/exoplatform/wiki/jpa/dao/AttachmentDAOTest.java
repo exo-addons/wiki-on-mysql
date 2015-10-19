@@ -17,7 +17,7 @@
 package org.exoplatform.wiki.jpa.dao;
 
 import org.exoplatform.wiki.jpa.BaseTest;
-import org.exoplatform.wiki.jpa.entity.Attachment;
+import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
 import org.exoplatform.wiki.jpa.entity.Permission;
 import org.exoplatform.wiki.jpa.entity.PermissionType;
 
@@ -43,13 +43,13 @@ public class AttachmentDAOTest extends BaseTest {
     //Given
     URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
     AttachmentDAO attachmentDAO = getService(AttachmentDAO.class);
-    Attachment att = new Attachment();
+    AttachmentEntity att = new AttachmentEntity();
     att.setContent(Files.readAllBytes(Paths.get(fileResource.toURI())));
     //When
     attachmentDAO.create(att);
     Long id = att.getId();
     //Then
-    Attachment got = attachmentDAO.find(id);
+    AttachmentEntity got = attachmentDAO.find(id);
     assertNotNull(got.getContent());
     assertEquals(new File(fileResource.toURI()).length(), got.getWeightInBytes());
     //Delete
@@ -61,7 +61,7 @@ public class AttachmentDAOTest extends BaseTest {
     //Given
     URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
     AttachmentDAO attachmentDAO = getService(AttachmentDAO.class);
-    Attachment att = new Attachment();
+    AttachmentEntity att = new AttachmentEntity();
     att.setContent(Files.readAllBytes(Paths.get(fileResource.toURI())));
     //When
     attachmentDAO.create(att);
@@ -79,7 +79,7 @@ public class AttachmentDAOTest extends BaseTest {
     att.setUpdatedDate(date);
     //Then
     attachmentDAO.update(att);
-    Attachment got = attachmentDAO.find(id);
+    AttachmentEntity got = attachmentDAO.find(id);
     assertEquals("http://exoplatform.com", got.getDownloadURL());
     assertEquals("title", got.getTitle());
     assertEquals("creator", got.getCreator());

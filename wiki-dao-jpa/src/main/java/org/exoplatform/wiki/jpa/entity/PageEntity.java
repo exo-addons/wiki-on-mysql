@@ -61,7 +61,7 @@ public class PageEntity extends BasePage {
 
   @OneToMany(mappedBy = "page", cascade = CascadeType.ALL)
   @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-  private List<Attachment> attachments;
+  private List<AttachmentEntity> attachments;
 
   @Column(name = "AUTHOR")
   private String author;
@@ -231,11 +231,11 @@ public class PageEntity extends BasePage {
     this.parentPage = parentPage;
   }
 
-  public List<Attachment> getAttachments() {
+  public List<AttachmentEntity> getAttachments() {
     return attachments;
   }
 
-  public void setAttachments(List<Attachment> attachments) {
+  public void setAttachments(List<AttachmentEntity> attachments) {
     this.attachments = attachments;
   }
 

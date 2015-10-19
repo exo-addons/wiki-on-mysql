@@ -28,7 +28,7 @@ import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.wiki.jpa.dao.*;
-import org.exoplatform.wiki.jpa.entity.Attachment;
+import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.jpa.entity.Wiki;
 import org.exoplatform.wiki.jpa.search.AttachmentIndexingServiceConnector;
@@ -145,7 +145,7 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
 
   protected void indexAttachment(String title, String filePath, String downloadedUrl)
           throws NoSuchFieldException, IllegalAccessException, IOException {
-    Attachment attachment = new Attachment();
+    AttachmentEntity attachment = new AttachmentEntity();
     attachment.setDownloadURL(downloadedUrl);
     attachment.setTitle(title);
     attachment.setContent(Files.readAllBytes(Paths.get(filePath)));

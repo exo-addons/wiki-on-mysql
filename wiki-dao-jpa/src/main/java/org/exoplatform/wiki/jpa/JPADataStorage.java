@@ -505,9 +505,9 @@ public class JPADataStorage implements DataStorage {
     }
 
     List<Attachment> attachments = new ArrayList<>();
-    List<org.exoplatform.wiki.jpa.entity.Attachment> attachmentsEntities = pageEntity.getAttachments();
+    List<AttachmentEntity> attachmentsEntities = pageEntity.getAttachments();
     if(attachmentsEntities != null) {
-      for(org.exoplatform.wiki.jpa.entity.Attachment attachmentEntity : attachmentsEntities) {
+      for(AttachmentEntity attachmentEntity : attachmentsEntities) {
         attachments.add(convertAttachmentEntityToAttachment(attachmentEntity));
       }
     }
@@ -524,9 +524,9 @@ public class JPADataStorage implements DataStorage {
               + page.getName() + " because page does not exist.");
     }
 
-    org.exoplatform.wiki.jpa.entity.Attachment attachmentEntity = attachmentDAO.create(convertAttachmentToAttachmentEntity(attachment));
+    AttachmentEntity attachmentEntity = attachmentDAO.create(convertAttachmentToAttachmentEntity(attachment));
 
-    List<org.exoplatform.wiki.jpa.entity.Attachment> attachmentsEntities = pageEntity.getAttachments();
+    List<AttachmentEntity> attachmentsEntities = pageEntity.getAttachments();
     if(attachmentsEntities == null) {
       attachmentsEntities = new ArrayList<>();
     }
@@ -545,10 +545,10 @@ public class JPADataStorage implements DataStorage {
     }
 
     boolean attachmentFound = false;
-    List<org.exoplatform.wiki.jpa.entity.Attachment> attachmentsEntities = pageEntity.getAttachments();
+    List<AttachmentEntity> attachmentsEntities = pageEntity.getAttachments();
     if(attachmentsEntities != null) {
       for (int i = 0; i < attachmentsEntities.size(); i++) {
-        org.exoplatform.wiki.jpa.entity.Attachment attachmentEntity = attachmentsEntities.get(i);
+        AttachmentEntity attachmentEntity = attachmentsEntities.get(i);
         if (attachmentEntity.getName() != null && attachmentEntity.getName().equals(attachmentName)) {
           attachmentFound = true;
           attachmentsEntities.remove(i);
@@ -828,7 +828,7 @@ public class JPADataStorage implements DataStorage {
     return pageEntity;
   }
 
-  private Attachment convertAttachmentEntityToAttachment(org.exoplatform.wiki.jpa.entity.Attachment attachmentEntity) {
+  private Attachment convertAttachmentEntityToAttachment(AttachmentEntity attachmentEntity) {
     Attachment attachment = null;
     if(attachmentEntity != null) {
       attachment = new Attachment();
@@ -854,10 +854,10 @@ public class JPADataStorage implements DataStorage {
     return attachment;
   }
 
-  private org.exoplatform.wiki.jpa.entity.Attachment convertAttachmentToAttachmentEntity(Attachment attachment) {
-    org.exoplatform.wiki.jpa.entity.Attachment attachmentEntity = null;
+  private AttachmentEntity convertAttachmentToAttachmentEntity(Attachment attachment) {
+    AttachmentEntity attachmentEntity = null;
     if(attachment != null) {
-      attachmentEntity = new org.exoplatform.wiki.jpa.entity.Attachment();
+      attachmentEntity = new AttachmentEntity();
       attachmentEntity.setName(attachment.getName());
       attachmentEntity.setTitle(attachment.getTitle());
       attachmentEntity.setCreator(attachment.getCreator());
