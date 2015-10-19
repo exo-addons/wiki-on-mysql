@@ -46,7 +46,7 @@ public class Template extends BasePage {
 
   @ManyToOne(cascade = CascadeType.PERSIST)
   @JoinColumn(name = "WIKI_ID")
-  private Wiki wiki;
+  private WikiEntity wiki;
 
   public long getId() {
     return id;
@@ -96,11 +96,11 @@ public class Template extends BasePage {
     this.title = title;
   }
 
-  public Wiki getWiki() {
+  public WikiEntity getWiki() {
     return wiki;
   }
 
-  public void setWiki(Wiki wiki) {
+  public void setWiki(WikiEntity wiki) {
     this.wiki = wiki;
   }
 }

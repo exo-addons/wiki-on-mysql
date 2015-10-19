@@ -103,7 +103,7 @@ public class JPADataStorage implements DataStorage {
   @Override
   public List<Wiki> getWikisByType(String wikiType) throws WikiException {
     List<Wiki> wikis = new ArrayList();
-    for(org.exoplatform.wiki.jpa.entity.Wiki wikiEntity : wikiDAO.getWikisByType(wikiType)) {
+    for(WikiEntity wikiEntity : wikiDAO.getWikisByType(wikiType)) {
       wikis.add(convertWikiEntityToWiki(wikiEntity));
     }
     return wikis;
@@ -111,7 +111,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public Wiki createWiki(Wiki wiki) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Wiki createdWikiEntity = wikiDAO.create(convertWikiToWikiEntity(wiki));
+    WikiEntity createdWikiEntity = wikiDAO.create(convertWikiToWikiEntity(wiki));
     Wiki createdWiki = convertWikiEntityToWiki(createdWikiEntity);
 
     // create wiki home page
@@ -133,7 +133,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public Page createPage(Wiki wiki, Page parentPage, Page page) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Wiki wikiEntity = wikiDAO.getWikiByTypeAndOwner(wiki.getType(), wiki.getOwner());
+    WikiEntity wikiEntity = wikiDAO.getWikiByTypeAndOwner(wiki.getType(), wiki.getOwner());
     if(wikiEntity == null) {
       throw new WikiException("Cannot create page " + wiki.getType() + ":" + wiki.getOwner() + ":"
               + page.getName() + " because wiki does not exist.");
@@ -745,7 +745,7 @@ public class JPADataStorage implements DataStorage {
 
   /*************** Entity converters ***************/
 
-  private Wiki convertWikiEntityToWiki(org.exoplatform.wiki.jpa.entity.Wiki wikiEntity) {
+  private Wiki convertWikiEntityToWiki(WikiEntity wikiEntity) {
     Wiki wiki = null;
     if(wikiEntity != null) {
       wiki = new Wiki();
@@ -763,10 +763,10 @@ public class JPADataStorage implements DataStorage {
     return wiki;
   }
 
-  private org.exoplatform.wiki.jpa.entity.Wiki convertWikiToWikiEntity(Wiki wiki) {
-    org.exoplatform.wiki.jpa.entity.Wiki wikiEntity = null;
+  private WikiEntity convertWikiToWikiEntity(Wiki wiki) {
+    WikiEntity wikiEntity = null;
     if(wiki != null) {
-      wikiEntity = new org.exoplatform.wiki.jpa.entity.Wiki();
+      wikiEntity = new WikiEntity();
       wikiEntity.setType(wiki.getType());
       wikiEntity.setOwner(wiki.getOwner());
       wikiEntity.setWikiHome(convertPageToPageEntity(wiki.getWikiHome()));
@@ -781,7 +781,7 @@ public class JPADataStorage implements DataStorage {
       page = new Page();
       page.setId(String.valueOf(pageEntity.getId()));
       page.setName(pageEntity.getName());
-      org.exoplatform.wiki.jpa.entity.Wiki wiki = pageEntity.getWiki();
+      WikiEntity wiki = pageEntity.getWiki();
       if(wiki != null) {
         page.setWikiId(String.valueOf(wiki.getId()));
         page.setWikiType(wiki.getType());
@@ -808,7 +808,7 @@ public class JPADataStorage implements DataStorage {
       pageEntity = new PageEntity();
       pageEntity.setName(page.getName());
       if(page.getWikiId() != null) {
-        org.exoplatform.wiki.jpa.entity.Wiki wiki = wikiDAO.find(Long.parseLong(page.getWikiId()));
+        WikiEntity wiki = wikiDAO.find(Long.parseLong(page.getWikiId()));
         if (wiki != null) {
           pageEntity.setWiki(wiki);
         }
@@ -920,7 +920,7 @@ public class JPADataStorage implements DataStorage {
       template = new Template();
       template.setId(String.valueOf(templateEntity.getId()));
       template.setName(templateEntity.getName());
-      org.exoplatform.wiki.jpa.entity.Wiki wiki = templateEntity.getWiki();
+      WikiEntity wiki = templateEntity.getWiki();
       if(wiki != null) {
         template.setWikiId(String.valueOf(wiki.getId()));
         template.setWikiType(wiki.getType());
@@ -939,7 +939,7 @@ public class JPADataStorage implements DataStorage {
       templateEntry = new org.exoplatform.wiki.jpa.entity.Template();
       templateEntry.setName(template.getName());
       if(template.getWikiId() != null) {
-        org.exoplatform.wiki.jpa.entity.Wiki wiki = wikiDAO.find(Long.parseLong(template.getWikiId()));
+        WikiEntity wiki = wikiDAO.find(Long.parseLong(template.getWikiId()));
         if (wiki != null) {
           templateEntry.setWiki(wiki);
         }

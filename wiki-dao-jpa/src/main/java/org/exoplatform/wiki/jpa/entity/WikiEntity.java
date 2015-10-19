@@ -31,11 +31,11 @@ import java.util.List;
 @ExoEntity
 @Table(name = "WIKI_WIKIS")
 @NamedQueries({
-        @NamedQuery(name = "wiki.getAllIds", query = "SELECT w.id FROM Wiki w ORDER BY w.id"),
-        @NamedQuery(name = "wiki.getWikisByType", query = "SELECT w FROM Wiki w WHERE w.type = :type"),
-        @NamedQuery(name = "wiki.getWikiByTypeAndOwner", query = "SELECT w FROM Wiki w WHERE w.type = :type AND w.owner = :owner")
+        @NamedQuery(name = "wiki.getAllIds", query = "SELECT w.id FROM WikiEntity w ORDER BY w.id"),
+        @NamedQuery(name = "wiki.getWikisByType", query = "SELECT w FROM WikiEntity w WHERE w.type = :type"),
+        @NamedQuery(name = "wiki.getWikiByTypeAndOwner", query = "SELECT w FROM WikiEntity w WHERE w.type = :type AND w.owner = :owner")
 })
-public class Wiki {
+public class WikiEntity {
   @Id
   @Column(name = "WIKI_ID")
   @GeneratedValue(strategy = GenerationType.AUTO)
@@ -65,7 +65,7 @@ public class Wiki {
     return name;
   }
 
-  public Wiki setName(String name) {
+  public WikiEntity setName(String name) {
     this.name = name;
     return this;
   }
@@ -74,7 +74,7 @@ public class Wiki {
     return owner;
   }
 
-  public Wiki setOwner(String owner) {
+  public WikiEntity setOwner(String owner) {
     this.owner = owner;
     return this;
   }
@@ -83,7 +83,7 @@ public class Wiki {
     return type;
   }
 
-  public Wiki setType(String type) {
+  public WikiEntity setType(String type) {
     this.type = type;
     return this;
   }
@@ -92,7 +92,7 @@ public class Wiki {
     return wikiHome;
   }
 
-  public Wiki setWikiHome(PageEntity wikiHome) {
+  public WikiEntity setWikiHome(PageEntity wikiHome) {
     this.wikiHome = wikiHome;
     return this;
   }
@@ -101,7 +101,7 @@ public class Wiki {
     return permissions;
   }
 
-  public Wiki setPermissions(List<Permission> permissions) {
+  public WikiEntity setPermissions(List<Permission> permissions) {
     this.permissions = permissions;
     return this;
   }

@@ -30,7 +30,7 @@ import org.exoplatform.container.PortalContainer;
 import org.exoplatform.wiki.jpa.dao.*;
 import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
-import org.exoplatform.wiki.jpa.entity.Wiki;
+import org.exoplatform.wiki.jpa.entity.WikiEntity;
 import org.exoplatform.wiki.jpa.search.AttachmentIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.WikiIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.WikiPageIndexingServiceConnector;
@@ -115,8 +115,8 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
     node.close();
   }
 
-  protected Wiki indexWiki(String name) throws NoSuchFieldException, IllegalAccessException {
-    Wiki wiki = new Wiki();
+  protected WikiEntity indexWiki(String name) throws NoSuchFieldException, IllegalAccessException {
+    WikiEntity wiki = new WikiEntity();
     wiki.setName(name);
     wiki.setOwner("BCH");
     wiki = wikiDAO.create(wiki);

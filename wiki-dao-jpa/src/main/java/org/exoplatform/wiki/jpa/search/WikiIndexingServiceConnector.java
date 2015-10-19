@@ -29,7 +29,7 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.wiki.jpa.dao.WikiDAO;
-import org.exoplatform.wiki.jpa.entity.Wiki;
+import org.exoplatform.wiki.jpa.entity.WikiEntity;
 
 /**
  * Created by The eXo Platform SAS
@@ -53,7 +53,7 @@ public class WikiIndexingServiceConnector extends ElasticIndexingServiceConnecto
             throw new IllegalArgumentException("Id is null");
         }
         //Get the wiki object from BD
-        Wiki wiki = dao.find(Long.parseLong(id));
+        WikiEntity wiki = dao.find(Long.parseLong(id));
         if (wiki==null) {
             LOGGER.info("The wiki entity with id {} doesn't exist.", id);
             return null;
@@ -85,17 +85,17 @@ public class WikiIndexingServiceConnector extends ElasticIndexingServiceConnecto
         return result;
     }
 
-    private Date getCreatedDate(Wiki wiki) {
+    private Date getCreatedDate(WikiEntity wiki) {
         //TODO
         return null;
     }
 
-    private String getUrl(Wiki wiki) {
+    private String getUrl(WikiEntity wiki) {
         //TODO
         return null;
     }
 
-    private String[] computePermissions(Wiki wiki) {
+    private String[] computePermissions(WikiEntity wiki) {
         List<String> permissions = new ArrayList<String>();
         //Add the owner
         permissions.add(wiki.getOwner());

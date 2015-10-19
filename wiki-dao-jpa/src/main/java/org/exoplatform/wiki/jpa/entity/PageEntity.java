@@ -53,7 +53,7 @@ public class PageEntity extends BasePage {
   @ManyToOne(cascade = CascadeType.PERSIST)
   @JoinColumn(name = "WIKI_ID")
   @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-  private Wiki wiki;
+  private WikiEntity wiki;
 
   @ManyToOne(cascade = CascadeType.PERSIST)
   @JoinColumn(name = "PARENT_PAGE_ID")
@@ -215,11 +215,11 @@ public class PageEntity extends BasePage {
     this.permissions = permission;
   }
 
-  public Wiki getWiki() {
+  public WikiEntity getWiki() {
     return wiki;
   }
 
-  public void setWiki(Wiki wiki) {
+  public void setWiki(WikiEntity wiki) {
     this.wiki = wiki;
   }
 

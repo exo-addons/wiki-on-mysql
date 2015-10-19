@@ -30,7 +30,7 @@ import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.jpa.entity.Permission;
 import org.exoplatform.wiki.jpa.entity.PermissionType;
-import org.exoplatform.wiki.jpa.entity.Wiki;
+import org.exoplatform.wiki.jpa.entity.WikiEntity;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
@@ -43,7 +43,7 @@ public class PageDAOTest extends BaseWikiIntegrationTest {
 
   @Test
   public void testPageOfWikiByName() {
-    Wiki wiki = new Wiki();
+    WikiEntity wiki = new WikiEntity();
     wiki.setType("portal");
     wiki.setOwner("wiki1");
     wiki = wikiDAO.create(wiki);

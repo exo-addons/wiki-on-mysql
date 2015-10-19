@@ -22,7 +22,7 @@ package org.exoplatform.wiki.jpa.dao;
 
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
 import org.exoplatform.wiki.jpa.entity.Template;
-import org.exoplatform.wiki.jpa.entity.Wiki;
+import org.exoplatform.wiki.jpa.entity.WikiEntity;
 import org.junit.Test;
 
 import java.util.List;
@@ -36,7 +36,7 @@ public class TemplateDAOTest extends BaseWikiIntegrationTest {
   @Test
   public void testGetTemplateOfWikiByName() {
     //Given
-    Wiki wiki = new Wiki();
+    WikiEntity wiki = new WikiEntity();
     wiki.setType("portal");
     wiki.setOwner("wiki1");
     wiki = wikiDAO.create(wiki);
@@ -69,7 +69,7 @@ public class TemplateDAOTest extends BaseWikiIntegrationTest {
   @Test
   public void testGetTemplatesOfWiki() {
     //Given
-    Wiki wiki = new Wiki();
+    WikiEntity wiki = new WikiEntity();
     wiki.setType("portal");
     wiki.setOwner("wiki1");
     wiki = wikiDAO.create(wiki);
@@ -103,7 +103,7 @@ public class TemplateDAOTest extends BaseWikiIntegrationTest {
   @Test
   public void testSearchTemplates() {
     //Given
-    Wiki wiki = new Wiki();
+    WikiEntity wiki = new WikiEntity();
     wiki.setType("portal");
     wiki.setOwner("wiki1");
     wiki = wikiDAO.create(wiki);
