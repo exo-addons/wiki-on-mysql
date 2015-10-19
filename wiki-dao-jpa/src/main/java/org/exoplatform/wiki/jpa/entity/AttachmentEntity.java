@@ -52,18 +52,24 @@ public class AttachmentEntity {
   @Temporal(TemporalType.TIMESTAMP)
   private Date updatedDate;
 
+  // TODO To remove
   @Column(name = "DOWNLOAD_URL")
   private String downloadURL;
 
   @Column(name = "TITLE")
   private String title;
 
+  @Column(name = "FULL_TITLE")
+  private String fullTitle;
+
   @Lob
   @Column(name = "CONTENT")
   private byte[] content;
 
-  @ManyToOne
+  @Column(name = "MIMETYPE")
+  private String mimeType;
 
+  @ManyToOne
   private PageEntity page;
 
   @OneToMany(cascade=CascadeType.ALL)
@@ -127,12 +133,28 @@ public class AttachmentEntity {
     this.title = title;
   }
 
+  public String getFullTitle() {
+    return fullTitle;
+  }
+
+  public void setFullTitle(String fullTitle) {
+    this.fullTitle = fullTitle;
+  }
+
   public byte[] getContent() {
     return content;
   }
 
   public void setContent(byte[] content) {
     this.content = content;
+  }
+
+  public String getMimeType() {
+    return mimeType;
+  }
+
+  public void setMimeType(String mimeType) {
+    this.mimeType = mimeType;
   }
 
   public PageEntity getPage() {

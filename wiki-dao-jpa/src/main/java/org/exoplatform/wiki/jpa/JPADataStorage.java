@@ -32,19 +32,15 @@ import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.jpa.dao.*;
 import org.exoplatform.wiki.jpa.entity.*;
 import org.exoplatform.wiki.mow.api.*;
-import org.exoplatform.wiki.mow.api.Attachment;
-import org.exoplatform.wiki.mow.api.DraftPage;
-import org.exoplatform.wiki.mow.api.EmotionIcon;
-import org.exoplatform.wiki.mow.api.Page;
-import org.exoplatform.wiki.mow.api.PermissionType;
-import org.exoplatform.wiki.mow.api.Template;
-import org.exoplatform.wiki.mow.api.Wiki;
 import org.exoplatform.wiki.service.DataStorage;
 import org.exoplatform.wiki.service.IDType;
 import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.search.*;
+import org.exoplatform.wiki.utils.Utils;
 import org.exoplatform.wiki.utils.WikiConstants;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.*;
 
 /**
@@ -616,7 +612,17 @@ public class JPADataStorage implements DataStorage {
     List<Attachment> attachments = new ArrayList<>();
     if(attachmentsEntities != null) {
       for(AttachmentEntity attachmentEntity : attachmentsEntities) {
-        attachments.add(convertAttachmentEntityToAttachment(attachmentEntity));
+        Attachment attachment = convertAttachmentEntityToAttachment(attachmentEntity);
+        // set title and full title if not there
+        if(attachment.getTitle() == null || StringUtils.isEmpty(attachment.getTitle())) {
+          attachment.setTitle(attachment.getName());
+        }
+        if(attachment.getFullTitle() == null || StringUtils.isEmpty(attachment.getFullTitle())) {
+          attachment.setFullTitle(attachment.getTitle());
+        }
+        // build download url
+        attachment.setDownloadURL(getDownloadURL(attachmentEntity));
+        attachments.add(attachment);
       }
     }
 
@@ -632,12 +638,24 @@ public class JPADataStorage implements DataStorage {
               + page.getName() + " because page does not exist.");
     }
 
-    AttachmentEntity attachmentEntity = attachmentDAO.create(convertAttachmentToAttachmentEntity(attachment));
+    AttachmentEntity attachmentEntity = convertAttachmentToAttachmentEntity(attachment);
+    attachmentEntity.setPage(pageEntity);
+    // attachment must be saved here because of Hibernate bug HHH-6776
+    attachmentDAO.create(attachmentEntity);
+
+    Date now = GregorianCalendar.getInstance().getTime();
+    if(attachmentEntity.getCreatedDate() == null) {
+      attachmentEntity.setCreatedDate(now);
+    }
+    if(attachmentEntity.getUpdatedDate() == null) {
+      attachmentEntity.setUpdatedDate(now);
+    }
 
     List<AttachmentEntity> attachmentsEntities = pageEntity.getAttachments();
     if(attachmentsEntities == null) {
       attachmentsEntities = new ArrayList<>();
     }
+
     attachmentsEntities.add(attachmentEntity);
     pageEntity.setAttachments(attachmentsEntities);
     pageDAO.update(pageEntity);
@@ -851,6 +869,46 @@ public class JPADataStorage implements DataStorage {
   }
 
 
+  public String getDownloadURL(AttachmentEntity attachmentEntity) {
+    StringBuilder sb = new StringBuilder();
+    String mimeType = attachmentEntity.getMimeType();
+    PageEntity page = attachmentEntity.getPage();
+    WikiEntity wiki = page.getWiki();
+    if (mimeType != null && mimeType.startsWith("image/") && wiki != null) {
+      // Build REST url to view image
+      sb.append(Utils.getDefaultRestBaseURI())
+              .append("/wiki/images/")
+              .append(wiki.getType())
+              .append("/")
+              .append(Utils.SPACE)
+              .append("/")
+              .append(Utils.validateWikiOwner(wiki.getType(), wiki.getOwner()))
+              .append("/")
+              .append(Utils.PAGE)
+              .append("/")
+              .append(page.getName());
+      try{
+        sb.append("/").append(URLEncoder.encode(attachmentEntity.getName(), "UTF-8"));
+      }catch (UnsupportedEncodingException e) {
+        sb.append("/").append(attachmentEntity.getName());
+      }
+    } else {
+      // TODO Manage download of attachments
+      /*
+      sb.append(JCRUtils.getCurrentRepositoryWebDavUri());
+      sb.append(getWorkspace());
+      String path = getPath();
+      try {
+        String parentPath = path.substring(0, path.lastIndexOf("/"));
+        sb.append(parentPath + "/" + URLEncoder.encode(getName(), "UTF-8"));
+      } catch (UnsupportedEncodingException e) {
+        sb.append(path);
+      }
+      */
+    }
+    return sb.toString();
+  }
+
   /*************** Entity converters ***************/
 
   private Wiki convertWikiEntityToWiki(WikiEntity wikiEntity) {
@@ -942,6 +1000,7 @@ public class JPADataStorage implements DataStorage {
       attachment = new Attachment();
       attachment.setName(attachmentEntity.getName());
       attachment.setTitle(attachmentEntity.getTitle());
+      attachment.setFullTitle(attachmentEntity.getFullTitle());
       attachment.setCreator(attachmentEntity.getCreator());
       if(attachmentEntity.getCreatedDate() != null) {
         Calendar createdDate = Calendar.getInstance();
@@ -954,8 +1013,7 @@ public class JPADataStorage implements DataStorage {
         attachment.setUpdatedDate(updatedDate);
       }
       attachment.setContent(attachmentEntity.getContent());
-      //attachment.setMimeType(?);
-      attachment.setDownloadURL(attachmentEntity.getDownloadURL());
+      attachment.setMimeType(attachmentEntity.getMimeType());
       attachment.setWeightInBytes(attachmentEntity.getWeightInBytes());
       //attachment.setPermissions(?);
     }
@@ -968,8 +1026,8 @@ public class JPADataStorage implements DataStorage {
       attachmentEntity = new AttachmentEntity();
       attachmentEntity.setName(attachment.getName());
       attachmentEntity.setTitle(attachment.getTitle());
+      attachmentEntity.setFullTitle(attachment.getFullTitle());
       attachmentEntity.setCreator(attachment.getCreator());
-      attachmentEntity.setContent(attachment.getContent());
       if(attachment.getCreatedDate() != null) {
         attachmentEntity.setCreatedDate(attachment.getCreatedDate().getTime());
       }
@@ -977,7 +1035,7 @@ public class JPADataStorage implements DataStorage {
         attachmentEntity.setUpdatedDate(attachment.getUpdatedDate().getTime());
       }
       attachmentEntity.setContent(attachment.getContent());
-      attachmentEntity.setDownloadURL(attachment.getDownloadURL());
+      attachmentEntity.setMimeType(attachment.getMimeType());
       //page.setPermissions(pageEntity.getPermissions());
     }
     return attachmentEntity;
