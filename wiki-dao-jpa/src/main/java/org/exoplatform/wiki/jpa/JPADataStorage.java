@@ -580,12 +580,6 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
-  public String getPortalOwner() throws WikiException {
-    // TODO Implement it !
-    return "";
-  }
-
-  @Override
   public boolean hasPermissionOnPage(Page page, PermissionType permissionType, Identity identity) throws WikiException {
     // TODO Implement it !
     return true;
