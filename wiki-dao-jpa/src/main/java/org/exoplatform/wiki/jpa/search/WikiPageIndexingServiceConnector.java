@@ -32,7 +32,7 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.wiki.jpa.dao.PageDAO;
-import org.exoplatform.wiki.jpa.entity.Page;
+import org.exoplatform.wiki.jpa.entity.PageEntity;
 
 /**
  * Created by The eXo Platform SAS
@@ -56,7 +56,7 @@ public class WikiPageIndexingServiceConnector extends ElasticIndexingServiceConn
             throw new IllegalArgumentException("Id is null");
         }
         //Get the Page object from BD
-        Page page = dao.find(Long.parseLong(id));
+        PageEntity page = dao.find(Long.parseLong(id));
         if (page==null) {
             LOGGER.info("The page entity with id {} doesn't exist.", id);
             return null;
@@ -74,7 +74,7 @@ public class WikiPageIndexingServiceConnector extends ElasticIndexingServiceConn
         return create(id);
     }
 
-    private String[] computePermissions(Page wiki) {
+    private String[] computePermissions(PageEntity wiki) {
         List<String> permissions = new ArrayList<>();
         //Add the owner
         permissions.add(wiki.getOwner());

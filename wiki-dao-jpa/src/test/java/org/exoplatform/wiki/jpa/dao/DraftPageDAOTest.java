@@ -16,12 +16,11 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
-import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.wiki.jpa.BaseTest;
 import org.junit.Test;
 
 import org.exoplatform.wiki.jpa.entity.DraftPage;
-import org.exoplatform.wiki.jpa.entity.Page;
+import org.exoplatform.wiki.jpa.entity.PageEntity;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -40,7 +39,7 @@ public class DraftPageDAOTest extends BaseTest {
     DraftPageDAO dao = new DraftPageDAO();
     PageDAO pageDAO = new PageDAO();
     DraftPage dp = new DraftPage();
-    Page page = new Page();
+    PageEntity page = new PageEntity();
     page.setName("name");
     dp.setTargetPage(page);
     dao.create(dp);
@@ -63,7 +62,7 @@ public class DraftPageDAOTest extends BaseTest {
     DraftPageDAO dao = new DraftPageDAO();
     PageDAO pageDAO = new PageDAO();
     DraftPage dp = new DraftPage();
-    Page page = new Page();
+    PageEntity page = new PageEntity();
     page.setName("name");
     dp.setTargetPage(page);
     dp.setAuthor("user1");
@@ -92,7 +91,7 @@ public class DraftPageDAOTest extends BaseTest {
     calendar.roll(Calendar.YEAR, 1);
     Date oneYearAgo = calendar.getTime();
 
-    Page page = new Page();
+    PageEntity page = new PageEntity();
     page.setName("page1");
     DraftPage dp1 = new DraftPage();
     dp1.setTargetPage(page);
@@ -125,10 +124,10 @@ public class DraftPageDAOTest extends BaseTest {
     DraftPageDAO dao = new DraftPageDAO();
     PageDAO pageDAO = new PageDAO();
     DraftPage dp = new DraftPage();
-    Page page = new Page();
+    PageEntity page = new PageEntity();
     page.setName("page1");
     dp.setTargetPage(page);
-    Page createdPage = pageDAO.create(page);
+    PageEntity createdPage = pageDAO.create(page);
     dp.setAuthor("user1");
     dao.create(dp);
 
@@ -161,9 +160,9 @@ public class DraftPageDAOTest extends BaseTest {
     calendar.roll(Calendar.YEAR, 1);
     Date oneYearAgo = calendar.getTime();
 
-    Page page1 = new Page();
+    PageEntity page1 = new PageEntity();
     page1.setName("page1");
-    Page page2 = new Page();
+    PageEntity page2 = new PageEntity();
     page1.setName("page2");
 
     DraftPage dp1 = new DraftPage();
@@ -205,9 +204,9 @@ public class DraftPageDAOTest extends BaseTest {
     calendar.roll(Calendar.YEAR, 1);
     Date oneYearAgo = calendar.getTime();
 
-    Page page1 = new Page();
+    PageEntity page1 = new PageEntity();
     page1.setName("page1");
-    Page page2 = new Page();
+    PageEntity page2 = new PageEntity();
     page1.setName("page2");
 
     DraftPage dp1 = new DraftPage();

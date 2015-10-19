@@ -24,7 +24,7 @@ import java.net.URL;
 
 import org.exoplatform.addons.es.index.impl.ElasticIndexingOperationProcessor;
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
-import org.exoplatform.wiki.jpa.entity.Page;
+import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.jpa.entity.Wiki;
 import org.exoplatform.wiki.service.search.WikiSearchData;
 
@@ -94,7 +94,7 @@ public class IndexingTest extends BaseWikiIntegrationTest {
 
   public void testReindexingWikiPagesAndSearch() throws NoSuchFieldException, IllegalAccessException, IOException {
     // Given
-    Page page = indexPage("RDBMS Guidelines", "RDBMS Guidelines", "All the guidelines you need", "Draft version");
+    PageEntity page = indexPage("RDBMS Guidelines", "RDBMS Guidelines", "All the guidelines you need", "Draft version");
     page.setName("Liquibase Guidelines");
     page.setTitle("Liquibase Guidelines");
     pageDAO.update(page);

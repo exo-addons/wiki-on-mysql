@@ -27,7 +27,7 @@ import java.util.List;
 import org.junit.Test;
 
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
-import org.exoplatform.wiki.jpa.entity.Page;
+import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.jpa.entity.Permission;
 import org.exoplatform.wiki.jpa.entity.PermissionType;
 import org.exoplatform.wiki.jpa.entity.Wiki;
@@ -47,9 +47,9 @@ public class PageDAOTest extends BaseWikiIntegrationTest {
     wiki.setType("portal");
     wiki.setOwner("wiki1");
     wiki = wikiDAO.create(wiki);
-    Page parentPage = new Page();
+    PageEntity parentPage = new PageEntity();
 
-    Page page = new Page();
+    PageEntity page = new PageEntity();
     page.setWiki(wiki);
     page.setParentPage(parentPage);
     page.setName("page1");
@@ -59,7 +59,7 @@ public class PageDAOTest extends BaseWikiIntegrationTest {
 
     assertEquals(2, pageDAO.findAll().size());
 
-    Page pageOfWikiByName = pageDAO.getPageOfWikiByName("portal", "wiki1", "page1");
+    PageEntity pageOfWikiByName = pageDAO.getPageOfWikiByName("portal", "wiki1", "page1");
     assertNotNull(pageOfWikiByName);
     assertEquals("portal", pageOfWikiByName.getWiki().getType());
     assertEquals("wiki1", pageOfWikiByName.getWiki().getOwner());
@@ -71,8 +71,8 @@ public class PageDAOTest extends BaseWikiIntegrationTest {
   @Test
   public void testGetRemovedPages() {
     // Given
-    Page parentPage = new Page();
-    Page page = new Page();
+    PageEntity parentPage = new PageEntity();
+    PageEntity page = new PageEntity();
     page.setName("page1");
     page.setTitle("Page 1");
     page.setParentPage(parentPage);
@@ -82,7 +82,7 @@ public class PageDAOTest extends BaseWikiIntegrationTest {
     pageDAO.delete(page);
     assertEquals(1, pageDAO.findAll().size());
     // When
-    List<Page> removedPages = pageDAO.findRemovedPages(parentPage);
+    List<PageEntity> removedPages = pageDAO.findRemovedPages(parentPage);
     // Then
     assertEquals(1, removedPages.size());
     assertEquals("page1", removedPages.get(0).getName());
@@ -92,7 +92,7 @@ public class PageDAOTest extends BaseWikiIntegrationTest {
   @Test
   public void testInsert(){
     //Given
-    Page page = new Page();
+    PageEntity page = new PageEntity();
     Permission per = new Permission();
     per.setUser("user");
     per.setType(PermissionType.EDITPAGE);
@@ -112,7 +112,7 @@ public class PageDAOTest extends BaseWikiIntegrationTest {
     page.setUrl("url");
     // When
     pageDAO.create(page);
-    Page got = pageDAO.find(page.getId());
+    PageEntity got = pageDAO.find(page.getId());
     // Then
     assertNotNull(got);
     if(got == null) return;
@@ -122,7 +122,7 @@ public class PageDAOTest extends BaseWikiIntegrationTest {
   @Test
   public void testAudit(){
     //Given
-    Page page = new Page();
+    PageEntity page = new PageEntity();
     Permission per = new Permission();
     per.setUser("user");
     per.setType(PermissionType.EDITPAGE);
@@ -144,12 +144,12 @@ public class PageDAOTest extends BaseWikiIntegrationTest {
     pageDAO.create(page);
     int size1 = pageDAO.getAllHistory(page).size();
     int version1 = pageDAO.getCurrentVersion(page);
-    Page got = pageDAO.find(page.getId());
+    PageEntity got = pageDAO.find(page.getId());
     got.setName("name2");
     pageDAO.update(got);
     assertEquals(size1 + 1, pageDAO.getAllHistory(got).size());
     
-    Page oldVersion = pageDAO.getPageAtRevision(got, version1);
+    PageEntity oldVersion = pageDAO.getPageAtRevision(got, version1);
     assertEquals("name", oldVersion.getName());
   }
 }

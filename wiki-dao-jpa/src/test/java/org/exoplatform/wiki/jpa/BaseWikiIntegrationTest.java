@@ -29,7 +29,7 @@ import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.wiki.jpa.dao.*;
 import org.exoplatform.wiki.jpa.entity.Attachment;
-import org.exoplatform.wiki.jpa.entity.Page;
+import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.jpa.entity.Wiki;
 import org.exoplatform.wiki.jpa.search.AttachmentIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.WikiIndexingServiceConnector;
@@ -127,9 +127,9 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
     return wiki;
   }
 
-  protected Page indexPage(String name, String title, String content, String comment)
+  protected PageEntity indexPage(String name, String title, String content, String comment)
           throws NoSuchFieldException, IllegalAccessException {
-    Page page = new Page();
+    PageEntity page = new PageEntity();
     page.setName(name);
     page.setTitle(title);
     page.setContent(content);

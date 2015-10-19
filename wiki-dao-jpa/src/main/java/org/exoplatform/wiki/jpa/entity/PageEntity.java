@@ -39,11 +39,11 @@ import java.util.List;
 @Audited
 @Table(name = "WIKI_PAGES")
 @NamedQueries({
-        @NamedQuery(name = "wikiPage.getAllIds", query = "SELECT p.id FROM Page p ORDER BY p.id"),
-        @NamedQuery(name = "wikiPage.getPageOfWikiByName", query = "SELECT p FROM Page p JOIN p.wiki w WHERE p.name = :name AND w.type = :type AND w.owner = :owner"),
-        @NamedQuery(name = "wikiPage.getChildrenPages", query = "SELECT p FROM Page p WHERE p.parentPage.id = :id")
+        @NamedQuery(name = "wikiPage.getAllIds", query = "SELECT p.id FROM PageEntity p ORDER BY p.id"),
+        @NamedQuery(name = "wikiPage.getPageOfWikiByName", query = "SELECT p FROM PageEntity p JOIN p.wiki w WHERE p.name = :name AND w.type = :type AND w.owner = :owner"),
+        @NamedQuery(name = "wikiPage.getChildrenPages", query = "SELECT p FROM PageEntity p WHERE p.parentPage.id = :id")
 })
-public class Page extends BasePage {
+public class PageEntity extends BasePage {
 
   @Id
   @Column(name = "PAGE_ID")
@@ -57,7 +57,7 @@ public class Page extends BasePage {
 
   @ManyToOne(cascade = CascadeType.PERSIST)
   @JoinColumn(name = "PARENT_PAGE_ID")
-  private Page parentPage;
+  private PageEntity parentPage;
 
   @OneToMany(mappedBy = "page", cascade = CascadeType.ALL)
   @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
@@ -223,11 +223,11 @@ public class Page extends BasePage {
     this.wiki = wiki;
   }
 
-  public Page getParentPage() {
+  public PageEntity getParentPage() {
     return parentPage;
   }
 
-  public void setParentPage(Page parentPage) {
+  public void setParentPage(PageEntity parentPage) {
     this.parentPage = parentPage;
   }
 

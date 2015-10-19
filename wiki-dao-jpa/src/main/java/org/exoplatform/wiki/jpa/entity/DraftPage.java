@@ -45,7 +45,7 @@ public class DraftPage extends BasePage {
 
   @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "TARGET_PAGE_ID")
-  private Page targetPage;
+  private PageEntity targetPage;
 
   @Column(name = "TARGET_PAGE_REVISION")
   private String targetRevision;
@@ -74,11 +74,11 @@ public class DraftPage extends BasePage {
   @Column(name = "UPDATED_DATE")
   private Date updatedDate;
 
-  public Page getTargetPage() {
+  public PageEntity getTargetPage() {
     return targetPage;
   }
 
-  public void setTargetPage(Page targetPage) {
+  public void setTargetPage(PageEntity targetPage) {
     this.targetPage = targetPage;
   }
 

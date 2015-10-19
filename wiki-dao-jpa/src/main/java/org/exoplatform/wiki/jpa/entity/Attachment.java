@@ -66,7 +66,7 @@ public class Attachment {
 
   @ManyToOne
   @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-  private Page page;
+  private PageEntity page;
 
   @OneToMany(cascade=CascadeType.ALL)
   private List<Permission> permissions;
@@ -137,11 +137,11 @@ public class Attachment {
     this.content = content;
   }
 
-  public Page getPage() {
+  public PageEntity getPage() {
     return page;
   }
 
-  public void setPage(Page page) {
+  public void setPage(PageEntity page) {
     this.page = page;
   }
 
