@@ -21,6 +21,7 @@ package org.exoplatform.wiki.jpa;
 
 import org.apache.commons.lang.StringUtils;
 import org.exoplatform.commons.utils.PageList;
+import org.exoplatform.portal.config.model.PortalConfig;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.mow.api.*;
 import org.exoplatform.wiki.service.IDType;
@@ -727,6 +728,7 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     Page page2 = storage.getExsitedOrNewDraftPageById("portal", "wiki2", "page1", "user1");
     Page page3 = storage.getExsitedOrNewDraftPageById("portal", "wiki1", "page2", "user1");
     Page page4 = storage.getExsitedOrNewDraftPageById("portal", "wiki1", "page1", "user2");
+    Page page5 = storage.getExsitedOrNewDraftPageById(null, null, "page3", "user1");
 
     // Then
     assertNotNull(page1);
@@ -736,19 +738,24 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertEquals("page1", page1.getName());
     assertNotNull(page2);
     assertTrue(page2 instanceof DraftPage);
-    assertEquals("portal", page2.getWikiType());
-    assertEquals("wiki2", page2.getWikiOwner());
+    assertEquals(PortalConfig.USER_TYPE, page2.getWikiType());
+    assertEquals("user1", page2.getWikiOwner());
     assertEquals("page1", page2.getName());
     assertNotNull(page3);
     assertTrue(page3 instanceof DraftPage);
-    assertEquals("portal", page3.getWikiType());
-    assertEquals("wiki1", page3.getWikiOwner());
+    assertEquals(PortalConfig.USER_TYPE, page3.getWikiType());
+    assertEquals("user1", page3.getWikiOwner());
     assertEquals("page2", page3.getName());
     assertNotNull(page4);
     assertTrue(page4 instanceof Page);
     assertEquals("portal", page4.getWikiType());
     assertEquals("wiki1", page4.getWikiOwner());
     assertEquals("page1", page4.getName());
+    assertNotNull(page5);
+    assertTrue(page5 instanceof DraftPage);
+    assertEquals(PortalConfig.USER_TYPE, page5.getWikiType());
+    assertEquals("user1", page5.getWikiOwner());
+    assertEquals("page3", page5.getName());
   }
 
   @Test
