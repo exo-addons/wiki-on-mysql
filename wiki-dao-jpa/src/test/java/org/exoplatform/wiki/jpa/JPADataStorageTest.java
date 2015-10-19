@@ -32,9 +32,7 @@ import org.exoplatform.wiki.service.search.WikiSearchData;
 import org.exoplatform.wiki.utils.WikiConstants;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by The eXo Platform SAS
@@ -495,6 +493,57 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     page.setContent("Content Page 1");
     Page createdPage = storage.createPage(wiki, wiki.getWikiHome(), page);
 
+    Calendar calendar = Calendar.getInstance();
+    Date now = calendar.getTime();
+    calendar.roll(Calendar.YEAR, 1);
+    Date oneYearAgo = calendar.getTime();
+
+    DraftPage draftPage1 = new DraftPage();
+    draftPage1.setAuthor("user1");
+    draftPage1.setName("DraftPage1");
+    draftPage1.setTitle("DraftPage 1");
+    draftPage1.setContent("Content Page 1 Updated");
+    draftPage1.setTargetPageId(createdPage.getId());
+    draftPage1.setTargetPageRevision("1");
+    draftPage1.setUpdatedDate(oneYearAgo);
+
+    DraftPage draftPage2 = new DraftPage();
+    draftPage2.setAuthor("user1");
+    draftPage2.setName("DraftPage2");
+    draftPage2.setTitle("DraftPage 2");
+    draftPage2.setContent("Content Page 2 Updated");
+    draftPage2.setTargetPageId(createdPage.getId());
+    draftPage2.setTargetPageRevision("1");
+    draftPage2.setUpdatedDate(now);
+
+    //When
+    storage.createDraftPageForUser(draftPage2, "user1");
+    DraftPage dratPage1 = storage.getDraft(new WikiPageParams("portal", "wiki1", "page1"), "user1");
+    DraftPage dratPage2 = storage.getDraft(new WikiPageParams("portal", "wiki1", "page1"), "user2");
+
+    // Then
+    assertNotNull(dratPage1);
+    assertEquals("DraftPage2", dratPage1.getName());
+    assertNull(dratPage2);
+  }
+
+  @Test
+  public void testGetExistingOrNewDraftPage() throws WikiException {
+    //Given
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Page page = new Page();
+    page.setWikiId(wiki.getId());
+    page.setWikiType(wiki.getType());
+    page.setWikiOwner(wiki.getOwner());
+    page.setName("page1");
+    page.setTitle("Page 1");
+    page.setContent("Content Page 1");
+    Page createdPage = storage.createPage(wiki, wiki.getWikiHome(), page);
+
     //When
     Page page1 = storage.getExsitedOrNewDraftPageById("portal", "wiki1", "page1", "user1");
     Page page2 = storage.getExsitedOrNewDraftPageById("portal", "wiki2", "page1", "user1");
@@ -523,6 +572,7 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertEquals("wiki1", page4.getWikiOwner());
     assertEquals("page1", page4.getName());
   }
+
 
   @Test
   public void testGetEmotionIcons() throws WikiException {

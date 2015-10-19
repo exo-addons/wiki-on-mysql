@@ -401,9 +401,28 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
-  public DraftPage getDraft(WikiPageParams wikiPageParams, String s) throws WikiException {
-    // TODO Implement it !
-    return null;
+  public DraftPage getDraft(WikiPageParams wikiPageParams, String username) throws WikiException {
+    DraftPage latestDraft = null;
+
+    Page page = getPageOfWikiByName(wikiPageParams.getType(), wikiPageParams.getOwner(), wikiPageParams.getPageName());
+
+    if(page != null) {
+      List<org.exoplatform.wiki.jpa.entity.DraftPage> draftPagesOfUser = draftPageDAO.findDraftPagesByUserAndTargetPage(username, Long.valueOf(page.getId()));
+
+      org.exoplatform.wiki.jpa.entity.DraftPage latestDraftEntity = null;
+      for (org.exoplatform.wiki.jpa.entity.DraftPage draft : draftPagesOfUser) {
+        // Compare and get the latest draft
+        if ((latestDraft == null) || (latestDraft.getUpdatedDate().getTime() < latestDraft.getUpdatedDate().getTime())) {
+          latestDraftEntity = draft;
+        }
+      }
+      latestDraft = convertDraftPageEntityToDraftPage(latestDraftEntity);
+    } else {
+      throw new WikiException("Cannot get draft of page " + wikiPageParams.getType() + ":" + wikiPageParams.getOwner() + ":"
+              + wikiPageParams.getPageName() + " because page does not exist.");
+    }
+
+    return latestDraft;
   }
 
   @Override

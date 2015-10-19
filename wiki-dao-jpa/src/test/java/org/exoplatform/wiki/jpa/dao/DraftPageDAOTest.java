@@ -93,16 +93,19 @@ public class DraftPageDAOTest extends BaseTest {
     dao.create(dp);
 
     //When
-    DraftPage draft1 = dao.findDraftPagesByUserAndTargetPage("user1", createdPage.getId());
-    DraftPage draft2 = dao.findDraftPagesByUserAndTargetPage("user2", createdPage.getId());
-    DraftPage draft3 = dao.findDraftPagesByUserAndTargetPage("user1", createdPage.getId() + 1);
+    List<DraftPage> drafts1 = dao.findDraftPagesByUserAndTargetPage("user1", createdPage.getId());
+    List<DraftPage> drafts2 = dao.findDraftPagesByUserAndTargetPage("user2", createdPage.getId());
+    List<DraftPage> drafts3 = dao.findDraftPagesByUserAndTargetPage("user1", createdPage.getId() + 1);
 
     //Then
     assertNotNull(dao.find(dp.getId()));
     assertNotNull(pageDAO.find(page.getId()));
-    assertNotNull(draft1);
-    assertNull(draft2);
-    assertNull(draft3);
+    assertNotNull(drafts1);
+    assertEquals(1, drafts1.size());
+    assertNotNull(drafts2);
+    assertEquals(0, drafts2.size());
+    assertNotNull(drafts3);
+    assertEquals(0, drafts3.size());
 
     dao.deleteAll();
     pageDAO.deleteAll();

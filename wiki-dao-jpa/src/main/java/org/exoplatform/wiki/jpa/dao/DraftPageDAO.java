@@ -37,15 +37,10 @@ public class DraftPageDAO extends GenericDAOJPAImpl<DraftPage, Long> {
     return query.getResultList();
   }
 
-  public DraftPage findDraftPagesByUserAndTargetPage(String username, long targetPageId) {
+  public List<DraftPage> findDraftPagesByUserAndTargetPage(String username, long targetPageId) {
     TypedQuery<DraftPage> query = getEntityManager().createNamedQuery("wikiDraftPage.findDraftPageByUserAndTargetPage", DraftPage.class)
             .setParameter("username", username)
             .setParameter("targetPageId", targetPageId);
-
-    try {
-      return query.getSingleResult();
-    } catch (NoResultException e) {
-      return null;
-    }
+    return query.getResultList();
   }
 }
