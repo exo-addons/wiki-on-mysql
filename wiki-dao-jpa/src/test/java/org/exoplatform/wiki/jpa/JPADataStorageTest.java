@@ -685,6 +685,61 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertNotNull(updatedDraftPageUser2);
   }
 
+  @Test
+  public void testDeleteDraftPageOfUserByName() throws WikiException {
+    //Given
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Page page = new Page();
+    page.setWikiId(wiki.getId());
+    page.setWikiType(wiki.getType());
+    page.setWikiOwner(wiki.getOwner());
+    page.setName("page1");
+    page.setTitle("Page 1");
+    page.setContent("Content Page 1");
+    Page createdPage = storage.createPage(wiki, wiki.getWikiHome(), page);
+
+    Calendar calendar = Calendar.getInstance();
+    Date now = calendar.getTime();
+    calendar.roll(Calendar.YEAR, -1);
+    Date oneYearAgo = calendar.getTime();
+
+    DraftPage draftPage1 = new DraftPage();
+    draftPage1.setAuthor("user1");
+    draftPage1.setName("DraftPage1");
+    draftPage1.setTitle("DraftPage 1");
+    draftPage1.setContent("Content Page 1 User1");
+    draftPage1.setTargetPageId(createdPage.getId());
+    draftPage1.setTargetPageRevision("1");
+    draftPage1.setUpdatedDate(oneYearAgo);
+
+    DraftPage draftPage2 = new DraftPage();
+    draftPage2.setAuthor("user2");
+    draftPage2.setName("DraftPage2");
+    draftPage2.setTitle("DraftPage 2");
+    draftPage2.setContent("Content Page 1 User 2");
+    draftPage2.setTargetPageId(createdPage.getId());
+    draftPage2.setTargetPageRevision("1");
+    draftPage2.setUpdatedDate(now);
+
+    //When
+    storage.createDraftPageForUser(draftPage1, "user1");
+    storage.createDraftPageForUser(draftPage2, "user2");
+    DraftPage initialDraftPageUser1 = storage.getDraft(new WikiPageParams("portal", "wiki1", "page1"), "user1");
+    DraftPage initialDraftPageUser2 = storage.getDraft(new WikiPageParams("portal", "wiki1", "page1"), "user2");
+    storage.deleteDraftByName("DraftPage1", "user1");
+    DraftPage updatedDraftPageUser1 = storage.getDraft(new WikiPageParams("portal", "wiki1", "page1"), "user1");
+    DraftPage updatedDraftPageUser2 = storage.getDraft(new WikiPageParams("portal", "wiki1", "page1"), "user2");
+
+    // Then
+    assertNotNull(initialDraftPageUser1);
+    assertNotNull(initialDraftPageUser2);
+    assertNull(updatedDraftPageUser1);
+    assertNotNull(updatedDraftPageUser2);
+  }
 
   @Test
   public void testGetEmotionIcons() throws WikiException {

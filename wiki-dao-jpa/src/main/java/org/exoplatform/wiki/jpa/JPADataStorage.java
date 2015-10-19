@@ -303,8 +303,8 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
-  public void deleteDraftByName(String s, String s1) throws WikiException {
-    // TODO Implement it !
+  public void deleteDraftByName(String draftPageName, String username) throws WikiException {
+    draftPageDAO.deleteDraftPagesByUserAndName(draftPageName, username);
   }
 
   @Override

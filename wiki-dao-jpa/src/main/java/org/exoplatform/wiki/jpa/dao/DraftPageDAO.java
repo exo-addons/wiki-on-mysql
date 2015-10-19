@@ -70,4 +70,22 @@ public class DraftPageDAO extends GenericDAOJPAImpl<DraftPage, Long> {
       trans.commit();
     }
   }
+
+  public void deleteDraftPagesByUserAndName(String draftName, String username) {
+    EntityTransaction trans = getEntityManager().getTransaction();
+    boolean active = false;
+    if (!trans.isActive()) {
+      trans.begin();
+      active = true;
+    }
+
+    Query query = getEntityManager().createNamedQuery("wikiDraftPage.deleteDraftPagesByUserAndName")
+            .setParameter("username", username)
+            .setParameter("draftPageName", draftName);
+    query.executeUpdate();
+
+    if (active) {
+      trans.commit();
+    }
+  }
 }
