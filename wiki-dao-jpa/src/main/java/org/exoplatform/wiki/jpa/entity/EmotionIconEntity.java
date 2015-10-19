@@ -8,9 +8,9 @@ import javax.persistence.*;
 @ExoEntity
 @Table(name = "WIKI_EMOTION_ICONS")
 @NamedQueries({
-        @NamedQuery(name = "emotionIcon.getEmotionIconByName", query = "SELECT e FROM EmotionIcon e WHERE e.name = :name")
+        @NamedQuery(name = "emotionIcon.getEmotionIconByName", query = "SELECT e FROM EmotionIconEntity e WHERE e.name = :name")
 })
-public class EmotionIcon {
+public class EmotionIconEntity {
   @Id
   @Column(name = "EMOTION_ICON_ID")
   @GeneratedValue(strategy = GenerationType.AUTO)

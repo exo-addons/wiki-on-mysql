@@ -574,7 +574,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void createEmotionIcon(EmotionIcon emotionIcon) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.EmotionIcon emotionIconEntity = new org.exoplatform.wiki.jpa.entity.EmotionIcon();
+    EmotionIconEntity emotionIconEntity = new EmotionIconEntity();
     emotionIconEntity.setName(emotionIcon.getName());
     emotionIconEntity.setImage(emotionIcon.getImage());
 
@@ -584,9 +584,9 @@ public class JPADataStorage implements DataStorage {
   @Override
   public List<EmotionIcon> getEmotionIcons() throws WikiException {
     List<EmotionIcon> emotionIcons = new ArrayList<>();
-    List<org.exoplatform.wiki.jpa.entity.EmotionIcon> emotionIconsEntities = emotionIconDAO.findAll();
+    List<EmotionIconEntity> emotionIconsEntities = emotionIconDAO.findAll();
     if(emotionIconsEntities != null) {
-      for (org.exoplatform.wiki.jpa.entity.EmotionIcon emotionIconEntity : emotionIconsEntities) {
+      for (EmotionIconEntity emotionIconEntity : emotionIconsEntities) {
         emotionIcons.add(convertEmotionIconEntityToEmotionIcon(emotionIconEntity));
       }
     }
@@ -951,7 +951,7 @@ public class JPADataStorage implements DataStorage {
     return templateEntry;
   }
 
-  private EmotionIcon convertEmotionIconEntityToEmotionIcon(org.exoplatform.wiki.jpa.entity.EmotionIcon emotionIconEntity) {
+  private EmotionIcon convertEmotionIconEntityToEmotionIcon(EmotionIconEntity emotionIconEntity) {
     EmotionIcon emotionIcon = null;
     if(emotionIconEntity != null) {
       emotionIcon = new EmotionIcon();
@@ -961,10 +961,10 @@ public class JPADataStorage implements DataStorage {
     return emotionIcon;
   }
 
-  private org.exoplatform.wiki.jpa.entity.EmotionIcon convertEmotionIconToEmotionIconEntity(EmotionIcon emotionIcon) {
-    org.exoplatform.wiki.jpa.entity.EmotionIcon emotionIconEntity = null;
+  private EmotionIconEntity convertEmotionIconToEmotionIconEntity(EmotionIcon emotionIcon) {
+    EmotionIconEntity emotionIconEntity = null;
     if(emotionIcon != null) {
-      emotionIconEntity = new org.exoplatform.wiki.jpa.entity.EmotionIcon();
+      emotionIconEntity = new EmotionIconEntity();
       emotionIconEntity.setName(emotionIcon.getName());
       emotionIconEntity.setImage(emotionIcon.getImage());
     }

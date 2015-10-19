@@ -21,7 +21,7 @@ package org.exoplatform.wiki.jpa.dao;
 
 
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
-import org.exoplatform.wiki.jpa.entity.EmotionIcon;
+import org.exoplatform.wiki.jpa.entity.EmotionIconEntity;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -31,20 +31,20 @@ public class EmotionIconDAOTest extends BaseWikiIntegrationTest {
   @Test
   public void testEmotionIconByName() {
     //Given
-    EmotionIcon emotionIcon1 = new EmotionIcon();
+    EmotionIconEntity emotionIcon1 = new EmotionIconEntity();
     emotionIcon1.setName("emotionIcon1");
     emotionIcon1.setImage("image1".getBytes());
     emotionIconDAO.create(emotionIcon1);
 
-    EmotionIcon emotionIcon2 = new EmotionIcon();
+    EmotionIconEntity emotionIcon2 = new EmotionIconEntity();
     emotionIcon2.setName("emotionIcon2");
     emotionIcon2.setImage("image2".getBytes());
     emotionIconDAO.create(emotionIcon2);
 
     //When
-    EmotionIcon fetchedEmotionIcon1 = emotionIconDAO.getEmotionIconByName("emotionIcon1");
-    EmotionIcon fetchedEmotionIcon2 = emotionIconDAO.getEmotionIconByName("emotionIcon2");
-    EmotionIcon fetchedEmotionIcon3 = emotionIconDAO.getEmotionIconByName("emotionIcon3");
+    EmotionIconEntity fetchedEmotionIcon1 = emotionIconDAO.getEmotionIconByName("emotionIcon1");
+    EmotionIconEntity fetchedEmotionIcon2 = emotionIconDAO.getEmotionIconByName("emotionIcon2");
+    EmotionIconEntity fetchedEmotionIcon3 = emotionIconDAO.getEmotionIconByName("emotionIcon3");
 
     //Then
     assertEquals(2, emotionIconDAO.findAll().size());
