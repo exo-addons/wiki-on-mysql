@@ -20,17 +20,16 @@
 package org.exoplatform.wiki.jpa.dao;
 
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import org.junit.Test;
-
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.jpa.entity.PermissionEntity;
 import org.exoplatform.wiki.jpa.entity.PermissionType;
 import org.exoplatform.wiki.jpa.entity.WikiEntity;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
@@ -67,28 +66,6 @@ public class PageDAOTest extends BaseWikiIntegrationTest {
     assertEquals("Page 1", pageOfWikiByName.getTitle());
   }
 
-
-  @Test
-  public void testGetRemovedPages() {
-    // Given
-    PageEntity parentPage = new PageEntity();
-    PageEntity page = new PageEntity();
-    page.setName("page1");
-    page.setTitle("Page 1");
-    page.setParentPage(parentPage);
-    page = pageDAO.create(page);
-    parentPage = page.getParentPage(); //get persisted parentPage with generated ID
-    assertEquals(2, pageDAO.findAll().size());
-    pageDAO.delete(page);
-    assertEquals(1, pageDAO.findAll().size());
-    // When
-    List<PageEntity> removedPages = pageDAO.findRemovedPages(parentPage);
-    // Then
-    assertEquals(1, removedPages.size());
-    assertEquals("page1", removedPages.get(0).getName());
-    assertEquals("Page 1", removedPages.get(0).getTitle());
-  }
-
   @Test
   public void testInsert(){
     //Given
@@ -119,37 +96,4 @@ public class PageDAOTest extends BaseWikiIntegrationTest {
     assertEquals("name", got.getName());
   }
 
-  @Test
-  public void testAudit(){
-    //Given
-    PageEntity page = new PageEntity();
-    PermissionEntity per = new PermissionEntity();
-    per.setUser("user");
-    per.setType(PermissionType.EDITPAGE);
-    List<PermissionEntity> permissions = new ArrayList<PermissionEntity>();
-    permissions.add(per);
-    page.setPermissions(permissions);
-    
-    page.setAuthor("author");
-    page.setContent("content");
-    page.setComment("comment");
-    page.setCreatedDate(new Date());
-    page.setName("name");
-    page.setMinorEdit(true);
-    page.setOwner("owner");
-    page.setSyntax("syntax");
-    page.setTitle("title");
-    page.setUrl("url");
-    // When
-    pageDAO.create(page);
-    int size1 = pageDAO.getAllHistory(page).size();
-    int version1 = pageDAO.getCurrentVersion(page);
-    PageEntity got = pageDAO.find(page.getId());
-    got.setName("name2");
-    pageDAO.update(got);
-    assertEquals(size1 + 1, pageDAO.getAllHistory(got).size());
-    
-    PageEntity oldVersion = pageDAO.getPageAtRevision(got, version1);
-    assertEquals("name", oldVersion.getName());
-  }
 }

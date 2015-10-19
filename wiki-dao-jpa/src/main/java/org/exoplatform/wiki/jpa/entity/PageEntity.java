@@ -20,11 +20,8 @@
 package org.exoplatform.wiki.jpa.entity;
 
 import org.exoplatform.commons.api.persistence.ExoEntity;
-import org.hibernate.envers.Audited;
-import org.hibernate.envers.RelationTargetAuditMode;
 
 import javax.persistence.*;
-
 import java.util.Date;
 import java.util.List;
 
@@ -36,7 +33,6 @@ import java.util.List;
  */
 @Entity
 @ExoEntity
-@Audited
 @Table(name = "WIKI_PAGES")
 @NamedQueries({
         @NamedQuery(name = "wikiPage.getAllIds", query = "SELECT p.id FROM PageEntity p ORDER BY p.id"),
@@ -52,7 +48,6 @@ public class PageEntity extends BasePageEntity {
 
   @ManyToOne(cascade = CascadeType.PERSIST)
   @JoinColumn(name = "WIKI_ID")
-  @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
   private WikiEntity wiki;
 
   @ManyToOne(cascade = CascadeType.PERSIST)
@@ -60,7 +55,6 @@ public class PageEntity extends BasePageEntity {
   private PageEntity parentPage;
 
   @OneToMany(mappedBy = "page", cascade = CascadeType.ALL)
-  @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
   private List<AttachmentEntity> attachments;
 
   @Column(name = "AUTHOR")
@@ -104,11 +98,9 @@ public class PageEntity extends BasePageEntity {
   private String activityId;
 
   @ManyToMany(cascade = CascadeType.ALL)
-  @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
   private List<WatcherEntity> watchers;
 
   @OneToMany(cascade = CascadeType.ALL)
-  @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
   private List<PermissionEntity> permissions;
 
   public String getAuthor() {

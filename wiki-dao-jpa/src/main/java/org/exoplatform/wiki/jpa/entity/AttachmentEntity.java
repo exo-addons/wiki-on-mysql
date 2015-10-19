@@ -16,14 +16,11 @@
  */
 package org.exoplatform.wiki.jpa.entity;
 
-import java.util.Date;
-import java.util.List;
+import org.exoplatform.commons.api.persistence.ExoEntity;
 
 import javax.persistence.*;
-
-import org.exoplatform.commons.api.persistence.ExoEntity;
-import org.hibernate.envers.Audited;
-import org.hibernate.envers.RelationTargetAuditMode;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
@@ -65,7 +62,7 @@ public class AttachmentEntity {
   private byte[] content;
 
   @ManyToOne
-  @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+
   private PageEntity page;
 
   @OneToMany(cascade=CascadeType.ALL)

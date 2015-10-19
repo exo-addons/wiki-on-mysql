@@ -16,20 +16,12 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
-import java.util.Date;
-import java.util.List;
+import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
+import org.exoplatform.wiki.jpa.entity.PageEntity;
 
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
-
-import org.hibernate.envers.AuditReader;
-import org.hibernate.envers.AuditReaderFactory;
-import org.hibernate.envers.RevisionType;
-import org.hibernate.envers.query.AuditEntity;
-import org.hibernate.envers.query.AuditQuery;
-
-import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
-import org.exoplatform.wiki.jpa.entity.PageEntity;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com Jun
@@ -56,29 +48,6 @@ public class PageDAO extends GenericDAOJPAImpl<PageEntity, Long> {
     return query.getResultList();
   }
 
-  public List<PageEntity> findRemovedPages(PageEntity parentPage) {
-    AuditReader reader = AuditReaderFactory.get(getEntityManager());
-    AuditQuery query = reader.createQuery()
-                             .forRevisionsOfEntity(PageEntity.class, true, true)
-                             .add(AuditEntity.property("parentPage").eq(parentPage))
-                             .add(AuditEntity.revisionType().eq(RevisionType.DEL));
-    return query.getResultList();
-  }
-
-  public List<Number> getAllHistory(PageEntity page) {
-    AuditReader reader = AuditReaderFactory.get(getEntityManager());
-    return reader.getRevisions(PageEntity.class, page.getId());
-  }
-
-  public PageEntity getPageAtRevision(PageEntity page, int revision) {
-    AuditReader reader = AuditReaderFactory.get(getEntityManager());
-    return reader.find(PageEntity.class, page.getId(), revision);
-  }
-
-  public int getCurrentVersion(PageEntity page) {
-    AuditReader reader = AuditReaderFactory.get(getEntityManager());
-    return (Integer) reader.getRevisionNumberForDate(new Date(Long.MAX_VALUE));
-  }
 
   public List<Long> findAllIds(int offset, int limit) {
     return getEntityManager().createNamedQuery("wikiPage.getAllIds").setFirstResult(offset).setMaxResults(limit).getResultList();
