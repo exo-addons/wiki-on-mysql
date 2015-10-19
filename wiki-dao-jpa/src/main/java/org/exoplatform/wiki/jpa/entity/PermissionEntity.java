@@ -29,7 +29,7 @@ import org.exoplatform.commons.api.persistence.ExoEntity;
 @Entity
 @ExoEntity
 @Table(name = "WIKI_PERMISSIONS")
-public class Permission {
+public class PermissionEntity {
 
   @Id
   @Column(name = "PERMISSION_ID")
@@ -47,11 +47,11 @@ public class Permission {
   private PermissionType type;
 
 
-  public Permission() {
+  public PermissionEntity() {
     //Default constructor
   }
 
-  public Permission(String user, PermissionType type) {
+  public PermissionEntity(String user, PermissionType type) {
     this.user = user;
     this.type = type;
   }

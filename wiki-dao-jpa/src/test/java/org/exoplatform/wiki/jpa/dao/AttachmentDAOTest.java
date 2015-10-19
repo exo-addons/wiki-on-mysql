@@ -18,7 +18,7 @@ package org.exoplatform.wiki.jpa.dao;
 
 import org.exoplatform.wiki.jpa.BaseTest;
 import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
-import org.exoplatform.wiki.jpa.entity.Permission;
+import org.exoplatform.wiki.jpa.entity.PermissionEntity;
 import org.exoplatform.wiki.jpa.entity.PermissionType;
 
 import java.io.File;
@@ -66,10 +66,10 @@ public class AttachmentDAOTest extends BaseTest {
     //When
     attachmentDAO.create(att);
     Long id = att.getId();
-    Permission per = new Permission();
+    PermissionEntity per = new PermissionEntity();
     per.setUser("user");
     per.setType(PermissionType.ADMINPAGE);
-    List<Permission> permissions = new ArrayList<>();
+    List<PermissionEntity> permissions = new ArrayList<>();
     permissions.add(per);
     att.setPermissions(permissions);
     att.setCreator("creator");
@@ -84,7 +84,7 @@ public class AttachmentDAOTest extends BaseTest {
     assertEquals("title", got.getTitle());
     assertEquals("creator", got.getCreator());
     assertEquals(date, got.getUpdatedDate());
-    Permission got_per = got.getPermissions().get(0);
+    PermissionEntity got_per = got.getPermissions().get(0);
     assertEquals("user", got_per.getUser());
   }
 }

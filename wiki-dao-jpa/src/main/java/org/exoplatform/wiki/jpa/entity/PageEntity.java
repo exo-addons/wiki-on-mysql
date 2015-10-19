@@ -109,7 +109,7 @@ public class PageEntity extends BasePageEntity {
 
   @OneToMany(cascade = CascadeType.ALL)
   @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-  private List<Permission> permissions;
+  private List<PermissionEntity> permissions;
 
   public String getAuthor() {
     return author;
@@ -207,11 +207,11 @@ public class PageEntity extends BasePageEntity {
     this.activityId = activityId;
   }
 
-  public List<Permission> getPermissions() {
+  public List<PermissionEntity> getPermissions() {
     return permissions;
   }
 
-  public void setPermissions(List<Permission> permission) {
+  public void setPermissions(List<PermissionEntity> permission) {
     this.permissions = permission;
   }
 

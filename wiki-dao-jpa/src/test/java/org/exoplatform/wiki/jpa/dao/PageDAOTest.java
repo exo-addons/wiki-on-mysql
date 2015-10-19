@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
-import org.exoplatform.wiki.jpa.entity.Permission;
+import org.exoplatform.wiki.jpa.entity.PermissionEntity;
 import org.exoplatform.wiki.jpa.entity.PermissionType;
 import org.exoplatform.wiki.jpa.entity.WikiEntity;
 
@@ -93,10 +93,10 @@ public class PageDAOTest extends BaseWikiIntegrationTest {
   public void testInsert(){
     //Given
     PageEntity page = new PageEntity();
-    Permission per = new Permission();
+    PermissionEntity per = new PermissionEntity();
     per.setUser("user");
     per.setType(PermissionType.EDITPAGE);
-    List<Permission> permissions = new ArrayList<Permission>();
+    List<PermissionEntity> permissions = new ArrayList<PermissionEntity>();
     permissions.add(per);
     page.setPermissions(permissions);
     
@@ -123,10 +123,10 @@ public class PageDAOTest extends BaseWikiIntegrationTest {
   public void testAudit(){
     //Given
     PageEntity page = new PageEntity();
-    Permission per = new Permission();
+    PermissionEntity per = new PermissionEntity();
     per.setUser("user");
     per.setType(PermissionType.EDITPAGE);
-    List<Permission> permissions = new ArrayList<Permission>();
+    List<PermissionEntity> permissions = new ArrayList<PermissionEntity>();
     permissions.add(per);
     page.setPermissions(permissions);
     

@@ -10,7 +10,7 @@
         <class>org.exoplatform.wiki.jpa.entity.DraftPageEntity</class>
         <class>org.exoplatform.wiki.jpa.entity.PageEntity</class>
         <class>org.exoplatform.wiki.jpa.entity.TemplateEntity</class>
-        <class>org.exoplatform.wiki.jpa.entity.Permission</class>
+        <class>org.exoplatform.wiki.jpa.entity.PermissionEntity</class>
         <class>org.exoplatform.wiki.jpa.entity.WikiEntity</class>
         <class>org.exoplatform.wiki.jpa.entity.EmotionIconEntity</class>
         <class>org.exoplatform.wiki.jpa.entity.WatcherEntity</class>

@@ -69,7 +69,7 @@ public class AttachmentEntity {
   private PageEntity page;
 
   @OneToMany(cascade=CascadeType.ALL)
-  private List<Permission> permissions;
+  private List<PermissionEntity> permissions;
 
   public long getId(){return this.id;}
 
@@ -145,10 +145,10 @@ public class AttachmentEntity {
     this.page = page;
   }
 
-  public List<Permission> getPermissions(){
+  public List<PermissionEntity> getPermissions(){
     return permissions;
   }
-  public void setPermissions(List<Permission> permission){
+  public void setPermissions(List<PermissionEntity> permission){
     this.permissions = permission;
   }
   

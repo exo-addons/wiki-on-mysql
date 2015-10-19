@@ -55,7 +55,7 @@ public class WikiEntity {
   private PageEntity wikiHome;
 
   @OneToMany(cascade=CascadeType.ALL)
-  private List<Permission> permissions;
+  private List<PermissionEntity> permissions;
 
   public long getId() {
     return id;
@@ -97,11 +97,11 @@ public class WikiEntity {
     return this;
   }
 
-  public List<Permission> getPermissions() {
+  public List<PermissionEntity> getPermissions() {
     return permissions;
   }
 
-  public WikiEntity setPermissions(List<Permission> permissions) {
+  public WikiEntity setPermissions(List<PermissionEntity> permissions) {
     this.permissions = permissions;
     return this;
   }
