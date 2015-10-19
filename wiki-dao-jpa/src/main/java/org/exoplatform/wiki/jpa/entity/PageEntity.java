@@ -43,7 +43,7 @@ import java.util.List;
         @NamedQuery(name = "wikiPage.getPageOfWikiByName", query = "SELECT p FROM PageEntity p JOIN p.wiki w WHERE p.name = :name AND w.type = :type AND w.owner = :owner"),
         @NamedQuery(name = "wikiPage.getChildrenPages", query = "SELECT p FROM PageEntity p WHERE p.parentPage.id = :id")
 })
-public class PageEntity extends BasePage {
+public class PageEntity extends BasePageEntity {
 
   @Id
   @Column(name = "PAGE_ID")

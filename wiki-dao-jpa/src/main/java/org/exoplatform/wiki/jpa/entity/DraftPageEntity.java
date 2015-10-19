@@ -36,7 +36,7 @@ import java.util.Date;
         @NamedQuery(name = "wikiDraftPage.deleteDraftPagesByUserAndTargetPage", query = "DELETE FROM DraftPageEntity d WHERE d.author = :username AND d.targetPage.id = :targetPageId"),
         @NamedQuery(name = "wikiDraftPage.deleteDraftPagesByUserAndName", query = "DELETE FROM DraftPageEntity d WHERE d.author = :username AND d.name = :draftPageName")
 })
-public class DraftPageEntity extends BasePage {
+public class DraftPageEntity extends BasePageEntity {
 
   @Id
   @Column(name = "DRAFT_PAGE_ID")
