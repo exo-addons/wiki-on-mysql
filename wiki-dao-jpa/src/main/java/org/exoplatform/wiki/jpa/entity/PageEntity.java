@@ -105,7 +105,7 @@ public class PageEntity extends BasePage {
 
   @ManyToMany(cascade = CascadeType.ALL)
   @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-  private List<Watcher> watchers;
+  private List<WatcherEntity> watchers;
 
   @OneToMany(cascade = CascadeType.ALL)
   @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
@@ -239,11 +239,11 @@ public class PageEntity extends BasePage {
     this.attachments = attachments;
   }
 
-  public List<Watcher> getWatchers() {
+  public List<WatcherEntity> getWatchers() {
     return watchers;
   }
 
-  public void setWatchers(List<Watcher> watchers) {
+  public void setWatchers(List<WatcherEntity> watchers) {
     this.watchers = watchers;
   }
 }

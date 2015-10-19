@@ -17,9 +17,8 @@
 package org.exoplatform.wiki.jpa.dao;
 
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
-import org.exoplatform.wiki.jpa.entity.EmotionIcon;
-import org.exoplatform.wiki.jpa.entity.Watcher;
+import org.exoplatform.wiki.jpa.entity.WatcherEntity;
 
-public class WatcherDAO extends GenericDAOJPAImpl<Watcher, Long> {
+public class WatcherDAO extends GenericDAOJPAImpl<WatcherEntity, Long> {
 
 }

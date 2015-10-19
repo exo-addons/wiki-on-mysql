@@ -674,9 +674,9 @@ public class JPADataStorage implements DataStorage {
 
     List<String> watchers = new ArrayList<>();
 
-    List<Watcher> watchersEntities = pageEntity.getWatchers();
+    List<WatcherEntity> watchersEntities = pageEntity.getWatchers();
     if(watchersEntities != null) {
-      for(Watcher watcherEntity : watchersEntities) {
+      for(WatcherEntity watcherEntity : watchersEntities) {
         watchers.add(watcherEntity.getUsername());
       }
     }
@@ -693,10 +693,10 @@ public class JPADataStorage implements DataStorage {
               + page.getName() + " because page does not exist.");
     }
 
-    Watcher watcher = new Watcher(username);
+    WatcherEntity watcher = new WatcherEntity(username);
     watcherDAO.create(watcher);
 
-    List<Watcher> watchers = pageEntity.getWatchers();
+    List<WatcherEntity> watchers = pageEntity.getWatchers();
     if(watchers == null) {
       watchers = new ArrayList<>();
     }
@@ -714,8 +714,8 @@ public class JPADataStorage implements DataStorage {
               + page.getName() + " because page does not exist.");
     }
 
-    Watcher watcherToRemove = new Watcher(username);
-    List<Watcher> watchers = pageEntity.getWatchers();
+    WatcherEntity watcherToRemove = new WatcherEntity(username);
+    List<WatcherEntity> watchers = pageEntity.getWatchers();
     if(watchers != null && watchers.contains(watcherToRemove)) {
       watchers.remove(watcherToRemove);
       pageEntity.setWatchers(watchers);

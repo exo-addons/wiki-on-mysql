@@ -22,7 +22,6 @@ package org.exoplatform.wiki.jpa;
 import org.apache.commons.lang.StringUtils;
 import org.exoplatform.commons.utils.PageList;
 import org.exoplatform.wiki.WikiException;
-import org.exoplatform.wiki.jpa.entity.Watcher;
 import org.exoplatform.wiki.mow.api.*;
 import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.search.SearchResult;
