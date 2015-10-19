@@ -246,7 +246,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void updateTemplatePage(Template template) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Template templateEntity;
+    TemplateEntity templateEntity;
     if(template.getId() != null && !template.getId().isEmpty()) {
       templateEntity = templateDAO.find(Long.parseLong(template.getId()));
     } else {
@@ -268,7 +268,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void deleteTemplatePage(String wikiType, String wikiOwner, String templateName) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Template templateEntity = templateDAO.getTemplateOfWikiByName(wikiType, wikiOwner, templateName);
+    TemplateEntity templateEntity = templateDAO.getTemplateOfWikiByName(wikiType, wikiOwner, templateName);
     if(templateEntity == null) {
       throw new WikiException("Cannot delete template " + wikiType + ":" + wikiOwner + ":" + templateName
               + " because template does not exist.");
@@ -279,7 +279,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public Template getTemplatePage(WikiPageParams params, String templateName) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Template templateEntity = templateDAO.getTemplateOfWikiByName(params.getType(), params.getOwner(), templateName);
+    TemplateEntity templateEntity = templateDAO.getTemplateOfWikiByName(params.getType(), params.getOwner(), templateName);
     return convertTemplateEntityToTemplate(templateEntity);
   }
 
@@ -287,9 +287,9 @@ public class JPADataStorage implements DataStorage {
   public Map<String, Template> getTemplates(WikiPageParams wikiPageParams) throws WikiException {
     Map<String, Template> templates = new HashMap<>();
 
-    List<org.exoplatform.wiki.jpa.entity.Template> templatesEntities = templateDAO.getTemplatesOfWiki(wikiPageParams.getType(), wikiPageParams.getOwner());
+    List<TemplateEntity> templatesEntities = templateDAO.getTemplatesOfWiki(wikiPageParams.getType(), wikiPageParams.getOwner());
     if(templatesEntities != null) {
-      for(org.exoplatform.wiki.jpa.entity.Template templateEntity : templatesEntities) {
+      for(TemplateEntity templateEntity : templatesEntities) {
         templates.put(templateEntity.getName(), convertTemplateEntityToTemplate(templateEntity));
       }
     }
@@ -467,12 +467,12 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public List<TemplateSearchResult> searchTemplate(TemplateSearchData templateSearchData) throws WikiException {
-    List<org.exoplatform.wiki.jpa.entity.Template> templates = templateDAO.searchTemplatesByTitle(templateSearchData.getWikiType(),
+    List<TemplateEntity> templates = templateDAO.searchTemplatesByTitle(templateSearchData.getWikiType(),
             templateSearchData.getWikiOwner(), templateSearchData.getTitle());
 
     List<TemplateSearchResult> searchResults = new ArrayList<>();
     if(templates != null) {
-      for (org.exoplatform.wiki.jpa.entity.Template templateEntity : templates) {
+      for (TemplateEntity templateEntity : templates) {
         TemplateSearchResult templateSearchResult = new TemplateSearchResult(templateEntity.getWiki().getType(),
                 templateEntity.getWiki().getOwner(),
                 templateEntity.getName(),
@@ -914,7 +914,7 @@ public class JPADataStorage implements DataStorage {
   }
 
 
-  private Template convertTemplateEntityToTemplate(org.exoplatform.wiki.jpa.entity.Template templateEntity) {
+  private Template convertTemplateEntityToTemplate(TemplateEntity templateEntity) {
     Template template = null;
     if(templateEntity != null) {
       template = new Template();
@@ -933,10 +933,10 @@ public class JPADataStorage implements DataStorage {
     return template;
   }
 
-  private org.exoplatform.wiki.jpa.entity.Template convertTemplateToTemplateEntity(Template template) {
-    org.exoplatform.wiki.jpa.entity.Template templateEntry = null;
+  private TemplateEntity convertTemplateToTemplateEntity(Template template) {
+    TemplateEntity templateEntry = null;
     if(template != null) {
-      templateEntry = new org.exoplatform.wiki.jpa.entity.Template();
+      templateEntry = new TemplateEntity();
       templateEntry.setName(template.getName());
       if(template.getWikiId() != null) {
         WikiEntity wiki = wikiDAO.find(Long.parseLong(template.getWikiId()));

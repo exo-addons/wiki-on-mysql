@@ -21,7 +21,7 @@ package org.exoplatform.wiki.jpa.dao;
 
 
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
-import org.exoplatform.wiki.jpa.entity.Template;
+import org.exoplatform.wiki.jpa.entity.TemplateEntity;
 import org.exoplatform.wiki.jpa.entity.WikiEntity;
 import org.junit.Test;
 
@@ -41,7 +41,7 @@ public class TemplateDAOTest extends BaseWikiIntegrationTest {
     wiki.setOwner("wiki1");
     wiki = wikiDAO.create(wiki);
 
-    Template template = new Template();
+    TemplateEntity template = new TemplateEntity();
     template.setWiki(wiki);
     template.setName("template1");
     template.setTitle("Template 1");
@@ -49,9 +49,9 @@ public class TemplateDAOTest extends BaseWikiIntegrationTest {
     templateDAO.create(template);
 
     //When
-    Template fetchedTemplate1 = templateDAO.getTemplateOfWikiByName("portal", "wiki1", "template1");
-    Template fetchedTemplate2 = templateDAO.getTemplateOfWikiByName("portal", "wiki1", "template2");
-    Template fetchedTemplate1OfWiki2 = templateDAO.getTemplateOfWikiByName("portal", "wiki2", "template1");
+    TemplateEntity fetchedTemplate1 = templateDAO.getTemplateOfWikiByName("portal", "wiki1", "template1");
+    TemplateEntity fetchedTemplate2 = templateDAO.getTemplateOfWikiByName("portal", "wiki1", "template2");
+    TemplateEntity fetchedTemplate1OfWiki2 = templateDAO.getTemplateOfWikiByName("portal", "wiki2", "template1");
 
     //Then
     assertEquals(1, templateDAO.findAll().size());
@@ -74,14 +74,14 @@ public class TemplateDAOTest extends BaseWikiIntegrationTest {
     wiki.setOwner("wiki1");
     wiki = wikiDAO.create(wiki);
 
-    Template template1 = new Template();
+    TemplateEntity template1 = new TemplateEntity();
     template1.setWiki(wiki);
     template1.setName("template1");
     template1.setTitle("Template 1");
     template1.setContent("Template 1 Content");
     templateDAO.create(template1);
 
-    Template template2 = new Template();
+    TemplateEntity template2 = new TemplateEntity();
     template2.setWiki(wiki);
     template2.setName("template2");
     template2.setTitle("Template 2");
@@ -89,8 +89,8 @@ public class TemplateDAOTest extends BaseWikiIntegrationTest {
     templateDAO.create(template2);
 
     //When
-    List<Template> templatesWiki1 = templateDAO.getTemplatesOfWiki("portal", "wiki1");
-    List<Template> templatesWiki2 = templateDAO.getTemplatesOfWiki("portal", "wiki2");
+    List<TemplateEntity> templatesWiki1 = templateDAO.getTemplatesOfWiki("portal", "wiki1");
+    List<TemplateEntity> templatesWiki2 = templateDAO.getTemplatesOfWiki("portal", "wiki2");
 
     //Then
     assertEquals(2, templateDAO.findAll().size());
@@ -108,14 +108,14 @@ public class TemplateDAOTest extends BaseWikiIntegrationTest {
     wiki.setOwner("wiki1");
     wiki = wikiDAO.create(wiki);
 
-    Template template1 = new Template();
+    TemplateEntity template1 = new TemplateEntity();
     template1.setWiki(wiki);
     template1.setName("template1");
     template1.setTitle("Template with Title 1");
     template1.setContent("Template 1 Content");
     templateDAO.create(template1);
 
-    Template template2 = new Template();
+    TemplateEntity template2 = new TemplateEntity();
     template2.setWiki(wiki);
     template2.setName("template2");
     template2.setTitle("Template with Title 2");
@@ -123,9 +123,9 @@ public class TemplateDAOTest extends BaseWikiIntegrationTest {
     templateDAO.create(template2);
 
     //When
-    List<Template> templatesWiki1 = templateDAO.searchTemplatesByTitle("portal", "wiki1", "with Title");
-    List<Template> templatesWiki2 = templateDAO.searchTemplatesByTitle("portal", "wiki1", "Title 1");
-    List<Template> templatesWiki3 = templateDAO.searchTemplatesByTitle("portal", "wiki1", "No Result");
+    List<TemplateEntity> templatesWiki1 = templateDAO.searchTemplatesByTitle("portal", "wiki1", "with Title");
+    List<TemplateEntity> templatesWiki2 = templateDAO.searchTemplatesByTitle("portal", "wiki1", "Title 1");
+    List<TemplateEntity> templatesWiki3 = templateDAO.searchTemplatesByTitle("portal", "wiki1", "No Result");
 
     //Then
     assertEquals(2, templateDAO.findAll().size());
