@@ -477,6 +477,61 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   }
 
   @Test
+  public void testLatestDraftPageOfUser() throws WikiException {
+    //Given
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Page page = new Page();
+    page.setWikiId(wiki.getId());
+    page.setWikiType(wiki.getType());
+    page.setWikiOwner(wiki.getOwner());
+    page.setName("page1");
+    page.setTitle("Page 1");
+    page.setContent("Content Page 1");
+    Page createdPage = storage.createPage(wiki, wiki.getWikiHome(), page);
+
+    Calendar calendar = Calendar.getInstance();
+    Date now = calendar.getTime();
+    calendar.add(Calendar.YEAR, -1);
+    Date oneYearAgo = calendar.getTime();
+
+    DraftPage draftPage1 = new DraftPage();
+    draftPage1.setAuthor("user1");
+    draftPage1.setName("DraftPage1");
+    draftPage1.setTitle("DraftPage 1");
+    draftPage1.setContent("Content Page 1 Updated");
+    draftPage1.setTargetPageId(createdPage.getId());
+    draftPage1.setTargetPageRevision("1");
+    draftPage1.setUpdatedDate(oneYearAgo);
+
+    DraftPage draftPage2 = new DraftPage();
+    draftPage2.setAuthor("user1");
+    draftPage2.setName("DraftPage1");
+    draftPage2.setTitle("DraftPage 1");
+    draftPage2.setContent("Content Page 1 Updated Again");
+    draftPage2.setTargetPageId(createdPage.getId());
+    draftPage2.setTargetPageRevision("2");
+    draftPage2.setUpdatedDate(now);
+
+    //When
+    storage.createDraftPageForUser(draftPage1, "user1");
+    storage.createDraftPageForUser(draftPage2, "user1");
+    DraftPage fetchedDraftPage1 = storage.getLastestDraft("user1");
+    DraftPage fetchedDraftPage2 = storage.getLastestDraft("user2");
+
+    // Then
+    assertNotNull(fetchedDraftPage1);
+    assertEquals(createdPage.getId(), fetchedDraftPage1.getTargetPageId());
+    assertEquals("Content Page 1 Updated Again", fetchedDraftPage1.getContent());
+    assertNull(fetchedDraftPage2);
+  }
+
+
+
+  @Test
   public void testDraftPageOfUserByNameAndTargetPage() throws WikiException {
     //Given
     Wiki wiki = new Wiki();
@@ -495,7 +550,7 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
 
     Calendar calendar = Calendar.getInstance();
     Date now = calendar.getTime();
-    calendar.roll(Calendar.YEAR, 1);
+    calendar.roll(Calendar.YEAR, -1);
     Date oneYearAgo = calendar.getTime();
 
     DraftPage draftPage1 = new DraftPage();
@@ -517,14 +572,15 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     draftPage2.setUpdatedDate(now);
 
     //When
+    storage.createDraftPageForUser(draftPage1, "user1");
     storage.createDraftPageForUser(draftPage2, "user1");
-    DraftPage dratPage1 = storage.getDraft(new WikiPageParams("portal", "wiki1", "page1"), "user1");
-    DraftPage dratPage2 = storage.getDraft(new WikiPageParams("portal", "wiki1", "page1"), "user2");
+    DraftPage fetchedDraftPage1 = storage.getDraft(new WikiPageParams("portal", "wiki1", "page1"), "user1");
+    DraftPage fetchedDraftPage2 = storage.getDraft(new WikiPageParams("portal", "wiki1", "page1"), "user2");
 
     // Then
-    assertNotNull(dratPage1);
-    assertEquals("DraftPage2", dratPage1.getName());
-    assertNull(dratPage2);
+    assertNotNull(fetchedDraftPage1);
+    assertEquals("DraftPage2", fetchedDraftPage1.getName());
+    assertNull(fetchedDraftPage2);
   }
 
   @Test

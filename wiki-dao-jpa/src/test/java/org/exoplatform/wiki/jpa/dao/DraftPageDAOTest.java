@@ -22,6 +22,8 @@ import org.junit.Test;
 import org.exoplatform.wiki.jpa.entity.DraftPage;
 import org.exoplatform.wiki.jpa.entity.Page;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -74,6 +76,43 @@ public class DraftPageDAOTest extends BaseTest {
     List<DraftPage> user2DraftPages = dao.findDraftPagesByUser("user2");
     assertNotNull(user2DraftPages);
     assertEquals(0, user2DraftPages.size());
+
+    dao.deleteAll();
+    pageDAO.deleteAll();
+  }
+
+  @Test
+  public void testFindLatestDraftPageByUser(){
+    DraftPageDAO dao = new DraftPageDAO();
+    PageDAO pageDAO = new PageDAO();
+
+    Calendar calendar = Calendar.getInstance();
+    Date now = calendar.getTime();
+    calendar.roll(Calendar.YEAR, 1);
+    Date oneYearAgo = calendar.getTime();
+
+    Page page = new Page();
+    page.setName("page1");
+    DraftPage dp1 = new DraftPage();
+    dp1.setTargetPage(page);
+    dp1.setAuthor("user1");
+    dp1.setUpdatedDate(oneYearAgo);
+    dp1.setTargetRevision("1");
+    dao.create(dp1);
+    DraftPage dp2 = new DraftPage();
+    dp2.setTargetPage(page);
+    dp2.setAuthor("user1");
+    dp2.setUpdatedDate(now);
+    dp1.setTargetRevision("2");
+    dao.create(dp2);
+
+    assertNotNull(dao.find(dp2.getId()));
+    assertNotNull(pageDAO.find(page.getId()));
+    DraftPage user1DraftPage = dao.findLatestDraftPageByUser("user1");
+    assertNotNull(user1DraftPage);
+    assertEquals("2", user1DraftPage.getTargetRevision());
+    DraftPage user2DraftPage = dao.findLatestDraftPageByUser("user2");
+    assertNull(user2DraftPage);
 
     dao.deleteAll();
     pageDAO.deleteAll();

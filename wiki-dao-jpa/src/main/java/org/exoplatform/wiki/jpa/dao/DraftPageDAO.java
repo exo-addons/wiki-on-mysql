@@ -32,9 +32,16 @@ import java.util.List;
 public class DraftPageDAO extends GenericDAOJPAImpl<DraftPage, Long> {
 
   public List<DraftPage> findDraftPagesByUser(String username) {
-    TypedQuery<DraftPage> query = getEntityManager().createNamedQuery("wikiDraftPage.findDraftPageByUser", DraftPage.class)
+    TypedQuery<DraftPage> query = getEntityManager().createNamedQuery("wikiDraftPage.findDraftPagesByUser", DraftPage.class)
             .setParameter("username", username);
     return query.getResultList();
+  }
+
+  public DraftPage findLatestDraftPageByUser(String username) {
+    TypedQuery<DraftPage> query = getEntityManager().createNamedQuery("wikiDraftPage.findDraftPagesByUser", DraftPage.class)
+            .setParameter("username", username).setMaxResults(1);
+    List<DraftPage> draftPages = query.getResultList();
+    return draftPages.size() > 0 ? draftPages.get(0) : null;
   }
 
   public List<DraftPage> findDraftPagesByUserAndTargetPage(String username, long targetPageId) {

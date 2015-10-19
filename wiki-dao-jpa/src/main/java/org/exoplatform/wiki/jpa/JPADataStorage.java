@@ -412,7 +412,7 @@ public class JPADataStorage implements DataStorage {
       org.exoplatform.wiki.jpa.entity.DraftPage latestDraftEntity = null;
       for (org.exoplatform.wiki.jpa.entity.DraftPage draft : draftPagesOfUser) {
         // Compare and get the latest draft
-        if ((latestDraft == null) || (latestDraft.getUpdatedDate().getTime() < latestDraft.getUpdatedDate().getTime())) {
+        if ((latestDraftEntity == null) || (latestDraftEntity.getUpdatedDate().getTime() < draft.getUpdatedDate().getTime())) {
           latestDraftEntity = draft;
         }
       }
@@ -426,9 +426,9 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
-  public DraftPage getLastestDraft(String s) throws WikiException {
-    // TODO Implement it !
-    return null;
+  public DraftPage getLastestDraft(String username) throws WikiException {
+    org.exoplatform.wiki.jpa.entity.DraftPage draftPagEntity = draftPageDAO.findLatestDraftPageByUser(username);
+    return convertDraftPageEntityToDraftPage(draftPagEntity);
   }
 
   @Override
