@@ -21,6 +21,7 @@ package org.exoplatform.wiki.jpa.dao;
 
 
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
+import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
 import org.exoplatform.wiki.jpa.entity.Template;
 import org.exoplatform.wiki.jpa.entity.Wiki;
 import org.junit.Test;
@@ -31,7 +32,7 @@ import java.util.List;
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
  * 7/31/15
  */
-public class TemplateDAOTest extends BaseWikiIntegrationTest {
+public class TemplateDAOTest extends BaseWikiJPAIntegrationTest {
 
   @Test
   public void testGetTemplateOfWikiByName() {

@@ -44,6 +44,8 @@ import java.util.List;
         @NamedQuery(name = "wikiPage.getChildrenPages", query = "SELECT p FROM Page p WHERE p.parentPage.id = :id")
 })
 public class Page extends BasePage {
+  private static final String YES = "Y";
+  private static final String NO  = "N";
 
   @Id
   @Column(name = "PAGE_ID")
@@ -98,7 +100,7 @@ public class Page extends BasePage {
   private String url;
 
   @Column(name = "IS_MINOR_EDIT")
-  private boolean isMinorEdit;
+  private String isMinorEdit;
 
   @Column(name = "ACTIVITY_ID")
   private String activityId;
@@ -192,11 +194,11 @@ public class Page extends BasePage {
   }
 
   public boolean isMinorEdit() {
-    return isMinorEdit;
+    return YES.equals(isMinorEdit);
   }
 
   public void setMinorEdit(boolean isMinorEdit) {
-    this.isMinorEdit = isMinorEdit;
+    this.isMinorEdit = isMinorEdit?YES:NO;
   }
 
   public String getActivityId() {

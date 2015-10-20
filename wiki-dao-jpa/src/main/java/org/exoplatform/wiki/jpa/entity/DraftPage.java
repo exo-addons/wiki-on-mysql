@@ -34,6 +34,8 @@ import java.util.Date;
         @NamedQuery(name = "wikiDraftPage.findDraftPageByUser", query = "SELECT d FROM DraftPage d WHERE d.author = :username")
 })
 public class DraftPage extends BasePage {
+  private static final String YES = "Y";
+  private static final String NO  = "N";
 
   @Id
   @Column(name = "DRAFT_PAGE_ID")
@@ -48,7 +50,7 @@ public class DraftPage extends BasePage {
   private String targetRevision;
 
   @Column(name = "NEW_PAGE")
-  private boolean newPage;
+  private String newPage;
 
   @Column(name = "AUTHOR")
   private String author;
@@ -88,11 +90,11 @@ public class DraftPage extends BasePage {
   }
 
   public boolean isNewPage() {
-    return newPage;
+    return YES.equals(newPage);
   }
 
   public void setNewPage(boolean newPage) {
-    this.newPage = newPage;
+    this.newPage = newPage?YES:NO;
   }
 
   public long getId() {

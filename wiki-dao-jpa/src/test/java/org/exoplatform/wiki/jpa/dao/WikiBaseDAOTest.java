@@ -16,8 +16,8 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
+import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
 import org.exoplatform.wiki.jpa.entity.Attachment;
-import org.exoplatform.wiki.jpa.BaseTest;
 
 /**
  * Created by The eXo Platform SAS
@@ -25,24 +25,22 @@ import org.exoplatform.wiki.jpa.BaseTest;
  *          exo@exoplatform.com
  * Jun 26, 2015  
  */
-public class WikiBaseDAOTest extends BaseTest {
+public class WikiBaseDAOTest extends BaseWikiJPAIntegrationTest {
 
   public void testRollBackTransaction(){
     //Given
-    AttachmentDAO dao = new AttachmentDAO();
     //When
-    Attachment att = dao.create(new Attachment());
+    Attachment att = attachmentDAO.create(new Attachment());
     //Then
-    assertNotNull(dao.find(att.getId()));
+    assertNotNull(attachmentDAO.find(att.getId()));
   }
 
   public void testCommit(){
     //Given
-    AttachmentDAO dao = new AttachmentDAO();
-    long count = dao.count();
+    long count = attachmentDAO.count();
     //When
-    Attachment att = dao.create(new Attachment());
+    Attachment att = attachmentDAO.create(new Attachment());
     //Then
-    assertEquals(new Long(count + 1), dao.count());
+    assertEquals(new Long(count + 1), attachmentDAO.count());
   }
 }

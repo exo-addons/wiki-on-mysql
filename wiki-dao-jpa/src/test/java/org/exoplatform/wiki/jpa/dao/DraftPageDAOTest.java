@@ -16,13 +16,13 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
-import org.exoplatform.wiki.jpa.BaseTest;
+import java.util.List;
+
 import org.junit.Test;
 
+import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
 import org.exoplatform.wiki.jpa.entity.DraftPage;
 import org.exoplatform.wiki.jpa.entity.Page;
-
-import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
@@ -30,48 +30,44 @@ import java.util.List;
  *          exo@exoplatform.com
  * Jun 26, 2015  
  */
-public class DraftPageDAOTest extends BaseTest {
+public class DraftPageDAOTest extends BaseWikiJPAIntegrationTest {
 
   @Test
-  public void testInsert(){
-    DraftPageDAO dao = new DraftPageDAO();
-    PageDAO pageDAO = new PageDAO();
+  public void testInsert(){;
     DraftPage dp = new DraftPage();
     Page page = new Page();
     page.setName("name");
     dp.setTargetPage(page);
-    dao.create(dp);
+    draftPageDAO.create(dp);
     
-    assertNotNull(dao.find(dp.getId()));
+    assertNotNull(draftPageDAO.find(dp.getId()));
     assertNotNull(pageDAO.find(page.getId()));
     
-    DraftPage got = dao.find(dp.getId());
+    DraftPage got = draftPageDAO.find(dp.getId());
     got.getTargetPage().setName("name1");
-    dao.update(got);
+    draftPageDAO.update(got);
     assertEquals("name1",page.getName());
-    dao.deleteAll();
+    draftPageDAO.deleteAll();
     pageDAO.deleteAll();
     
-    assertNull(dao.find(dp.getId()));
+    assertNull(draftPageDAO.find(dp.getId()));
   }
 
   @Test
   public void testFindDraftPagesByUser(){
-    DraftPageDAO dao = new DraftPageDAO();
-    PageDAO pageDAO = new PageDAO();
     DraftPage dp = new DraftPage();
     Page page = new Page();
     page.setName("name");
     dp.setTargetPage(page);
     dp.setAuthor("user1");
-    dao.create(dp);
+    draftPageDAO.create(dp);
 
-    assertNotNull(dao.find(dp.getId()));
+    assertNotNull(draftPageDAO.find(dp.getId()));
     assertNotNull(pageDAO.find(page.getId()));
-    List<DraftPage> user1DraftPages = dao.findDraftPagesByUser("user1");
+    List<DraftPage> user1DraftPages = draftPageDAO.findDraftPagesByUser("user1");
     assertNotNull(user1DraftPages);
     assertEquals(1, user1DraftPages.size());
-    List<DraftPage> user2DraftPages = dao.findDraftPagesByUser("user2");
+    List<DraftPage> user2DraftPages = draftPageDAO.findDraftPagesByUser("user2");
     assertNotNull(user2DraftPages);
     assertEquals(0, user2DraftPages.size());
   }

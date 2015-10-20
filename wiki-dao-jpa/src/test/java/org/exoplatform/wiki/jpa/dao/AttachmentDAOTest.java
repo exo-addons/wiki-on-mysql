@@ -16,11 +16,6 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
-import org.exoplatform.wiki.jpa.BaseTest;
-import org.exoplatform.wiki.jpa.entity.Attachment;
-import org.exoplatform.wiki.jpa.entity.Permission;
-import org.exoplatform.wiki.jpa.entity.PermissionType;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -31,18 +26,22 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
+import org.exoplatform.wiki.jpa.entity.Attachment;
+import org.exoplatform.wiki.jpa.entity.Permission;
+import org.exoplatform.wiki.jpa.entity.PermissionType;
+
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  *          exo@exoplatform.com
  * Jun 25, 2015  
  */
-public class AttachmentDAOTest extends BaseTest {
+public class AttachmentDAOTest extends BaseWikiJPAIntegrationTest {
 
   public void testInsertDelete() throws IOException, URISyntaxException {
     //Given
     URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
-    AttachmentDAO attachmentDAO = getService(AttachmentDAO.class);
     Attachment att = new Attachment();
     att.setContent(Files.readAllBytes(Paths.get(fileResource.toURI())));
     //When
@@ -60,7 +59,6 @@ public class AttachmentDAOTest extends BaseTest {
   public void testUpdate() throws IOException, URISyntaxException {
     //Given
     URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
-    AttachmentDAO attachmentDAO = getService(AttachmentDAO.class);
     Attachment att = new Attachment();
     att.setContent(Files.readAllBytes(Paths.get(fileResource.toURI())));
     //When

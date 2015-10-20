@@ -19,14 +19,38 @@
 
 package org.exoplatform.wiki.jpa;
 
+import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
+import static org.junit.Assert.assertNotEquals;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Date;
+
+import liquibase.Liquibase;
+import liquibase.database.Database;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.LiquibaseException;
+import liquibase.resource.ClassLoaderResourceAccessor;
+import liquibase.resource.FileSystemResourceAccessor;
+
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.internal.InternalNode;
 import org.elasticsearch.plugins.PluginsService;
 import org.elasticsearch.rest.RestController;
+
 import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.IndexingService;
+import org.exoplatform.commons.persistence.impl.ChangeLogsPlugin;
+import org.exoplatform.commons.persistence.impl.LiquibaseDataInitializer;
 import org.exoplatform.container.PortalContainer;
+import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.wiki.jpa.dao.*;
 import org.exoplatform.wiki.jpa.entity.Attachment;
 import org.exoplatform.wiki.jpa.entity.Page;
@@ -35,29 +59,14 @@ import org.exoplatform.wiki.jpa.search.AttachmentIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.WikiIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.WikiPageIndexingServiceConnector;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Date;
-
-import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
-import static org.junit.Assert.assertNotEquals;
-
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  * exo@exoplatform.com
  * 10/1/15
  */
-public abstract class BaseWikiIntegrationTest extends BaseTest {
+public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest {
   protected Node node;
-  protected WikiDAO wikiDAO;
-  protected PageDAO pageDAO;
-  protected AttachmentDAO attachmentDAO;
-  protected DraftPageDAO draftPageDAO;
-  protected TemplateDAO templateDAO;
-  protected EmotionIconDAO emotionIconDAO;
-  protected WatcherDAO watcherDAO;
   protected IndexingService indexingService;
   protected IndexingOperationProcessor indexingOperationProcessor;
   protected JPADataStorage storage;
@@ -79,29 +88,13 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
             .setWaitForYellowStatus().execute().actionGet();
     assertNotNull(node);
     assertFalse(node.isClosed());
-    SecurityUtils.setCurrentUser("BCH", "*:/admin");
+    //Init services
     indexingService = PortalContainer.getInstance().getComponentInstanceOfType(IndexingService.class);
     indexingOperationProcessor = PortalContainer.getInstance().getComponentInstanceOfType(IndexingOperationProcessor.class);
-    wikiDAO = PortalContainer.getInstance().getComponentInstanceOfType(WikiDAO.class);
-    pageDAO = PortalContainer.getInstance().getComponentInstanceOfType(PageDAO.class);
-    attachmentDAO = PortalContainer.getInstance().getComponentInstanceOfType(AttachmentDAO.class);
-    draftPageDAO = PortalContainer.getInstance().getComponentInstanceOfType(DraftPageDAO.class);
-    templateDAO = PortalContainer.getInstance().getComponentInstanceOfType(TemplateDAO.class);
-    emotionIconDAO = PortalContainer.getInstance().getComponentInstanceOfType(EmotionIconDAO.class);
-    watcherDAO = PortalContainer.getInstance().getComponentInstanceOfType(WatcherDAO.class);
     storage = PortalContainer.getInstance().getComponentInstanceOfType(JPADataStorage.class);
+    //Init data
     deleteAllDocumentsInES();
-    cleanDB();
-  }
-
-  private void cleanDB() {
-    watcherDAO.deleteAll();
-    emotionIconDAO.deleteAll();
-    templateDAO.deleteAll();
-    draftPageDAO.deleteAll();
-    attachmentDAO.deleteAll();
-    pageDAO.deleteAll();
-    wikiDAO.deleteAll();
+    SecurityUtils.setCurrentUser("BCH", "*:/admin");
   }
 
   private void deleteAllDocumentsInES() {
@@ -112,6 +105,7 @@ public abstract class BaseWikiIntegrationTest extends BaseTest {
 
   public void tearDown() {
     super.tearDown();
+    //Close ES Node
     node.close();
   }
 

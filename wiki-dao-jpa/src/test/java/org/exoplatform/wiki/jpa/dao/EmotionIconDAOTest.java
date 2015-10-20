@@ -21,12 +21,13 @@ package org.exoplatform.wiki.jpa.dao;
 
 
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
+import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
 import org.exoplatform.wiki.jpa.entity.EmotionIcon;
 import org.junit.Test;
 
 import java.util.Arrays;
 
-public class EmotionIconDAOTest extends BaseWikiIntegrationTest {
+public class EmotionIconDAOTest extends BaseWikiJPAIntegrationTest {
 
   @Test
   public void testEmotionIconByName() {

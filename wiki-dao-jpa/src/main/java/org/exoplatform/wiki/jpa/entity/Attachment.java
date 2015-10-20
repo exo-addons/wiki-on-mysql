@@ -65,6 +65,7 @@ public class Attachment {
   private byte[] content;
 
   @ManyToOne
+  @JoinColumn(name = "PAGE_ID")
   @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
   private Page page;
 

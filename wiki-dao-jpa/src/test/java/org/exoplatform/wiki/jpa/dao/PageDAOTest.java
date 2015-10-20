@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
 import org.junit.Test;
 
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
@@ -36,10 +37,7 @@ import org.exoplatform.wiki.jpa.entity.Wiki;
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
  * 7/31/15
  */
-public class PageDAOTest extends BaseWikiIntegrationTest {
-  private final WikiDAO wikiDAO = new WikiDAO();
-
-  private final PageDAO pageDAO = new PageDAO();
+public class PageDAOTest extends BaseWikiJPAIntegrationTest {
 
   @Test
   public void testPageOfWikiByName() {
