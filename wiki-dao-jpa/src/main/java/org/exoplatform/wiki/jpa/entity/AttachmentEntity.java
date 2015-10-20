@@ -171,8 +171,4 @@ public class AttachmentEntity {
   public void setPermissions(List<PermissionEntity> permission){
     this.permissions = permission;
   }
-  
-  public boolean hasPermission(PermissionType permissionType){
-    throw new UnsupportedOperationException("Not implemented");
-  }
 }
