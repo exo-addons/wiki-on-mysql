@@ -101,6 +101,8 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
     indexingService.unindexAll(WikiIndexingServiceConnector.TYPE);
     indexingService.unindexAll(WikiPageIndexingServiceConnector.TYPE);
     indexingService.unindexAll(AttachmentIndexingServiceConnector.TYPE);
+    indexingOperationProcessor.process();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
   }
 
   public void tearDown() {
