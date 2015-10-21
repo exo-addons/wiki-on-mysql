@@ -29,6 +29,7 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.wiki.jpa.dao.WikiDAO;
+import org.exoplatform.wiki.jpa.entity.PermissionEntity;
 import org.exoplatform.wiki.jpa.entity.WikiEntity;
 
 /**
@@ -96,10 +97,15 @@ public class WikiIndexingServiceConnector extends ElasticIndexingServiceConnecto
     }
 
     private String[] computePermissions(WikiEntity wiki) {
-        List<String> permissions = new ArrayList<String>();
+        List<String> permissions = new ArrayList<>();
         //Add the owner
         permissions.add(wiki.getOwner());
-        //TODO Add the permissions
+        //Add permissions
+        if (wiki.getPermissions()!=null) {
+            for (PermissionEntity permission : wiki.getPermissions()) {
+                permissions.add(permission.getIdentity());
+            }
+        }
         String[] result = new String[permissions.size()];
         return permissions.toArray(result);
     }

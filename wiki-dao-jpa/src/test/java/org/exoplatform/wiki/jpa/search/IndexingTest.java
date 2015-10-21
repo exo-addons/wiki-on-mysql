@@ -39,17 +39,17 @@ public class IndexingTest extends BaseWikiIntegrationTest {
   public void testIndexingAndSearchingOfWiki() throws NoSuchFieldException, IllegalAccessException {
     // Given
     // When
-    indexWiki("RDBMS Guidelines");
+    indexWiki("RDBMS Guidelines", "BCH", null);
     // Then
     assertEquals(1, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
   }
 
   public void testReindexingWikiAndSearch() throws NoSuchFieldException, IllegalAccessException, IOException {
     // Given
-    WikiEntity wiki1 = indexWiki("RDBMS Guidelines");
+    WikiEntity wiki1 = indexWiki("RDBMS Guidelines", "BCH", null);
     wiki1.setName("Liquibase Guidelines");
     wikiDAO.update(wiki1);
-    WikiEntity wiki2 = indexWiki("RDBMS Stats");
+    WikiEntity wiki2 = indexWiki("RDBMS Stats", "BCH", null);
     wiki2.setName("Liquibase Stats");
     wikiDAO.update(wiki2);
     assertEquals(2, wikiDAO.findAll().size());
@@ -94,11 +94,11 @@ public class IndexingTest extends BaseWikiIntegrationTest {
 
   public void testReindexingWikiPagesAndSearch() throws NoSuchFieldException, IllegalAccessException, IOException {
     // Given
-    PageEntity page = indexPage("RDBMS Guidelines", "RDBMS Guidelines", "All the guidelines you need", "Draft version");
+    PageEntity page = indexPage("RDBMS Guidelines", "RDBMS Guidelines", "All the guidelines you need", "Draft version", "BCH", null);
     page.setName("Liquibase Guidelines");
     page.setTitle("Liquibase Guidelines");
     pageDAO.update(page);
-    page = indexPage("RDBMS Stats", "RDBMS Stats", "All the stats you need", "Draft version");
+    page = indexPage("RDBMS Stats", "RDBMS Stats", "All the stats you need", "Draft version", "BCH", null);
     page.setName("Liquibase Stats");
     page.setTitle("Liquibase Stats");
     pageDAO.update(page);
@@ -116,14 +116,14 @@ public class IndexingTest extends BaseWikiIntegrationTest {
   public void testIndexingAndSearchingOfWikiPage() throws NoSuchFieldException, IllegalAccessException {
     // Given
     // When
-    indexPage("RDBMS Guidelines", "RDBMS Guidelines", "All the guidelines you need", "Draft version");
+    indexPage("RDBMS Guidelines", "RDBMS Guidelines", "All the guidelines you need", "Draft version", "BCH", null);
     // Then
     assertEquals(1, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
   }
 
   public void testUpdatingWiki() throws NoSuchFieldException, IllegalAccessException {
     // Given
-    WikiEntity wiki = indexWiki("RDBMS Guidelines");
+    WikiEntity wiki = indexWiki("RDBMS Guidelines", "BCH", null);
     assertEquals(0, storage.search(new WikiSearchData("Liquibase", null, null, null)).getPageSize());
     // When
     wiki.setName("Liquibase Guidelines");
@@ -140,7 +140,7 @@ public class IndexingTest extends BaseWikiIntegrationTest {
     // Given
     URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
     // When
-    indexAttachment("Scrum @eXo - Collector", fileResource.getPath(), "www.exo.com");
+    indexAttachment("Scrum @eXo - Collector", fileResource.getPath(), "www.exo.com", "BCH", null);
     // Then
     assertEquals(1, storage.search(new WikiSearchData("Collector", null, null, null)).getPageSize()); // Title
     assertEquals(1, storage.search(new WikiSearchData("Agile", null, null, null)).getPageSize()); // Content

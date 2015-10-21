@@ -33,6 +33,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.wiki.jpa.dao.AttachmentDAO;
 import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
+import org.exoplatform.wiki.jpa.entity.PermissionEntity;
 
 /**
  * Created by The eXo Platform SAS
@@ -76,7 +77,12 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
     private String[] computePermissions(AttachmentEntity attachment) {
         List<String> permissions = new ArrayList<>();
         permissions.add(attachment.getCreator());
-        //TODO Add the permissions
+        //Add permissions
+        if (attachment.getPermissions()!=null) {
+            for (PermissionEntity permission : attachment.getPermissions()) {
+                permissions.add(permission.getIdentity());
+            }
+        }
         String[] result = new String[permissions.size()];
         return permissions.toArray(result);
     }

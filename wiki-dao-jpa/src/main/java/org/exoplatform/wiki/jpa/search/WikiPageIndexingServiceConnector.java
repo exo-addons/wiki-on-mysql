@@ -33,6 +33,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.wiki.jpa.dao.PageDAO;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
+import org.exoplatform.wiki.jpa.entity.PermissionEntity;
 
 /**
  * Created by The eXo Platform SAS
@@ -74,11 +75,16 @@ public class WikiPageIndexingServiceConnector extends ElasticIndexingServiceConn
         return create(id);
     }
 
-    private String[] computePermissions(PageEntity wiki) {
+    private String[] computePermissions(PageEntity page) {
         List<String> permissions = new ArrayList<>();
         //Add the owner
-        permissions.add(wiki.getOwner());
-        //TODO Add the permissions
+        permissions.add(page.getOwner());
+        //Add permissions
+        if (page.getPermissions()!=null) {
+            for (PermissionEntity permission : page.getPermissions()) {
+                permissions.add(permission.getIdentity());
+            }
+        }
         String[] result = new String[permissions.size()];
         return permissions.toArray(result);
     }

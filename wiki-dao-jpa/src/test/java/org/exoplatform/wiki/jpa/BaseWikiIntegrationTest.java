@@ -25,18 +25,8 @@ import static org.junit.Assert.assertNotEquals;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.Date;
-
-import liquibase.Liquibase;
-import liquibase.database.Database;
-import liquibase.database.DatabaseFactory;
-import liquibase.database.jvm.JdbcConnection;
-import liquibase.exception.LiquibaseException;
-import liquibase.resource.ClassLoaderResourceAccessor;
-import liquibase.resource.FileSystemResourceAccessor;
+import java.util.List;
 
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.node.Node;
@@ -46,53 +36,45 @@ import org.elasticsearch.rest.RestController;
 
 import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.IndexingService;
-import org.exoplatform.commons.persistence.impl.ChangeLogsPlugin;
-import org.exoplatform.commons.persistence.impl.LiquibaseDataInitializer;
 import org.exoplatform.container.PortalContainer;
-import org.exoplatform.container.xml.InitParams;
-import org.exoplatform.container.xml.ValueParam;
-import org.exoplatform.wiki.jpa.dao.*;
 import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
+import org.exoplatform.wiki.jpa.entity.PermissionEntity;
 import org.exoplatform.wiki.jpa.entity.WikiEntity;
 import org.exoplatform.wiki.jpa.search.AttachmentIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.WikiIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.WikiPageIndexingServiceConnector;
 
 /**
- * Created by The eXo Platform SAS
- * Author : eXoPlatform
- * exo@exoplatform.com
+ * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
  * 10/1/15
  */
 public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest {
-  protected Node node;
-  protected IndexingService indexingService;
+  protected Node                       node;
+  protected IndexingService            indexingService;
   protected IndexingOperationProcessor indexingOperationProcessor;
-  protected JPADataStorage storage;
+  protected JPADataStorage             storage;
 
   public void setUp() {
     super.setUp();
-    //Init ES
+    // Init ES
     ImmutableSettings.Builder elasticsearchSettings = ImmutableSettings.settingsBuilder()
-            .put(RestController.HTTP_JSON_ENABLE, true)
-            .put(InternalNode.HTTP_ENABLED, true)
-            .put("network.host", "127.0.0.1")
-            .put("path.data", "target/data")
-            .put("plugins." + PluginsService.LOAD_PLUGIN_FROM_CLASSPATH, true);
-    node = nodeBuilder()
-            .local(true)
-            .settings(elasticsearchSettings.build())
-            .node();
-    node.client().admin().cluster().prepareHealth()
-            .setWaitForYellowStatus().execute().actionGet();
+                                                                       .put(RestController.HTTP_JSON_ENABLE, true)
+                                                                       .put(InternalNode.HTTP_ENABLED, true)
+                                                                       .put("network.host", "127.0.0.1")
+                                                                       .put("path.data", "target/data")
+                                                                       .put("plugins."
+                                                                                       + PluginsService.LOAD_PLUGIN_FROM_CLASSPATH,
+                                                                               true);
+    node = nodeBuilder().local(true).settings(elasticsearchSettings.build()).node();
+    node.client().admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
     assertNotNull(node);
     assertFalse(node.isClosed());
-    //Init services
+    // Init services
     indexingService = PortalContainer.getInstance().getComponentInstanceOfType(IndexingService.class);
     indexingOperationProcessor = PortalContainer.getInstance().getComponentInstanceOfType(IndexingOperationProcessor.class);
     storage = PortalContainer.getInstance().getComponentInstanceOfType(JPADataStorage.class);
-    //Init data
+    // Init data
     deleteAllDocumentsInES();
     SecurityUtils.setCurrentUser("BCH", "*:/admin");
   }
@@ -107,14 +89,16 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
 
   public void tearDown() {
     super.tearDown();
-    //Close ES Node
+    // Close ES Node
     node.close();
   }
 
-  protected WikiEntity indexWiki(String name) throws NoSuchFieldException, IllegalAccessException {
+  protected WikiEntity indexWiki(String name, String owner, List<PermissionEntity> permissions) throws NoSuchFieldException,
+                                                                                               IllegalAccessException {
     WikiEntity wiki = new WikiEntity();
     wiki.setName(name);
-    wiki.setOwner("BCH");
+    wiki.setOwner(owner);
+    wiki.setPermissions(permissions);
     wiki = wikiDAO.create(wiki);
     assertNotEquals(wiki.getId(), 0);
     indexingService.index(WikiIndexingServiceConnector.TYPE, Long.toString(wiki.getId()));
@@ -123,14 +107,15 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
     return wiki;
   }
 
-  protected PageEntity indexPage(String name, String title, String content, String comment)
-          throws NoSuchFieldException, IllegalAccessException {
+  protected PageEntity indexPage(String name, String title, String content, String comment, String owner,
+                                 List<PermissionEntity> permissions) throws NoSuchFieldException, IllegalAccessException {
     PageEntity page = new PageEntity();
     page.setName(name);
     page.setTitle(title);
     page.setContent(content);
     page.setComment(comment);
-    page.setOwner("BCH");
+    page.setOwner(owner);
+    page.setPermissions(permissions);
     page.setCreatedDate(new Date());
     page.setUpdatedDate(new Date());
     page = pageDAO.create(page);
@@ -141,15 +126,18 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
     return page;
   }
 
-  protected void indexAttachment(String title, String filePath, String downloadedUrl)
-          throws NoSuchFieldException, IllegalAccessException, IOException {
+  protected void indexAttachment(String title, String filePath, String downloadedUrl, String owner,
+                                 List<PermissionEntity> permissions) throws NoSuchFieldException,
+                                                                                     IllegalAccessException,
+                                                                                     IOException {
     AttachmentEntity attachment = new AttachmentEntity();
     attachment.setDownloadURL(downloadedUrl);
     attachment.setTitle(title);
     attachment.setContent(Files.readAllBytes(Paths.get(filePath)));
     attachment.setCreatedDate(new Date());
     attachment.setUpdatedDate(new Date());
-    attachment.setCreator("BCH");
+    attachment.setCreator(owner);
+    attachment.setPermissions(permissions);
     attachment = attachmentDAO.create(attachment);
     assertEquals(1, attachmentDAO.findAll().size());
     assertNotEquals(attachment.getId(), 0);

@@ -99,7 +99,7 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   @Test
   public void testSearchWikiByName() throws Exception {
     // Given
-    indexWiki("My Wiki");
+    indexWiki("My Wiki", "BCH", null);
     WikiSearchData searchData = new WikiSearchData("My Wiki", null, null, null);
     // When
     PageList<SearchResult> results = storage.search(searchData);
@@ -110,7 +110,7 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   @Test
   public void testSearchPageByName() throws Exception {
     // Given
-    indexPage("My Page", "My Page", "This is the content of my Page", "This is a comment");
+    indexPage("My Page", "My Page", "This is the content of my Page", "This is a comment", "BCH", null);
     WikiSearchData searchData = new WikiSearchData("Page", null, null, null);
     // When
     PageList<SearchResult> results = storage.search(searchData);
