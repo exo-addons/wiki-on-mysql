@@ -31,9 +31,13 @@ import java.util.Date;
 @ExoEntity
 @Table(name = "WIKI_DRAFT_PAGES")
 @NamedQueries({
-        @NamedQuery(name = "wikiDraftPage.findDraftPageByUser", query = "SELECT d FROM DraftPage d WHERE d.author = :username")
+        @NamedQuery(name = "wikiDraftPage.findDraftPagesByUser", query = "SELECT d FROM DraftPageEntity d WHERE d.author = :username ORDER BY d.updatedDate DESC"),
+        @NamedQuery(name = "wikiDraftPage.findDraftPageByUserAndName", query = "SELECT d FROM DraftPageEntity d WHERE d.author = :username AND d.name = :draftPageName ORDER BY d.updatedDate DESC"),
+        @NamedQuery(name = "wikiDraftPage.findDraftPageByUserAndTargetPage", query = "SELECT d FROM DraftPageEntity d WHERE d.author = :username AND d.targetPage.id = :targetPageId"),
+        @NamedQuery(name = "wikiDraftPage.deleteDraftPagesByUserAndTargetPage", query = "DELETE FROM DraftPageEntity d WHERE d.author = :username AND d.targetPage.id = :targetPageId"),
+        @NamedQuery(name = "wikiDraftPage.deleteDraftPagesByUserAndName", query = "DELETE FROM DraftPageEntity d WHERE d.author = :username AND d.name = :draftPageName")
 })
-public class DraftPage extends BasePage {
+public class DraftPageEntity extends BasePageEntity {
   private static final String YES = "Y";
   private static final String NO  = "N";
 
@@ -44,7 +48,7 @@ public class DraftPage extends BasePage {
 
   @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "TARGET_PAGE_ID")
-  private Page targetPage;
+  private PageEntity targetPage;
 
   @Column(name = "TARGET_PAGE_REVISION")
   private String targetRevision;
@@ -73,11 +77,11 @@ public class DraftPage extends BasePage {
   @Column(name = "UPDATED_DATE")
   private Date updatedDate;
 
-  public Page getTargetPage() {
+  public PageEntity getTargetPage() {
     return targetPage;
   }
 
-  public void setTargetPage(Page targetPage) {
+  public void setTargetPage(PageEntity targetPage) {
     this.targetPage = targetPage;
   }
 

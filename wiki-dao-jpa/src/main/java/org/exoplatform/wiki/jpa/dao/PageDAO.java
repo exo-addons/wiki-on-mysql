@@ -16,29 +16,21 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
-import java.util.Date;
-import java.util.List;
+import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
+import org.exoplatform.wiki.jpa.entity.PageEntity;
 
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
-
-import org.hibernate.envers.AuditReader;
-import org.hibernate.envers.AuditReaderFactory;
-import org.hibernate.envers.RevisionType;
-import org.hibernate.envers.query.AuditEntity;
-import org.hibernate.envers.query.AuditQuery;
-
-import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
-import org.exoplatform.wiki.jpa.entity.Page;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com Jun
  * 24, 2015
  */
-public class PageDAO extends GenericDAOJPAImpl<Page, Long> {
+public class PageDAO extends GenericDAOJPAImpl<PageEntity, Long> {
 
-  public Page getPageOfWikiByName(String wikiType, String wikiOwner, String pageName) {
-    TypedQuery<Page> query = getEntityManager().createNamedQuery("wikiPage.getPageOfWikiByName", Page.class)
+  public PageEntity getPageOfWikiByName(String wikiType, String wikiOwner, String pageName) {
+    TypedQuery<PageEntity> query = getEntityManager().createNamedQuery("wikiPage.getPageOfWikiByName", PageEntity.class)
                                                .setParameter("name", pageName)
                                                .setParameter("type", wikiType)
                                                .setParameter("owner", wikiOwner);
@@ -50,35 +42,12 @@ public class PageDAO extends GenericDAOJPAImpl<Page, Long> {
     }
   }
 
-  public List<Page> getChildrenPages(Page page) {
-    TypedQuery<Page> query = getEntityManager().createNamedQuery("wikiPage.getChildrenPages", Page.class)
+  public List<PageEntity> getChildrenPages(PageEntity page) {
+    TypedQuery<PageEntity> query = getEntityManager().createNamedQuery("wikiPage.getChildrenPages", PageEntity.class)
                                                .setParameter("id", page.getId());
     return query.getResultList();
   }
 
-  public List<Page> findRemovedPages(Page parentPage) {
-    AuditReader reader = AuditReaderFactory.get(getEntityManager());
-    AuditQuery query = reader.createQuery()
-                             .forRevisionsOfEntity(Page.class, true, true)
-                             .add(AuditEntity.property("parentPage").eq(parentPage))
-                             .add(AuditEntity.revisionType().eq(RevisionType.DEL));
-    return query.getResultList();
-  }
-
-  public List<Number> getAllHistory(Page page) {
-    AuditReader reader = AuditReaderFactory.get(getEntityManager());
-    return reader.getRevisions(Page.class, page.getId());
-  }
-
-  public Page getPageAtRevision(Page page, int revision) {
-    AuditReader reader = AuditReaderFactory.get(getEntityManager());
-    return reader.find(Page.class, page.getId(), revision);
-  }
-
-  public int getCurrentVersion(Page page) {
-    AuditReader reader = AuditReaderFactory.get(getEntityManager());
-    return (Integer) reader.getRevisionNumberForDate(new Date(Long.MAX_VALUE));
-  }
 
   public List<Long> findAllIds(int offset, int limit) {
     return getEntityManager().createNamedQuery("wikiPage.getAllIds").setFirstResult(offset).setMaxResults(limit).getResultList();

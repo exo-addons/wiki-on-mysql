@@ -36,6 +36,7 @@
             </column>
             <column name="WIKI_ID" type="BIGINT"/>
             <column name="PARENT_PAGE_ID" type="BIGINT"/>
+            <!-- TODO manage RELATED_PAGE_ID -->
             <column name="AUTHOR" type="VARCHAR(36)"/>
             <column name="NAME" type="VARCHAR(50)"/>
             <column name="OWNER" type="VARCHAR(36)"/>
@@ -72,16 +73,15 @@
             </column>
             <column name="DOWNLOAD_URL" type="VARCHAR(500)"/>
             <column name="TITLE" type="VARCHAR(250)"/>
+            <column name="FULL_TITLE" type="VARCHAR(2000)"/>
             <column name="CONTENT" type="BLOB"/>
+            <column name="MIMETYPE" type="VARCHAR(250)"/>
             <column name="PAGE_ID" type="BIGINT"/>
         </createTable>
     </changeSet>
 
     <changeSet author="wiki-rdbms" id="1.0.0-4">
         <createTable tableName="WIKI_WATCHERS">
-            <column name="WATCHER_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="PK_WIKI_WATCHERS_WATCHER_ID"/>
-            </column>
             <column name="USERNAME" type="VARCHAR(36)"/>
             <column name="PAGE_ID" type="BIGINT"/>
         </createTable>
@@ -133,53 +133,125 @@
     </changeSet>
 
     <changeSet author="wiki-rdbms" id="1.0.0-8">
+        <createTable tableName="WIKI_ATTACHMENT_PERMISSIONS">
+            <column name="ATTACHMENT_ID" type="BIGINT"/>
+            <column name="IDENTITY" type="VARCHAR(36)"/>
+            <column name="IDENTITY_TYPE" type="VARCHAR(50)"/>
+            <column name="PERMISSION" type="VARCHAR(15)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="wiki-rdbms" id="1.0.0-9">
+        <createTable tableName="WIKI_WIKI_PERMISSIONS">
+            <column name="WIKI_ID" type="BIGINT"/>
+            <column name="IDENTITY" type="VARCHAR(36)"/>
+            <column name="IDENTITY_TYPE" type="VARCHAR(50)"/>
+            <column name="PERMISSION" type="VARCHAR(15)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="wiki-rdbms" id="1.0.0-10">
+        <createTable tableName="WIKI_PAGE_PERMISSIONS">
+            <column name="PAGE_ID" type="BIGINT"/>
+            <column name="IDENTITY" type="VARCHAR(36)"/>
+            <column name="IDENTITY_TYPE" type="VARCHAR(50)"/>
+            <column name="PERMISSION" type="VARCHAR(15)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="wiki-rdbms" id="1.0.0-11">
+        <createTable tableName="WIKI_PAGES_RELATED_PAGES">
+            <column name="PAGE_ID" type="BIGINT"/>
+            <column name="RELATED_PAGE_ID" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="wiki-rdbms" id="1.0.0-12">
         <addForeignKeyConstraint baseColumnNames="WIKI_HOME" baseTableName="WIKI_WIKIS"
                                  constraintName="FK_WIKI_WIKIS_WIKI_HOME" deferrable="false" initiallyDeferred="false"
                                  onDelete="NO ACTION" onUpdate="NO ACTION"
                                  referencedColumnNames="PAGE_ID" referencedTableName="WIKI_PAGES"/>
     </changeSet>
 
-    <changeSet author="wiki-rdbms" id="1.0.0-9">
+    <changeSet author="wiki-rdbms" id="1.0.0-13">
         <addForeignKeyConstraint baseColumnNames="WIKI_ID" baseTableName="WIKI_PAGES"
                                  constraintName="FK_WIKI_PAGES_WIKI_ID" deferrable="false" initiallyDeferred="false"
                                  onDelete="NO ACTION" onUpdate="NO ACTION"
                                  referencedColumnNames="WIKI_ID" referencedTableName="WIKI_WIKIS"/>
     </changeSet>
 
-    <changeSet author="wiki-rdbms" id="1.0.0-10">
+    <changeSet author="wiki-rdbms" id="1.0.0-14">
         <addForeignKeyConstraint baseColumnNames="PARENT_PAGE_ID" baseTableName="WIKI_PAGES"
                                  constraintName="FK_WIKI_PAGES_PARENT_PAGE_ID" deferrable="false" initiallyDeferred="false"
                                  onDelete="NO ACTION" onUpdate="NO ACTION"
                                  referencedColumnNames="PAGE_ID" referencedTableName="WIKI_PAGES"/>
     </changeSet>
 
-    <changeSet author="wiki-rdbms" id="1.0.0-11">
+    <changeSet author="wiki-rdbms" id="1.0.0-15">
         <addForeignKeyConstraint baseColumnNames="PAGE_ID" baseTableName="WIKI_WATCHERS"
                                  constraintName="FK_WIKI_WATCHERS_PAGE_ID" deferrable="false" initiallyDeferred="false"
                                  onDelete="NO ACTION" onUpdate="NO ACTION"
                                  referencedColumnNames="PAGE_ID" referencedTableName="WIKI_PAGES"/>
     </changeSet>
 
-    <changeSet author="wiki-rdbms" id="1.0.0-12">
+    <changeSet author="wiki-rdbms" id="1.0.0-16">
         <addForeignKeyConstraint baseColumnNames="WIKI_ID" baseTableName="WIKI_TEMPLATES"
                                  constraintName="FK_WIKI_TEMPLATES_WIKI_ID" deferrable="false" initiallyDeferred="false"
                                  onDelete="NO ACTION" onUpdate="NO ACTION"
                                  referencedColumnNames="WIKI_ID" referencedTableName="WIKI_WIKIS"/>
     </changeSet>
 
-    <changeSet author="wiki-rdbms" id="1.0.0-13">
+    <changeSet author="wiki-rdbms" id="1.0.0-17">
         <addForeignKeyConstraint baseColumnNames="TARGET_PAGE_ID" baseTableName="WIKI_DRAFT_PAGES"
                                  constraintName="FK_WIKI_DRAFT_PAGES_TARGET_PAGE_ID" deferrable="false" initiallyDeferred="false"
                                  onDelete="NO ACTION" onUpdate="NO ACTION"
                                  referencedColumnNames="PAGE_ID" referencedTableName="WIKI_PAGES"/>
     </changeSet>
 
-    <changeSet author="wiki-rdbms" id="1.0.0-14">
+    <changeSet author="wiki-rdbms" id="1.0.0-18">
         <addForeignKeyConstraint baseColumnNames="PAGE_ID" baseTableName="WIKI_ATTACHMENTS"
                                  constraintName="FK_WIKI_ATTACHMENTS_PAGE_ID" deferrable="false" initiallyDeferred="false"
                                  onDelete="NO ACTION" onUpdate="NO ACTION"
                                  referencedColumnNames="PAGE_ID" referencedTableName="WIKI_PAGES"/>
     </changeSet>
 
+    <changeSet author="wiki-rdbms" id="1.0.0-19">
+        <addForeignKeyConstraint baseColumnNames="ATTACHMENT_ID" baseTableName="WIKI_ATTACHMENT_PERMISSIONS"
+                                 constraintName="FK_WIKI_ATTACHMENTS_PERMISSIONS_ATTACHMENT_ID" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="ATTACHMENT_ID" referencedTableName="WIKI_ATTACHMENTS"/>
+    </changeSet>
+
+    <changeSet author="wiki-rdbms" id="1.0.0-20">
+        <addForeignKeyConstraint baseColumnNames="WIKI_ID" baseTableName="WIKI_WIKI_PERMISSIONS"
+                                 constraintName="FK_WIKI_WIKIS_PERMISSIONS_WIKI_ID" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="WIKI_ID" referencedTableName="WIKI_WIKIS"/>
+    </changeSet>
+
+    <changeSet author="wiki-rdbms" id="1.0.0-21">
+        <addForeignKeyConstraint baseColumnNames="PAGE_ID" baseTableName="WIKI_PAGE_PERMISSIONS"
+                                 constraintName="FK_WIKI_PAGES_PERMISSIONS_PAGE_ID" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="PAGE_ID" referencedTableName="WIKI_PAGES"/>
+    </changeSet>
+
+    <changeSet author="wiki-rdbms" id="1.0.0-22">
+        <addForeignKeyConstraint baseColumnNames="RELATED_PAGE_ID" baseTableName="WIKI_PAGES_RELATED_PAGES"
+                                 constraintName="FK_WIKI_PAGES_RELATED_PAGES_RELATED_PAGE_ID" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="PAGE_ID" referencedTableName="WIKI_PAGES"/>
+    </changeSet>
+
+    <changeSet author="wiki-rdbms" id="1.0.0-23">
+        <addForeignKeyConstraint baseColumnNames="PAGE_ID" baseTableName="WIKI_PAGES_RELATED_PAGES"
+                                 constraintName="FK_WIKI_PAGES_RELATED_PAGES_PAGE_ID" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="PAGE_ID" referencedTableName="WIKI_PAGES"/>
+    </changeSet>
+
     <!-- TODO add UNIQUE constraint on (USERNAME, PAGE_ID) -->
+    <!-- TODO add UNIQUE constraint on WIKI_ATTACHMENT_PERMISSIONS -->
+    <!-- TODO add PK or FK on WIKI_PAGES_RELATED_PAGES -->
+    <!-- TODO add UNIQUE constraint on WATCHERS -->
 </databaseChangeLog>

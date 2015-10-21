@@ -30,7 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
-import org.exoplatform.wiki.jpa.entity.Wiki;
+import org.exoplatform.wiki.jpa.entity.WikiEntity;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
@@ -52,8 +52,8 @@ public class WikiDAOTest extends BaseWikiJPAIntegrationTest {
   @Test
   public void testFindAllIds() {
     //Given
-    wikiDAO.create(new Wiki().setName("My wiki #1"));
-    wikiDAO.create(new Wiki().setName("My wiki #2"));
+    wikiDAO.create(new WikiEntity().setName("My wiki #1"));
+    wikiDAO.create(new WikiEntity().setName("My wiki #2"));
     //When
     List<Long> ids = wikiDAO.findAllIds(0, 10);
     //Then
@@ -63,12 +63,12 @@ public class WikiDAOTest extends BaseWikiJPAIntegrationTest {
   @Test
   public void testFindWikiByTypeAndOwner() {
     //Given
-    wikiDAO.create(new Wiki().setName("My wiki #1").setType("portal").setOwner("wiki1"));
-    wikiDAO.create(new Wiki().setName("My wiki #2").setType("portal").setOwner("wiki2"));
+    wikiDAO.create(new WikiEntity().setName("My wiki #1").setType("portal").setOwner("wiki1"));
+    wikiDAO.create(new WikiEntity().setName("My wiki #2").setType("portal").setOwner("wiki2"));
     //When
-    Wiki wiki1 = wikiDAO.getWikiByTypeAndOwner("portal", "wiki1");
-    Wiki wiki2 = wikiDAO.getWikiByTypeAndOwner("group", "wiki1");
-    Wiki wiki3 = wikiDAO.getWikiByTypeAndOwner("portal", "wiki3");
+    WikiEntity wiki1 = wikiDAO.getWikiByTypeAndOwner("portal", "wiki1");
+    WikiEntity wiki2 = wikiDAO.getWikiByTypeAndOwner("group", "wiki1");
+    WikiEntity wiki3 = wikiDAO.getWikiByTypeAndOwner("portal", "wiki3");
     //Then
     assertNotNull(wiki1);
     assertNull(wiki2);
@@ -78,13 +78,13 @@ public class WikiDAOTest extends BaseWikiJPAIntegrationTest {
   @Test
   public void testFindWikisByType() {
     //Given
-    wikiDAO.create(new Wiki().setName("My wiki #1").setType("portal").setOwner("wiki1"));
-    wikiDAO.create(new Wiki().setName("My wiki #2").setType("portal").setOwner("wiki2"));
-    wikiDAO.create(new Wiki().setName("My wiki #3").setType("group").setOwner("wiki3"));
+    wikiDAO.create(new WikiEntity().setName("My wiki #1").setType("portal").setOwner("wiki1"));
+    wikiDAO.create(new WikiEntity().setName("My wiki #2").setType("portal").setOwner("wiki2"));
+    wikiDAO.create(new WikiEntity().setName("My wiki #3").setType("group").setOwner("wiki3"));
     //When
-    List<Wiki> portalWikis = wikiDAO.getWikisByType("portal");
-    List<Wiki> groupWikis = wikiDAO.getWikisByType("group");
-    List<Wiki> userWikis = wikiDAO.getWikisByType("user");
+    List<WikiEntity> portalWikis = wikiDAO.getWikisByType("portal");
+    List<WikiEntity> groupWikis = wikiDAO.getWikisByType("group");
+    List<WikiEntity> userWikis = wikiDAO.getWikisByType("user");
     //Then
     assertNotNull(portalWikis);
     assertEquals(2, portalWikis.size());
@@ -98,7 +98,7 @@ public class WikiDAOTest extends BaseWikiJPAIntegrationTest {
   public void testCreateWiki() {
     //Given
     //When
-    Wiki wiki1 = wikiDAO.create(new Wiki().setType("portal").setOwner("wiki1"));
+    WikiEntity wiki1 = wikiDAO.create(new WikiEntity().setType("portal").setOwner("wiki1"));
     //Then
     assertNotNull(wiki1);
     assertEquals("portal", wiki1.getType());

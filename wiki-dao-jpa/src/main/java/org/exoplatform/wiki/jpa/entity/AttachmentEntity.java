@@ -22,20 +22,18 @@ import java.util.List;
 import javax.persistence.*;
 
 import org.exoplatform.commons.api.persistence.ExoEntity;
-import org.hibernate.envers.Audited;
-import org.hibernate.envers.RelationTargetAuditMode;
 
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  *          exo@exoplatform.com
- * Jun 23, 2015  
+ * Jun 23, 2015
  */
 @Entity
 @ExoEntity
 @Table(name = "WIKI_ATTACHMENTS")
-public class Attachment {
-  @Id 
+public class AttachmentEntity {
+  @Id
   @Column(name = "ATTACHMENT_ID")
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
@@ -54,23 +52,33 @@ public class Attachment {
   @Temporal(TemporalType.TIMESTAMP)
   private Date updatedDate;
 
+  // TODO To remove
   @Column(name = "DOWNLOAD_URL")
   private String downloadURL;
 
   @Column(name = "TITLE")
   private String title;
 
+  @Column(name = "FULL_TITLE")
+  private String fullTitle;
+
   @Lob
   @Column(name = "CONTENT")
   private byte[] content;
 
+  @Column(name = "MIMETYPE")
+  private String mimeType;
+
   @ManyToOne
   @JoinColumn(name = "PAGE_ID")
-  @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-  private Page page;
+  private PageEntity page;
 
-  @OneToMany(cascade=CascadeType.ALL)
-  private List<Permission> permissions;
+  @ElementCollection
+  @CollectionTable(
+    name = "WIKI_ATTACHMENT_PERMISSIONS",
+    joinColumns=@JoinColumn(name = "ATTACHMENT_ID")
+  )
+  private List<PermissionEntity> permissions;
 
   public long getId(){return this.id;}
 
@@ -130,6 +138,14 @@ public class Attachment {
     this.title = title;
   }
 
+  public String getFullTitle() {
+    return fullTitle;
+  }
+
+  public void setFullTitle(String fullTitle) {
+    this.fullTitle = fullTitle;
+  }
+
   public byte[] getContent() {
     return content;
   }
@@ -138,22 +154,26 @@ public class Attachment {
     this.content = content;
   }
 
-  public Page getPage() {
+  public String getMimeType() {
+    return mimeType;
+  }
+
+  public void setMimeType(String mimeType) {
+    this.mimeType = mimeType;
+  }
+
+  public PageEntity getPage() {
     return page;
   }
 
-  public void setPage(Page page) {
+  public void setPage(PageEntity page) {
     this.page = page;
   }
 
-  public List<Permission> getPermissions(){
+  public List<PermissionEntity> getPermissions(){
     return permissions;
   }
-  public void setPermissions(List<Permission> permission){
+  public void setPermissions(List<PermissionEntity> permission){
     this.permissions = permission;
-  }
-  
-  public boolean hasPermission(PermissionType permissionType){
-    throw new UnsupportedOperationException("Not implemented");
   }
 }

@@ -17,15 +17,15 @@
 package org.exoplatform.wiki.jpa.dao;
 
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
-import org.exoplatform.wiki.jpa.entity.EmotionIcon;
+import org.exoplatform.wiki.jpa.entity.EmotionIconEntity;
 
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 
-public class EmotionIconDAO extends GenericDAOJPAImpl<EmotionIcon, Long> {
+public class EmotionIconDAO extends GenericDAOJPAImpl<EmotionIconEntity, Long> {
 
-  public EmotionIcon getEmotionIconByName(String emotionIconName) {
-    TypedQuery<EmotionIcon> query = getEntityManager().createNamedQuery("emotionIcon.getEmotionIconByName", EmotionIcon.class)
+  public EmotionIconEntity getEmotionIconByName(String emotionIconName) {
+    TypedQuery<EmotionIconEntity> query = getEntityManager().createNamedQuery("emotionIcon.getEmotionIconByName", EmotionIconEntity.class)
             .setParameter("name", emotionIconName);
 
     try {

@@ -22,20 +22,20 @@ import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
-import org.exoplatform.wiki.jpa.entity.Wiki;
+import org.exoplatform.wiki.jpa.entity.WikiEntity;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com Jun
  * 24, 2015
  */
-public class WikiDAO extends GenericDAOJPAImpl<Wiki, Long> {
+public class WikiDAO extends GenericDAOJPAImpl<WikiEntity, Long> {
 
   public List<Long> findAllIds(int offset, int limit) {
     return getEntityManager().createNamedQuery("wiki.getAllIds").setFirstResult(offset).setMaxResults(limit).getResultList();
   }
 
-  public Wiki getWikiByTypeAndOwner(String wikiType, String wikiOwner) {
-    TypedQuery<Wiki> query = getEntityManager().createNamedQuery("wiki.getWikiByTypeAndOwner", Wiki.class)
+  public WikiEntity getWikiByTypeAndOwner(String wikiType, String wikiOwner) {
+    TypedQuery<WikiEntity> query = getEntityManager().createNamedQuery("wiki.getWikiByTypeAndOwner", WikiEntity.class)
                                                .setParameter("type", wikiType)
                                                .setParameter("owner", wikiOwner);
 
@@ -46,8 +46,8 @@ public class WikiDAO extends GenericDAOJPAImpl<Wiki, Long> {
     }
   }
 
-  public List<Wiki> getWikisByType(String wikiType) {
-    TypedQuery<Wiki> query = getEntityManager().createNamedQuery("wiki.getWikisByType", Wiki.class)
+  public List<WikiEntity> getWikisByType(String wikiType) {
+    TypedQuery<WikiEntity> query = getEntityManager().createNamedQuery("wiki.getWikisByType", WikiEntity.class)
                                                .setParameter("type", wikiType);
 
     return query.getResultList();

@@ -52,9 +52,9 @@ import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.wiki.jpa.dao.*;
-import org.exoplatform.wiki.jpa.entity.Attachment;
-import org.exoplatform.wiki.jpa.entity.Page;
-import org.exoplatform.wiki.jpa.entity.Wiki;
+import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
+import org.exoplatform.wiki.jpa.entity.PageEntity;
+import org.exoplatform.wiki.jpa.entity.WikiEntity;
 import org.exoplatform.wiki.jpa.search.AttachmentIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.WikiIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.WikiPageIndexingServiceConnector;
@@ -109,8 +109,8 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
     node.close();
   }
 
-  protected Wiki indexWiki(String name) throws NoSuchFieldException, IllegalAccessException {
-    Wiki wiki = new Wiki();
+  protected WikiEntity indexWiki(String name) throws NoSuchFieldException, IllegalAccessException {
+    WikiEntity wiki = new WikiEntity();
     wiki.setName(name);
     wiki.setOwner("BCH");
     wiki = wikiDAO.create(wiki);
@@ -121,14 +121,16 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
     return wiki;
   }
 
-  protected Page indexPage(String name, String title, String content, String comment)
+  protected PageEntity indexPage(String name, String title, String content, String comment)
           throws NoSuchFieldException, IllegalAccessException {
-    Page page = new Page();
+    PageEntity page = new PageEntity();
     page.setName(name);
     page.setTitle(title);
     page.setContent(content);
     page.setComment(comment);
     page.setOwner("BCH");
+    page.setCreatedDate(new Date());
+    page.setUpdatedDate(new Date());
     page = pageDAO.create(page);
     assertNotEquals(page.getId(), 0);
     indexingService.index(WikiPageIndexingServiceConnector.TYPE, Long.toString(page.getId()));
@@ -139,7 +141,7 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
 
   protected void indexAttachment(String title, String filePath, String downloadedUrl)
           throws NoSuchFieldException, IllegalAccessException, IOException {
-    Attachment attachment = new Attachment();
+    AttachmentEntity attachment = new AttachmentEntity();
     attachment.setDownloadURL(downloadedUrl);
     attachment.setTitle(title);
     attachment.setContent(Files.readAllBytes(Paths.get(filePath)));

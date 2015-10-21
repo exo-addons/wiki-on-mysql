@@ -37,14 +37,13 @@ import org.exoplatform.wiki.jpa.dao.*;
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
  * 10/20/15
  */
-public class BaseWikiJPAIntegrationTest extends BaseTest {
+public abstract class BaseWikiJPAIntegrationTest extends BaseTest {
   protected WikiDAO        wikiDAO;
   protected PageDAO        pageDAO;
   protected AttachmentDAO  attachmentDAO;
   protected DraftPageDAO   draftPageDAO;
   protected TemplateDAO    templateDAO;
   protected EmotionIconDAO emotionIconDAO;
-  protected WatcherDAO     watcherDAO;
   private Connection       conn;
   private Liquibase        liquibase;
 
@@ -68,7 +67,6 @@ public class BaseWikiJPAIntegrationTest extends BaseTest {
     draftPageDAO = PortalContainer.getInstance().getComponentInstanceOfType(DraftPageDAO.class);
     templateDAO = PortalContainer.getInstance().getComponentInstanceOfType(TemplateDAO.class);
     emotionIconDAO = PortalContainer.getInstance().getComponentInstanceOfType(EmotionIconDAO.class);
-    watcherDAO = PortalContainer.getInstance().getComponentInstanceOfType(WatcherDAO.class);
     // Clean Data
     cleanDB();
   }
@@ -85,7 +83,6 @@ public class BaseWikiJPAIntegrationTest extends BaseTest {
   }
 
   private void cleanDB() {
-    watcherDAO.deleteAll();
     emotionIconDAO.deleteAll();
     templateDAO.deleteAll();
     draftPageDAO.deleteAll();

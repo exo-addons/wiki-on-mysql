@@ -17,23 +17,23 @@
 package org.exoplatform.wiki.jpa.dao;
 
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
-import org.exoplatform.wiki.jpa.entity.Template;
+import org.exoplatform.wiki.jpa.entity.TemplateEntity;
 
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
-public class TemplateDAO extends GenericDAOJPAImpl<Template, Long> {
+public class TemplateDAO extends GenericDAOJPAImpl<TemplateEntity, Long> {
 
-  public List<Template> getTemplatesOfWiki(String wikiType, String wikiOwner) {
-    TypedQuery<Template> query = getEntityManager().createNamedQuery("template.getTemplatesOfWiki", Template.class)
+  public List<TemplateEntity> getTemplatesOfWiki(String wikiType, String wikiOwner) {
+    TypedQuery<TemplateEntity> query = getEntityManager().createNamedQuery("template.getTemplatesOfWiki", TemplateEntity.class)
             .setParameter("type", wikiType)
             .setParameter("owner", wikiOwner);
     return query.getResultList();
   }
 
-  public Template getTemplateOfWikiByName(String wikiType, String wikiOwner, String templateName) {
-    TypedQuery<Template> query = getEntityManager().createNamedQuery("template.getTemplateOfWikiByName", Template.class)
+  public TemplateEntity getTemplateOfWikiByName(String wikiType, String wikiOwner, String templateName) {
+    TypedQuery<TemplateEntity> query = getEntityManager().createNamedQuery("template.getTemplateOfWikiByName", TemplateEntity.class)
             .setParameter("name", templateName)
             .setParameter("type", wikiType)
             .setParameter("owner", wikiOwner);
@@ -45,8 +45,8 @@ public class TemplateDAO extends GenericDAOJPAImpl<Template, Long> {
     }
   }
 
-  public List<Template> searchTemplatesByTitle(String wikiType, String wikiOwner, String searchText) {
-    TypedQuery<Template> query = getEntityManager().createNamedQuery("template.searchTemplatesByTitle", Template.class)
+  public List<TemplateEntity> searchTemplatesByTitle(String wikiType, String wikiOwner, String searchText) {
+    TypedQuery<TemplateEntity> query = getEntityManager().createNamedQuery("template.searchTemplatesByTitle", TemplateEntity.class)
             .setParameter("type", wikiType)
             .setParameter("owner", wikiOwner)
             .setParameter("searchText", "%" + searchText + "%");

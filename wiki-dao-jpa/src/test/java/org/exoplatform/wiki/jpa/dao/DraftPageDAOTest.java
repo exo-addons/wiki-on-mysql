@@ -16,13 +16,15 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Test;
 
 import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
-import org.exoplatform.wiki.jpa.entity.DraftPage;
-import org.exoplatform.wiki.jpa.entity.Page;
+import org.exoplatform.wiki.jpa.entity.DraftPageEntity;
+import org.exoplatform.wiki.jpa.entity.PageEntity;
 
 /**
  * Created by The eXo Platform SAS
@@ -33,17 +35,21 @@ import org.exoplatform.wiki.jpa.entity.Page;
 public class DraftPageDAOTest extends BaseWikiJPAIntegrationTest {
 
   @Test
-  public void testInsert(){;
-    DraftPage dp = new DraftPage();
-    Page page = new Page();
+  public void testInsert(){
+    DraftPageEntity dp = new DraftPageEntity();
+    PageEntity page = new PageEntity();
     page.setName("name");
+    page.setCreatedDate(new Date());
+    page.setUpdatedDate(new Date());
     dp.setTargetPage(page);
+    dp.setCreatedDate(new Date());
+    dp.setUpdatedDate(new Date());
     draftPageDAO.create(dp);
     
     assertNotNull(draftPageDAO.find(dp.getId()));
     assertNotNull(pageDAO.find(page.getId()));
     
-    DraftPage got = draftPageDAO.find(dp.getId());
+    DraftPageEntity got = draftPageDAO.find(dp.getId());
     got.getTargetPage().setName("name1");
     draftPageDAO.update(got);
     assertEquals("name1",page.getName());
@@ -55,20 +61,193 @@ public class DraftPageDAOTest extends BaseWikiJPAIntegrationTest {
 
   @Test
   public void testFindDraftPagesByUser(){
-    DraftPage dp = new DraftPage();
-    Page page = new Page();
+    DraftPageEntity dp = new DraftPageEntity();
+    PageEntity page = new PageEntity();
     page.setName("name");
+    page.setCreatedDate(new Date());
+    page.setUpdatedDate(new Date());
     dp.setTargetPage(page);
     dp.setAuthor("user1");
+    dp.setCreatedDate(new Date());
+    dp.setUpdatedDate(new Date());
     draftPageDAO.create(dp);
 
     assertNotNull(draftPageDAO.find(dp.getId()));
     assertNotNull(pageDAO.find(page.getId()));
-    List<DraftPage> user1DraftPages = draftPageDAO.findDraftPagesByUser("user1");
+    List<DraftPageEntity> user1DraftPages = draftPageDAO.findDraftPagesByUser("user1");
     assertNotNull(user1DraftPages);
     assertEquals(1, user1DraftPages.size());
-    List<DraftPage> user2DraftPages = draftPageDAO.findDraftPagesByUser("user2");
+    List<DraftPageEntity> user2DraftPages = draftPageDAO.findDraftPagesByUser("user2");
     assertNotNull(user2DraftPages);
     assertEquals(0, user2DraftPages.size());
+
+    draftPageDAO.deleteAll();
+    pageDAO.deleteAll();
+  }
+
+  @Test
+  public void testFindLatestDraftPageByUser(){
+    Calendar calendar = Calendar.getInstance();
+    Date now = calendar.getTime();
+    calendar.roll(Calendar.YEAR, 1);
+    Date oneYearAgo = calendar.getTime();
+
+    PageEntity page = new PageEntity();
+    page.setName("page1");
+    page.setUpdatedDate(oneYearAgo);
+    page.setCreatedDate(oneYearAgo);
+    DraftPageEntity dp1 = new DraftPageEntity();
+    dp1.setTargetPage(page);
+    dp1.setAuthor("user1");
+    dp1.setUpdatedDate(oneYearAgo);
+    dp1.setCreatedDate(oneYearAgo);
+    dp1.setTargetRevision("1");
+    draftPageDAO.create(dp1);
+    DraftPageEntity dp2 = new DraftPageEntity();
+    dp2.setTargetPage(page);
+    dp2.setAuthor("user1");
+    dp2.setUpdatedDate(now);
+    dp2.setCreatedDate(now);
+    dp1.setTargetRevision("2");
+    draftPageDAO.create(dp2);
+
+    assertNotNull(draftPageDAO.find(dp2.getId()));
+    assertNotNull(pageDAO.find(page.getId()));
+    DraftPageEntity user1DraftPage = draftPageDAO.findLatestDraftPageByUser("user1");
+    assertNotNull(user1DraftPage);
+    assertEquals("2", user1DraftPage.getTargetRevision());
+    DraftPageEntity user2DraftPage = draftPageDAO.findLatestDraftPageByUser("user2");
+    assertNull(user2DraftPage);
+
+    draftPageDAO.deleteAll();
+    pageDAO.deleteAll();
+  }
+
+  @Test
+  public void testFindDraftPagesByUserAndTargetPage(){
+    //Given
+    DraftPageEntity dp = new DraftPageEntity();
+    PageEntity page = new PageEntity();
+    page.setCreatedDate(new Date());
+    page.setUpdatedDate(new Date());
+    page.setName("page1");
+    dp.setTargetPage(page);
+    PageEntity createdPage = pageDAO.create(page);
+    dp.setAuthor("user1");
+    dp.setCreatedDate(new Date());
+    dp.setUpdatedDate(new Date());
+    draftPageDAO.create(dp);
+
+    //When
+    List<DraftPageEntity> drafts1 = draftPageDAO.findDraftPagesByUserAndTargetPage("user1", createdPage.getId());
+    List<DraftPageEntity> drafts2 = draftPageDAO.findDraftPagesByUserAndTargetPage("user2", createdPage.getId());
+    List<DraftPageEntity> drafts3 = draftPageDAO.findDraftPagesByUserAndTargetPage("user1", createdPage.getId() + 1);
+
+    //Then
+    assertNotNull(draftPageDAO.find(dp.getId()));
+    assertNotNull(pageDAO.find(page.getId()));
+    assertNotNull(drafts1);
+    assertEquals(1, drafts1.size());
+    assertNotNull(drafts2);
+    assertEquals(0, drafts2.size());
+    assertNotNull(drafts3);
+    assertEquals(0, drafts3.size());
+
+    draftPageDAO.deleteAll();
+    pageDAO.deleteAll();
+  }
+
+  @Test
+  public void testDeleteDraftPageByUserAndTargetPage(){
+    Calendar calendar = Calendar.getInstance();
+    Date now = calendar.getTime();
+    calendar.roll(Calendar.YEAR, 1);
+    Date oneYearAgo = calendar.getTime();
+
+    PageEntity page1 = new PageEntity();
+    page1.setName("page1");
+    page1.setUpdatedDate(oneYearAgo);
+    page1.setCreatedDate(oneYearAgo);
+    PageEntity page2 = new PageEntity();
+    page2.setName("page2");
+    page2.setUpdatedDate(now);
+    page2.setCreatedDate(now);
+
+    DraftPageEntity dp1 = new DraftPageEntity();
+    dp1.setTargetPage(page1);
+    dp1.setAuthor("user1");
+    dp1.setName("draft1");
+    dp1.setUpdatedDate(oneYearAgo);
+    dp1.setCreatedDate(oneYearAgo);
+    dp1.setTargetRevision("1");
+    draftPageDAO.create(dp1);
+    DraftPageEntity dp2 = new DraftPageEntity();
+    dp2.setTargetPage(page2);
+    dp2.setAuthor("user1");
+    dp2.setName("draft2");
+    dp2.setUpdatedDate(now);
+    dp2.setCreatedDate(now);
+    dp2.setTargetRevision("1");
+    draftPageDAO.create(dp2);
+
+    assertEquals(2, draftPageDAO.findAll().size());
+    assertEquals(2, pageDAO.findAll().size());
+    draftPageDAO.deleteDraftPagesByUserAndTargetPage("user1", page1.getId());
+    assertEquals(1, draftPageDAO.findAll().size());
+    assertEquals("draft2", draftPageDAO.findAll().get(0).getName());
+    assertEquals(2, pageDAO.findAll().size());
+    draftPageDAO.deleteDraftPagesByUserAndTargetPage("user1", page2.getId());
+    assertEquals(0, draftPageDAO.findAll().size());
+    assertEquals(2, pageDAO.findAll().size());
+
+    draftPageDAO.deleteAll();
+    pageDAO.deleteAll();
+  }
+
+  @Test
+  public void testDeleteDraftPageByUserAndName(){
+    Calendar calendar = Calendar.getInstance();
+    Date now = calendar.getTime();
+    calendar.roll(Calendar.YEAR, 1);
+    Date oneYearAgo = calendar.getTime();
+
+    PageEntity page1 = new PageEntity();
+    page1.setName("page1");
+    page1.setUpdatedDate(oneYearAgo);
+    page1.setCreatedDate(oneYearAgo);
+    PageEntity page2 = new PageEntity();
+    page2.setName("page2");
+    page2.setUpdatedDate(now);
+    page2.setCreatedDate(now);
+
+    DraftPageEntity dp1 = new DraftPageEntity();
+    dp1.setTargetPage(page1);
+    dp1.setAuthor("user1");
+    dp1.setName("draft1");
+    dp1.setUpdatedDate(oneYearAgo);
+    dp1.setCreatedDate(oneYearAgo);
+    dp1.setTargetRevision("1");
+    draftPageDAO.create(dp1);
+    DraftPageEntity dp2 = new DraftPageEntity();
+    dp2.setTargetPage(page2);
+    dp2.setAuthor("user1");
+    dp2.setName("draft2");
+    dp2.setUpdatedDate(now);
+    dp2.setCreatedDate(now);
+    dp2.setTargetRevision("1");
+    draftPageDAO.create(dp2);
+
+    assertEquals(2, draftPageDAO.findAll().size());
+    assertEquals(2, pageDAO.findAll().size());
+    draftPageDAO.deleteDraftPagesByUserAndName("draft1", "user1");
+    assertEquals(1, draftPageDAO.findAll().size());
+    assertEquals("draft2", draftPageDAO.findAll().get(0).getName());
+    assertEquals(2, pageDAO.findAll().size());
+    draftPageDAO.deleteDraftPagesByUserAndName("draft2", "user1");
+    assertEquals(0, draftPageDAO.findAll().size());
+    assertEquals(2, pageDAO.findAll().size());
+
+    draftPageDAO.deleteAll();
+    pageDAO.deleteAll();
   }
 }

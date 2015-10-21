@@ -24,8 +24,8 @@ import java.net.URL;
 
 import org.exoplatform.addons.es.index.impl.ElasticIndexingOperationProcessor;
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
-import org.exoplatform.wiki.jpa.entity.Page;
-import org.exoplatform.wiki.jpa.entity.Wiki;
+import org.exoplatform.wiki.jpa.entity.PageEntity;
+import org.exoplatform.wiki.jpa.entity.WikiEntity;
 import org.exoplatform.wiki.service.search.WikiSearchData;
 
 import static org.junit.Assert.assertNotEquals;
@@ -46,10 +46,10 @@ public class IndexingTest extends BaseWikiIntegrationTest {
 
   public void testReindexingWikiAndSearch() throws NoSuchFieldException, IllegalAccessException, IOException {
     // Given
-    Wiki wiki1 = indexWiki("RDBMS Guidelines");
+    WikiEntity wiki1 = indexWiki("RDBMS Guidelines");
     wiki1.setName("Liquibase Guidelines");
     wikiDAO.update(wiki1);
-    Wiki wiki2 = indexWiki("RDBMS Stats");
+    WikiEntity wiki2 = indexWiki("RDBMS Stats");
     wiki2.setName("Liquibase Stats");
     wikiDAO.update(wiki2);
     assertEquals(2, wikiDAO.findAll().size());
@@ -65,17 +65,17 @@ public class IndexingTest extends BaseWikiIntegrationTest {
 
     public void testReindexing_isProcessedAsBatch() throws NoSuchFieldException, IllegalAccessException, IOException {
         // Given
-        Wiki wiki = new Wiki();
+        WikiEntity wiki = new WikiEntity();
         wiki.setName("RDBMS Guidelines");
         wiki.setOwner("BCH");
         wiki = wikiDAO.create(wiki);
         assertNotEquals(wiki.getId(), 0);
-        Wiki wiki2 = new Wiki();
+        WikiEntity wiki2 = new WikiEntity();
         wiki2.setName("Liquibase Guidelines");
         wiki2.setOwner("BCH");
         wiki2 = wikiDAO.create(wiki2);
         assertNotEquals(wiki2.getId(), 0);
-        Wiki wiki3 = new Wiki();
+        WikiEntity wiki3 = new WikiEntity();
         wiki3.setName("Logs Guidelines");
         wiki3.setOwner("BCH");
         wiki3 = wikiDAO.create(wiki3);
@@ -94,7 +94,7 @@ public class IndexingTest extends BaseWikiIntegrationTest {
 
   public void testReindexingWikiPagesAndSearch() throws NoSuchFieldException, IllegalAccessException, IOException {
     // Given
-    Page page = indexPage("RDBMS Guidelines", "RDBMS Guidelines", "All the guidelines you need", "Draft version");
+    PageEntity page = indexPage("RDBMS Guidelines", "RDBMS Guidelines", "All the guidelines you need", "Draft version");
     page.setName("Liquibase Guidelines");
     page.setTitle("Liquibase Guidelines");
     pageDAO.update(page);
@@ -123,7 +123,7 @@ public class IndexingTest extends BaseWikiIntegrationTest {
 
   public void testUpdatingWiki() throws NoSuchFieldException, IllegalAccessException {
     // Given
-    Wiki wiki = indexWiki("RDBMS Guidelines");
+    WikiEntity wiki = indexWiki("RDBMS Guidelines");
     assertEquals(0, storage.search(new WikiSearchData("Liquibase", null, null, null)).getPageSize());
     // When
     wiki.setName("Liquibase Guidelines");

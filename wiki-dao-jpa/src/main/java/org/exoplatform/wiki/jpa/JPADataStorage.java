@@ -19,31 +19,30 @@
 
 package org.exoplatform.wiki.jpa;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.*;
+
 import org.apache.commons.lang.StringUtils;
+
 import org.exoplatform.commons.api.search.SearchService;
 import org.exoplatform.commons.utils.ObjectPageList;
 import org.exoplatform.commons.utils.PageList;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.ValuesParam;
+import org.exoplatform.portal.config.model.PortalConfig;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.jpa.dao.*;
 import org.exoplatform.wiki.jpa.entity.*;
 import org.exoplatform.wiki.mow.api.*;
-import org.exoplatform.wiki.mow.api.Attachment;
-import org.exoplatform.wiki.mow.api.DraftPage;
-import org.exoplatform.wiki.mow.api.EmotionIcon;
-import org.exoplatform.wiki.mow.api.Page;
-import org.exoplatform.wiki.mow.api.PermissionType;
-import org.exoplatform.wiki.mow.api.Template;
-import org.exoplatform.wiki.mow.api.Wiki;
 import org.exoplatform.wiki.service.DataStorage;
+import org.exoplatform.wiki.service.IDType;
 import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.search.*;
+import org.exoplatform.wiki.utils.Utils;
 import org.exoplatform.wiki.utils.WikiConstants;
-
-import java.util.*;
 
 /**
  * Created by The eXo Platform SAS
@@ -59,17 +58,15 @@ public class JPADataStorage implements DataStorage {
   private DraftPageDAO draftPageDAO;
   private TemplateDAO templateDAO;
   private EmotionIconDAO emotionIconDAO;
-  private WatcherDAO watcherDAO;
 
   public JPADataStorage(WikiDAO wikiDAO, PageDAO pageDAO, AttachmentDAO attachmentDAO, DraftPageDAO draftPageDAO,
-                        TemplateDAO templateDAO, EmotionIconDAO emotionIconDAO, WatcherDAO watcherDAO) {
+                        TemplateDAO templateDAO, EmotionIconDAO emotionIconDAO) {
     this.wikiDAO = wikiDAO;
     this.pageDAO = pageDAO;
     this.attachmentDAO = attachmentDAO;
     this.draftPageDAO = draftPageDAO;
     this.templateDAO = templateDAO;
     this.emotionIconDAO = emotionIconDAO;
-    this.watcherDAO = watcherDAO;
   }
 
   @Override
@@ -103,7 +100,7 @@ public class JPADataStorage implements DataStorage {
   @Override
   public List<Wiki> getWikisByType(String wikiType) throws WikiException {
     List<Wiki> wikis = new ArrayList();
-    for(org.exoplatform.wiki.jpa.entity.Wiki wikiEntity : wikiDAO.getWikisByType(wikiType)) {
+    for(WikiEntity wikiEntity : wikiDAO.getWikisByType(wikiType)) {
       wikis.add(convertWikiEntityToWiki(wikiEntity));
     }
     return wikis;
@@ -111,7 +108,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public Wiki createWiki(Wiki wiki) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Wiki createdWikiEntity = wikiDAO.create(convertWikiToWikiEntity(wiki));
+    WikiEntity createdWikiEntity = wikiDAO.create(convertWikiToWikiEntity(wiki));
     Wiki createdWiki = convertWikiEntityToWiki(createdWikiEntity);
 
     // create wiki home page
@@ -133,13 +130,13 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public Page createPage(Wiki wiki, Page parentPage, Page page) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Wiki wikiEntity = wikiDAO.getWikiByTypeAndOwner(wiki.getType(), wiki.getOwner());
+    WikiEntity wikiEntity = wikiDAO.getWikiByTypeAndOwner(wiki.getType(), wiki.getOwner());
     if(wikiEntity == null) {
       throw new WikiException("Cannot create page " + wiki.getType() + ":" + wiki.getOwner() + ":"
               + page.getName() + " because wiki does not exist.");
     }
 
-    org.exoplatform.wiki.jpa.entity.Page parentPageEntity = null;
+    PageEntity parentPageEntity = null;
     if(parentPage != null) {
       parentPageEntity = pageDAO.getPageOfWikiByName(wiki.getType(), wiki.getOwner(), parentPage.getName());
       if(parentPageEntity == null) {
@@ -147,11 +144,19 @@ public class JPADataStorage implements DataStorage {
                 + page.getName() + " because parent page " + parentPage.getName() + " does not exist.");
       }
     }
-    org.exoplatform.wiki.jpa.entity.Page pageEntity = convertPageToPageEntity(page);
+    PageEntity pageEntity = convertPageToPageEntity(page);
     pageEntity.setWiki(wikiEntity);
     pageEntity.setParentPage(parentPageEntity);
 
-    org.exoplatform.wiki.jpa.entity.Page createdPageEntity = pageDAO.create(pageEntity);
+    Date now = GregorianCalendar.getInstance().getTime();
+    if(pageEntity.getCreatedDate() == null) {
+      pageEntity.setCreatedDate(now);
+    }
+    if(pageEntity.getUpdatedDate() == null) {
+      pageEntity.setUpdatedDate(now);
+    }
+
+    PageEntity createdPageEntity = pageDAO.create(pageEntity);
 
     // if the page to create is the wiki home, update the wiki
     if(parentPage == null) {
@@ -176,7 +181,7 @@ public class JPADataStorage implements DataStorage {
   public Page getParentPageOf(Page page) throws WikiException {
     Page parentPage = null;
 
-    org.exoplatform.wiki.jpa.entity.Page childPageEntity = null;
+    PageEntity childPageEntity = null;
     if(page.getId() != null && !page.getId().isEmpty()) {
       childPageEntity = pageDAO.find(Long.parseLong(page.getId()));
     } else {
@@ -192,16 +197,16 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public List<Page> getChildrenPageOf(Page page) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
+    PageEntity pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
     if(pageEntity == null) {
       throw new WikiException("Cannot get children of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
               + page.getName() + " because page does not exist.");
     }
 
     List<Page> childrenPages = new ArrayList<>();
-    List<org.exoplatform.wiki.jpa.entity.Page> childrenPagesEntities = pageDAO.getChildrenPages(pageEntity);
+    List<PageEntity> childrenPagesEntities = pageDAO.getChildrenPages(pageEntity);
     if(childrenPagesEntities != null) {
-      for (org.exoplatform.wiki.jpa.entity.Page childPageEntity : childrenPagesEntities) {
+      for (PageEntity childPageEntity : childrenPagesEntities) {
         childrenPages.add(convertPageEntityToPage(childPageEntity));
       }
     }
@@ -211,7 +216,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void deletePage(String wikiType, String wikiOwner, String pageName) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity = pageDAO.getPageOfWikiByName(wikiType, wikiOwner, pageName);
+    PageEntity pageEntity = pageDAO.getPageOfWikiByName(wikiType, wikiOwner, pageName);
     if(pageEntity == null) {
       throw new WikiException("Cannot delete page " + wikiType + ":" + wikiOwner + ":" + pageName
               + " because page does not exist.");
@@ -225,10 +230,10 @@ public class JPADataStorage implements DataStorage {
    * Recursively deletes a page and all its children pages
    * @param pageEntity the root page to delete
    */
-  private void deletePageEntity(org.exoplatform.wiki.jpa.entity.Page pageEntity) {
-    List<org.exoplatform.wiki.jpa.entity.Page> childrenPages = pageDAO.getChildrenPages(pageEntity);
+  private void deletePageEntity(PageEntity pageEntity) {
+    List<PageEntity> childrenPages = pageDAO.getChildrenPages(pageEntity);
     if(childrenPages != null) {
-      for (org.exoplatform.wiki.jpa.entity.Page childPage : childrenPages) {
+      for (PageEntity childPage : childrenPages) {
         deletePageEntity(childPage);
       }
     }
@@ -246,7 +251,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void updateTemplatePage(Template template) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Template templateEntity;
+    TemplateEntity templateEntity;
     if(template.getId() != null && !template.getId().isEmpty()) {
       templateEntity = templateDAO.find(Long.parseLong(template.getId()));
     } else {
@@ -268,7 +273,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void deleteTemplatePage(String wikiType, String wikiOwner, String templateName) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Template templateEntity = templateDAO.getTemplateOfWikiByName(wikiType, wikiOwner, templateName);
+    TemplateEntity templateEntity = templateDAO.getTemplateOfWikiByName(wikiType, wikiOwner, templateName);
     if(templateEntity == null) {
       throw new WikiException("Cannot delete template " + wikiType + ":" + wikiOwner + ":" + templateName
               + " because template does not exist.");
@@ -279,7 +284,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public Template getTemplatePage(WikiPageParams params, String templateName) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Template templateEntity = templateDAO.getTemplateOfWikiByName(params.getType(), params.getOwner(), templateName);
+    TemplateEntity templateEntity = templateDAO.getTemplateOfWikiByName(params.getType(), params.getOwner(), templateName);
     return convertTemplateEntityToTemplate(templateEntity);
   }
 
@@ -287,9 +292,9 @@ public class JPADataStorage implements DataStorage {
   public Map<String, Template> getTemplates(WikiPageParams wikiPageParams) throws WikiException {
     Map<String, Template> templates = new HashMap<>();
 
-    List<org.exoplatform.wiki.jpa.entity.Template> templatesEntities = templateDAO.getTemplatesOfWiki(wikiPageParams.getType(), wikiPageParams.getOwner());
+    List<TemplateEntity> templatesEntities = templateDAO.getTemplatesOfWiki(wikiPageParams.getType(), wikiPageParams.getOwner());
     if(templatesEntities != null) {
-      for(org.exoplatform.wiki.jpa.entity.Template templateEntity : templatesEntities) {
+      for(TemplateEntity templateEntity : templatesEntities) {
         templates.put(templateEntity.getName(), convertTemplateEntityToTemplate(templateEntity));
       }
     }
@@ -298,18 +303,18 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
-  public void deleteDraftOfPage(Page page, String s) throws WikiException {
-    // TODO Implement it !
+  public void deleteDraftOfPage(Page page, String username) throws WikiException {
+    draftPageDAO.deleteDraftPagesByUserAndTargetPage(username, Long.valueOf(page.getId()));
   }
 
   @Override
-  public void deleteDraftByName(String s, String s1) throws WikiException {
-    // TODO Implement it !
+  public void deleteDraftByName(String draftPageName, String username) throws WikiException {
+    draftPageDAO.deleteDraftPagesByUserAndName(draftPageName, username);
   }
 
   @Override
   public void renamePage(String wikiType, String wikiOwner, String pageName, String newName, String newTitle) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity = pageDAO.getPageOfWikiByName(wikiType, wikiOwner, pageName);
+    PageEntity pageEntity = pageDAO.getPageOfWikiByName(wikiType, wikiOwner, pageName);
     if(pageEntity == null) {
       throw new WikiException("Cannot rename page " + wikiType + ":" + wikiOwner + ":" + pageName
               + " because page does not exist.");
@@ -322,7 +327,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void movePage(WikiPageParams currentLocationParams, WikiPageParams newLocationParams) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity = pageDAO.getPageOfWikiByName(currentLocationParams.getType(),
+    PageEntity pageEntity = pageDAO.getPageOfWikiByName(currentLocationParams.getType(),
             currentLocationParams.getOwner(), currentLocationParams.getPageName());
     if(pageEntity == null) {
       throw new WikiException("Cannot move page " + currentLocationParams.getType() + ":"
@@ -330,7 +335,7 @@ public class JPADataStorage implements DataStorage {
               + " because page does not exist.");
     }
 
-    org.exoplatform.wiki.jpa.entity.Page destinationPageEntity = pageDAO.getPageOfWikiByName(newLocationParams.getType(),
+    PageEntity destinationPageEntity = pageDAO.getPageOfWikiByName(newLocationParams.getType(),
             newLocationParams.getOwner(), newLocationParams.getPageName());
     if(destinationPageEntity == null) {
       throw new WikiException("Cannot move page " + currentLocationParams.getType() + ":"
@@ -344,54 +349,182 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
-  public List<PermissionEntry> getWikiPermission(String s, String s1) throws WikiException {
-    // TODO Implement it !
-    return new ArrayList<>();
+  public List<PermissionEntry> getWikiPermission(String wikiType, String wikiOwner) throws WikiException {
+    WikiEntity wikiEntity = wikiDAO.getWikiByTypeAndOwner(wikiType, wikiOwner);
+
+    if(wikiEntity == null) {
+      throw new WikiException("Cannot get permissions of wiki " + wikiType + ":" + wikiOwner + " because wiki does not exist.");
+    }
+
+    List<PermissionEntry> permissionEntries = new ArrayList<>();
+    if(wikiEntity.getPermissions() != null) {
+      for(PermissionEntity permissionEntity : wikiEntity.getPermissions()) {
+        permissionEntries.add(convertPermissionEntityToPermissionEntry(permissionEntity));
+      }
+    }
+
+    return permissionEntries;
   }
 
   @Override
-  public void updateWikiPermission(String s, String s1, List<PermissionEntry> list) throws WikiException {
-    // TODO Implement it !
+  public void updateWikiPermission(String wikiType, String wikiOwner, List<PermissionEntry> permissionEntries) throws WikiException {
+    WikiEntity wikiEntity = wikiDAO.getWikiByTypeAndOwner(wikiType, wikiOwner);
+
+    if(wikiEntity == null) {
+      throw new WikiException("Cannot update permissions of wiki " + wikiType + ":" + wikiOwner + " because wiki does not exist.");
+    }
+
+    List<PermissionEntity> permissionEntities = new ArrayList<>();
+    for(PermissionEntry permissionEntry : permissionEntries) {
+      for(Permission permission : permissionEntry.getPermissions()) {
+        permissionEntities.add(new PermissionEntity(permissionEntry.getId(),
+                permissionEntry.getIdType().toString(), permission.getPermissionType()));
+      }
+    }
+    wikiEntity.setPermissions(permissionEntities);
+
+    wikiDAO.update(wikiEntity);
   }
 
   @Override
   public List<Page> getRelatedPagesOfPage(Page page) throws WikiException {
-    // TODO Implement it !
-    return new ArrayList<>();
+    PageEntity pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
+
+    if(pageEntity == null) {
+      throw new WikiException("Cannot get related pages of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because page does not exist.");
+    }
+
+    List<Page> relatedPages = new ArrayList<>();
+    List<PageEntity> relatedPagesEntities = pageEntity.getRelatedPages();
+    if(relatedPagesEntities != null) {
+      for(PageEntity relatedPageEntity : relatedPagesEntities) {
+        relatedPages.add(convertPageEntityToPage(relatedPageEntity));
+      }
+    }
+
+    return relatedPages;
   }
 
   @Override
-  public Page getRelatedPage(String s, String s1, String s2) throws WikiException {
+  public Page getRelatedPage(String wikiType, String wikiOwner, String pageId) throws WikiException {
     // TODO Implement it !
     return null;
   }
 
   @Override
-  public void addRelatedPage(Page page, Page page1) throws WikiException {
-    // TODO Implement it !
+  public void addRelatedPage(Page page, Page relatedPage) throws WikiException {
+    PageEntity pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
+
+    if(pageEntity == null) {
+      throw new WikiException("Cannot add related page to page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because page does not exist.");
+    }
+
+    PageEntity relatedPageEntity = pageDAO.getPageOfWikiByName(relatedPage.getWikiType(), relatedPage.getWikiOwner(), relatedPage.getName());
+
+    if(relatedPageEntity == null) {
+      throw new WikiException("Cannot add related page " + relatedPage.getWikiType() + ":" + relatedPage.getWikiOwner() + ":"
+              + relatedPage.getName() + " of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because related page does not exist.");
+    }
+
+    List<PageEntity> relatedPages = pageEntity.getRelatedPages();
+    if(relatedPages == null) {
+      relatedPages = new ArrayList<>();
+    }
+    relatedPages.add(relatedPageEntity);
+    pageEntity.setRelatedPages(relatedPages);
+
+    pageDAO.update(pageEntity);
   }
 
   @Override
-  public void removeRelatedPage(Page page, Page page1) throws WikiException {
-    // TODO Implement it !
+  public void removeRelatedPage(Page page, Page relatedPage) throws WikiException {
+    PageEntity pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
+
+    if(pageEntity == null) {
+      throw new WikiException("Cannot remove related page to page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because page does not exist.");
+    }
+
+    PageEntity relatedPageEntity = pageDAO.getPageOfWikiByName(relatedPage.getWikiType(), relatedPage.getWikiOwner(), relatedPage.getName());
+
+    if(relatedPageEntity == null) {
+      throw new WikiException("Cannot remove related page " + relatedPage.getWikiType() + ":" + relatedPage.getWikiOwner() + ":"
+              + relatedPage.getName() + " of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because related page does not exist.");
+    }
+
+    List<PageEntity> relatedPages = pageEntity.getRelatedPages();
+    if(relatedPages != null) {
+      for(int i=0; i<relatedPages.size(); i++) {
+        if(relatedPages.get(i).getId() == relatedPageEntity.getId()) {
+          relatedPages.remove(i);
+          break;
+        }
+      }
+      pageEntity.setRelatedPages(relatedPages);
+      pageDAO.update(pageEntity);
+    }
   }
 
   @Override
-  public Page getExsitedOrNewDraftPageById(String s, String s1, String s2, String s3) throws WikiException {
-    // TODO Implement it !
-    return null;
+  public Page getExsitedOrNewDraftPageById(String wikiType, String wikiOwner, String pageName, String username) throws WikiException {
+    Page page;
+
+    PageEntity pageEntity = pageDAO.getPageOfWikiByName(wikiType, wikiOwner, pageName);
+    if(pageEntity == null) {
+      Date now = GregorianCalendar.getInstance().getTime();
+      // create page for non existing page
+      DraftPage draftPage = new DraftPage();
+      draftPage.setWikiType(PortalConfig.USER_TYPE);
+      draftPage.setWikiOwner(username);
+      draftPage.setName(pageName);
+      draftPage.setAuthor(username);
+      draftPage.setNewPage(true);
+      draftPage.setTargetPageId(null);
+      draftPage.setTargetPageRevision("1");
+      draftPage.setCreatedDate(now);
+      draftPage.setUpdatedDate(now);
+      createDraftPageForUser(draftPage, username);
+      page = draftPage;
+    } else {
+      page = convertPageEntityToPage(pageEntity);
+    }
+
+    return page;
   }
 
   @Override
-  public DraftPage getDraft(WikiPageParams wikiPageParams, String s) throws WikiException {
-    // TODO Implement it !
-    return null;
+  public DraftPage getDraft(WikiPageParams wikiPageParams, String username) throws WikiException {
+    DraftPage latestDraft = null;
+
+    Page page = getPageOfWikiByName(wikiPageParams.getType(), wikiPageParams.getOwner(), wikiPageParams.getPageName());
+
+    if(page != null) {
+      List<DraftPageEntity> draftPagesOfUser = draftPageDAO.findDraftPagesByUserAndTargetPage(username, Long.valueOf(page.getId()));
+
+      DraftPageEntity latestDraftEntity = null;
+      for (DraftPageEntity draft : draftPagesOfUser) {
+        // Compare and get the latest draft
+        if ((latestDraftEntity == null) || (latestDraftEntity.getUpdatedDate().getTime() < draft.getUpdatedDate().getTime())) {
+          latestDraftEntity = draft;
+        }
+      }
+      latestDraft = convertDraftPageEntityToDraftPage(latestDraftEntity);
+    } else {
+      throw new WikiException("Cannot get draft of page " + wikiPageParams.getType() + ":" + wikiPageParams.getOwner() + ":"
+              + wikiPageParams.getPageName() + " because page does not exist.");
+    }
+
+    return latestDraft;
   }
 
   @Override
-  public DraftPage getLastestDraft(String s) throws WikiException {
-    // TODO Implement it !
-    return null;
+  public DraftPage getLastestDraft(String username) throws WikiException {
+    DraftPageEntity draftPagEntity = draftPageDAO.findLatestDraftPageByUser(username);
+    return convertDraftPageEntityToDraftPage(draftPagEntity);
   }
 
   @Override
@@ -412,9 +545,9 @@ public class JPADataStorage implements DataStorage {
   @Override
   public List<DraftPage> getDraftPagesOfUser(String username) throws WikiException {
     List<DraftPage> draftPages = new ArrayList<>();
-    List<org.exoplatform.wiki.jpa.entity.DraftPage> draftPagesEntities = draftPageDAO.findDraftPagesByUser(username);
+    List<DraftPageEntity> draftPagesEntities = draftPageDAO.findDraftPagesByUser(username);
     if(draftPagesEntities != null) {
-      for(org.exoplatform.wiki.jpa.entity.DraftPage draftPageEntity : draftPagesEntities) {
+      for(DraftPageEntity draftPageEntity : draftPagesEntities) {
         draftPages.add(convertDraftPageEntityToDraftPage(draftPageEntity));
       }
     }
@@ -423,19 +556,19 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void createDraftPageForUser(DraftPage draftPage, String username) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.DraftPage draftPageEntity = convertDraftPageToDraftPageEntity(draftPage);
+    DraftPageEntity draftPageEntity = convertDraftPageToDraftPageEntity(draftPage);
     draftPageEntity.setAuthor(username);
     draftPageDAO.create(draftPageEntity);
   }
 
   @Override
   public List<TemplateSearchResult> searchTemplate(TemplateSearchData templateSearchData) throws WikiException {
-    List<org.exoplatform.wiki.jpa.entity.Template> templates = templateDAO.searchTemplatesByTitle(templateSearchData.getWikiType(),
+    List<TemplateEntity> templates = templateDAO.searchTemplatesByTitle(templateSearchData.getWikiType(),
             templateSearchData.getWikiOwner(), templateSearchData.getTitle());
 
     List<TemplateSearchResult> searchResults = new ArrayList<>();
     if(templates != null) {
-      for (org.exoplatform.wiki.jpa.entity.Template templateEntity : templates) {
+      for (TemplateEntity templateEntity : templates) {
         TemplateSearchResult templateSearchResult = new TemplateSearchResult(templateEntity.getWiki().getType(),
                 templateEntity.getWiki().getOwner(),
                 templateEntity.getName(),
@@ -460,18 +593,38 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public List<Attachment> getAttachmentsOfPage(Page page) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity = fetchPageEntity(page);
-
-    if(pageEntity == null) {
-      throw new WikiException("Cannot get attachments of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
-              + page.getName() + " because page does not exist.");
+    List<AttachmentEntity> attachmentsEntities;
+    if(page instanceof DraftPage) {
+      DraftPageEntity draftPageEntity = draftPageDAO.findLatestDraftPageByUserAndName(page.getWikiOwner(), page.getName());
+      if(draftPageEntity == null) {
+        throw new WikiException("Cannot get attachments of draft page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+                + page.getName() + " because draft page does not exist.");
+      }
+      // TODO add attachments to DraftPage JPA entity
+      attachmentsEntities = new ArrayList<>();
+    } else {
+      PageEntity pageEntity = fetchPageEntity(page);
+      if(pageEntity == null) {
+        throw new WikiException("Cannot get attachments of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+                + page.getName() + " because page does not exist.");
+      }
+      attachmentsEntities = pageEntity.getAttachments();
     }
 
     List<Attachment> attachments = new ArrayList<>();
-    List<org.exoplatform.wiki.jpa.entity.Attachment> attachmentsEntities = pageEntity.getAttachments();
     if(attachmentsEntities != null) {
-      for(org.exoplatform.wiki.jpa.entity.Attachment attachmentEntity : attachmentsEntities) {
-        attachments.add(convertAttachmentEntityToAttachment(attachmentEntity));
+      for(AttachmentEntity attachmentEntity : attachmentsEntities) {
+        Attachment attachment = convertAttachmentEntityToAttachment(attachmentEntity);
+        // set title and full title if not there
+        if(attachment.getTitle() == null || StringUtils.isEmpty(attachment.getTitle())) {
+          attachment.setTitle(attachment.getName());
+        }
+        if(attachment.getFullTitle() == null || StringUtils.isEmpty(attachment.getFullTitle())) {
+          attachment.setFullTitle(attachment.getTitle());
+        }
+        // build download url
+        attachment.setDownloadURL(getDownloadURL(attachmentEntity));
+        attachments.add(attachment);
       }
     }
 
@@ -480,19 +633,31 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void addAttachmentToPage(Attachment attachment, Page page) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity = fetchPageEntity(page);
+    PageEntity pageEntity = fetchPageEntity(page);
 
     if(pageEntity == null) {
       throw new WikiException("Cannot add an attachment to page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
               + page.getName() + " because page does not exist.");
     }
 
-    org.exoplatform.wiki.jpa.entity.Attachment attachmentEntity = attachmentDAO.create(convertAttachmentToAttachmentEntity(attachment));
+    AttachmentEntity attachmentEntity = convertAttachmentToAttachmentEntity(attachment);
+    attachmentEntity.setPage(pageEntity);
+    // attachment must be saved here because of Hibernate bug HHH-6776
+    attachmentDAO.create(attachmentEntity);
 
-    List<org.exoplatform.wiki.jpa.entity.Attachment> attachmentsEntities = pageEntity.getAttachments();
+    Date now = GregorianCalendar.getInstance().getTime();
+    if(attachmentEntity.getCreatedDate() == null) {
+      attachmentEntity.setCreatedDate(now);
+    }
+    if(attachmentEntity.getUpdatedDate() == null) {
+      attachmentEntity.setUpdatedDate(now);
+    }
+
+    List<AttachmentEntity> attachmentsEntities = pageEntity.getAttachments();
     if(attachmentsEntities == null) {
       attachmentsEntities = new ArrayList<>();
     }
+
     attachmentsEntities.add(attachmentEntity);
     pageEntity.setAttachments(attachmentsEntities);
     pageDAO.update(pageEntity);
@@ -500,7 +665,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void deleteAttachmentOfPage(String attachmentName, Page page) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity = fetchPageEntity(page);
+    PageEntity pageEntity = fetchPageEntity(page);
 
     if(pageEntity == null) {
       throw new WikiException("Cannot delete an attachment of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
@@ -508,10 +673,10 @@ public class JPADataStorage implements DataStorage {
     }
 
     boolean attachmentFound = false;
-    List<org.exoplatform.wiki.jpa.entity.Attachment> attachmentsEntities = pageEntity.getAttachments();
+    List<AttachmentEntity> attachmentsEntities = pageEntity.getAttachments();
     if(attachmentsEntities != null) {
       for (int i = 0; i < attachmentsEntities.size(); i++) {
-        org.exoplatform.wiki.jpa.entity.Attachment attachmentEntity = attachmentsEntities.get(i);
+        AttachmentEntity attachmentEntity = attachmentsEntities.get(i);
         if (attachmentEntity.getName() != null && attachmentEntity.getName().equals(attachmentName)) {
           attachmentFound = true;
           attachmentsEntities.remove(i);
@@ -537,7 +702,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void createEmotionIcon(EmotionIcon emotionIcon) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.EmotionIcon emotionIconEntity = new org.exoplatform.wiki.jpa.entity.EmotionIcon();
+    EmotionIconEntity emotionIconEntity = new EmotionIconEntity();
     emotionIconEntity.setName(emotionIcon.getName());
     emotionIconEntity.setImage(emotionIcon.getImage());
 
@@ -547,9 +712,9 @@ public class JPADataStorage implements DataStorage {
   @Override
   public List<EmotionIcon> getEmotionIcons() throws WikiException {
     List<EmotionIcon> emotionIcons = new ArrayList<>();
-    List<org.exoplatform.wiki.jpa.entity.EmotionIcon> emotionIconsEntities = emotionIconDAO.findAll();
+    List<EmotionIconEntity> emotionIconsEntities = emotionIconDAO.findAll();
     if(emotionIconsEntities != null) {
-      for (org.exoplatform.wiki.jpa.entity.EmotionIcon emotionIconEntity : emotionIconsEntities) {
+      for (EmotionIconEntity emotionIconEntity : emotionIconsEntities) {
         emotionIcons.add(convertEmotionIconEntityToEmotionIcon(emotionIconEntity));
       }
     }
@@ -597,7 +762,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void updatePage(Page page) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity = fetchPageEntity(page);
+    PageEntity pageEntity = fetchPageEntity(page);
 
     if(pageEntity == null) {
       throw new WikiException("Cannot update page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
@@ -628,59 +793,43 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public List<String> getWatchersOfPage(Page page) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity = fetchPageEntity(page);
+    PageEntity pageEntity = fetchPageEntity(page);
 
     if(pageEntity == null) {
       throw new WikiException("Cannot get watchers of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
               + page.getName() + " because page does not exist.");
     }
-
-    List<String> watchers = new ArrayList<>();
-
-    List<Watcher> watchersEntities = pageEntity.getWatchers();
-    if(watchersEntities != null) {
-      for(Watcher watcherEntity : watchersEntities) {
-        watchers.add(watcherEntity.getUsername());
-      }
-    }
-
-    return watchers;
+    return pageEntity.getWatchers()==null?null:new ArrayList<>(pageEntity.getWatchers());
   }
 
   @Override
   public void addWatcherToPage(String username, Page page) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity = fetchPageEntity(page);
+    PageEntity pageEntity = fetchPageEntity(page);
 
     if(pageEntity == null) {
       throw new WikiException("Cannot add a watcher on page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
               + page.getName() + " because page does not exist.");
     }
-
-    Watcher watcher = new Watcher(username);
-    watcherDAO.create(watcher);
-
-    List<Watcher> watchers = pageEntity.getWatchers();
-    if(watchers == null) {
-      watchers = new ArrayList<>();
+    if(pageEntity.getWatchers() == null) {
+      throw new WikiException("Cannot add a watcher on page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because list of watchers is null.");
     }
-    watchers.add(watcher);
-    pageEntity.setWatchers(watchers);
+    pageEntity.getWatchers().add(username);
     pageDAO.update(pageEntity);
   }
 
   @Override
   public void deleteWatcherOfPage(String username, Page page) throws WikiException {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity = fetchPageEntity(page);
+    PageEntity pageEntity = fetchPageEntity(page);
 
     if(pageEntity == null) {
       throw new WikiException("Cannot delete a watcher of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
               + page.getName() + " because page does not exist.");
     }
 
-    Watcher watcherToRemove = new Watcher(username);
-    List<Watcher> watchers = pageEntity.getWatchers();
-    if(watchers != null && watchers.contains(watcherToRemove)) {
-      watchers.remove(watcherToRemove);
+    Set<String> watchers = pageEntity.getWatchers();
+    if(watchers != null && watchers.contains(username)) {
+      watchers.remove(username);
       pageEntity.setWatchers(watchers);
       pageDAO.update(pageEntity);
     } else {
@@ -695,8 +844,8 @@ public class JPADataStorage implements DataStorage {
    * @param page The page domain object
    * @return The page entity
    */
-  private org.exoplatform.wiki.jpa.entity.Page fetchPageEntity(Page page) {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity;
+  private PageEntity fetchPageEntity(Page page) {
+    PageEntity pageEntity;
     if(page.getId() != null && !page.getId().isEmpty()) {
       pageEntity = pageDAO.find(Long.parseLong(page.getId()));
     } else {
@@ -706,16 +855,56 @@ public class JPADataStorage implements DataStorage {
   }
 
 
+  public String getDownloadURL(AttachmentEntity attachmentEntity) {
+    StringBuilder sb = new StringBuilder();
+    String mimeType = attachmentEntity.getMimeType();
+    PageEntity page = attachmentEntity.getPage();
+    WikiEntity wiki = page.getWiki();
+    if (mimeType != null && mimeType.startsWith("image/") && wiki != null) {
+      // Build REST url to view image
+      sb.append(Utils.getDefaultRestBaseURI())
+              .append("/wiki/images/")
+              .append(wiki.getType())
+              .append("/")
+              .append(Utils.SPACE)
+              .append("/")
+              .append(Utils.validateWikiOwner(wiki.getType(), wiki.getOwner()))
+              .append("/")
+              .append(Utils.PAGE)
+              .append("/")
+              .append(page.getName());
+      try{
+        sb.append("/").append(URLEncoder.encode(attachmentEntity.getName(), "UTF-8"));
+      }catch (UnsupportedEncodingException e) {
+        sb.append("/").append(attachmentEntity.getName());
+      }
+    } else {
+      // TODO Manage download of attachments
+      /*
+      sb.append(JCRUtils.getCurrentRepositoryWebDavUri());
+      sb.append(getWorkspace());
+      String path = getPath();
+      try {
+        String parentPath = path.substring(0, path.lastIndexOf("/"));
+        sb.append(parentPath + "/" + URLEncoder.encode(getName(), "UTF-8"));
+      } catch (UnsupportedEncodingException e) {
+        sb.append(path);
+      }
+      */
+    }
+    return sb.toString();
+  }
+
   /*************** Entity converters ***************/
 
-  private Wiki convertWikiEntityToWiki(org.exoplatform.wiki.jpa.entity.Wiki wikiEntity) {
+  private Wiki convertWikiEntityToWiki(WikiEntity wikiEntity) {
     Wiki wiki = null;
     if(wikiEntity != null) {
       wiki = new Wiki();
       wiki.setId(String.valueOf(wikiEntity.getId()));
       wiki.setType(wikiEntity.getType());
       wiki.setOwner(wikiEntity.getOwner());
-      org.exoplatform.wiki.jpa.entity.Page wikiHomePageEntity = wikiEntity.getWikiHome();
+      PageEntity wikiHomePageEntity = wikiEntity.getWikiHome();
       if(wikiHomePageEntity != null) {
         wiki.setWikiHome(convertPageEntityToPage(wikiHomePageEntity));
       }
@@ -726,10 +915,10 @@ public class JPADataStorage implements DataStorage {
     return wiki;
   }
 
-  private org.exoplatform.wiki.jpa.entity.Wiki convertWikiToWikiEntity(Wiki wiki) {
-    org.exoplatform.wiki.jpa.entity.Wiki wikiEntity = null;
+  private WikiEntity convertWikiToWikiEntity(Wiki wiki) {
+    WikiEntity wikiEntity = null;
     if(wiki != null) {
-      wikiEntity = new org.exoplatform.wiki.jpa.entity.Wiki();
+      wikiEntity = new WikiEntity();
       wikiEntity.setType(wiki.getType());
       wikiEntity.setOwner(wiki.getOwner());
       wikiEntity.setWikiHome(convertPageToPageEntity(wiki.getWikiHome()));
@@ -738,13 +927,13 @@ public class JPADataStorage implements DataStorage {
     return wikiEntity;
   }
 
-  private Page convertPageEntityToPage(org.exoplatform.wiki.jpa.entity.Page pageEntity) {
+  private Page convertPageEntityToPage(PageEntity pageEntity) {
     Page page = null;
     if(pageEntity != null) {
       page = new Page();
       page.setId(String.valueOf(pageEntity.getId()));
       page.setName(pageEntity.getName());
-      org.exoplatform.wiki.jpa.entity.Wiki wiki = pageEntity.getWiki();
+      WikiEntity wiki = pageEntity.getWiki();
       if(wiki != null) {
         page.setWikiId(String.valueOf(wiki.getId()));
         page.setWikiType(wiki.getType());
@@ -765,13 +954,13 @@ public class JPADataStorage implements DataStorage {
     return page;
   }
 
-  private org.exoplatform.wiki.jpa.entity.Page convertPageToPageEntity(Page page) {
-    org.exoplatform.wiki.jpa.entity.Page pageEntity = null;
+  private PageEntity convertPageToPageEntity(Page page) {
+    PageEntity pageEntity = null;
     if(page != null) {
-      pageEntity = new org.exoplatform.wiki.jpa.entity.Page();
+      pageEntity = new PageEntity();
       pageEntity.setName(page.getName());
       if(page.getWikiId() != null) {
-        org.exoplatform.wiki.jpa.entity.Wiki wiki = wikiDAO.find(Long.parseLong(page.getWikiId()));
+        WikiEntity wiki = wikiDAO.find(Long.parseLong(page.getWikiId()));
         if (wiki != null) {
           pageEntity.setWiki(wiki);
         }
@@ -791,12 +980,13 @@ public class JPADataStorage implements DataStorage {
     return pageEntity;
   }
 
-  private Attachment convertAttachmentEntityToAttachment(org.exoplatform.wiki.jpa.entity.Attachment attachmentEntity) {
+  private Attachment convertAttachmentEntityToAttachment(AttachmentEntity attachmentEntity) {
     Attachment attachment = null;
     if(attachmentEntity != null) {
       attachment = new Attachment();
       attachment.setName(attachmentEntity.getName());
       attachment.setTitle(attachmentEntity.getTitle());
+      attachment.setFullTitle(attachmentEntity.getFullTitle());
       attachment.setCreator(attachmentEntity.getCreator());
       if(attachmentEntity.getCreatedDate() != null) {
         Calendar createdDate = Calendar.getInstance();
@@ -809,22 +999,21 @@ public class JPADataStorage implements DataStorage {
         attachment.setUpdatedDate(updatedDate);
       }
       attachment.setContent(attachmentEntity.getContent());
-      //attachment.setMimeType(?);
-      attachment.setDownloadURL(attachmentEntity.getDownloadURL());
+      attachment.setMimeType(attachmentEntity.getMimeType());
       attachment.setWeightInBytes(attachmentEntity.getWeightInBytes());
       //attachment.setPermissions(?);
     }
     return attachment;
   }
 
-  private org.exoplatform.wiki.jpa.entity.Attachment convertAttachmentToAttachmentEntity(Attachment attachment) {
-    org.exoplatform.wiki.jpa.entity.Attachment attachmentEntity = null;
+  private AttachmentEntity convertAttachmentToAttachmentEntity(Attachment attachment) {
+    AttachmentEntity attachmentEntity = null;
     if(attachment != null) {
-      attachmentEntity = new org.exoplatform.wiki.jpa.entity.Attachment();
+      attachmentEntity = new AttachmentEntity();
       attachmentEntity.setName(attachment.getName());
       attachmentEntity.setTitle(attachment.getTitle());
+      attachmentEntity.setFullTitle(attachment.getFullTitle());
       attachmentEntity.setCreator(attachment.getCreator());
-      attachmentEntity.setContent(attachment.getContent());
       if(attachment.getCreatedDate() != null) {
         attachmentEntity.setCreatedDate(attachment.getCreatedDate().getTime());
       }
@@ -832,13 +1021,13 @@ public class JPADataStorage implements DataStorage {
         attachmentEntity.setUpdatedDate(attachment.getUpdatedDate().getTime());
       }
       attachmentEntity.setContent(attachment.getContent());
-      attachmentEntity.setDownloadURL(attachment.getDownloadURL());
+      attachmentEntity.setMimeType(attachment.getMimeType());
       //page.setPermissions(pageEntity.getPermissions());
     }
     return attachmentEntity;
   }
 
-  private DraftPage convertDraftPageEntityToDraftPage(org.exoplatform.wiki.jpa.entity.DraftPage draftPageEntity) {
+  private DraftPage convertDraftPageEntityToDraftPage(DraftPageEntity draftPageEntity) {
     DraftPage draftPage = null;
     if(draftPageEntity != null) {
       draftPage = new DraftPage();
@@ -850,16 +1039,19 @@ public class JPADataStorage implements DataStorage {
       draftPage.setSyntax(draftPageEntity.getSyntax());
       draftPage.setCreatedDate(draftPageEntity.getCreatedDate());
       draftPage.setUpdatedDate(draftPageEntity.getUpdatedDate());
-      draftPage.setTargetPageId(String.valueOf(draftPageEntity.getTargetPage().getId()));
-      draftPage.setTargetPageRevision(draftPageEntity.getTargetRevision());
+      PageEntity targetPage = draftPageEntity.getTargetPage();
+      if(targetPage != null) {
+        draftPage.setTargetPageId(String.valueOf(draftPageEntity.getTargetPage().getId()));
+        draftPage.setTargetPageRevision(draftPageEntity.getTargetRevision());
+      }
     }
     return draftPage;
   }
 
-  private org.exoplatform.wiki.jpa.entity.DraftPage convertDraftPageToDraftPageEntity(DraftPage draftPage) {
-    org.exoplatform.wiki.jpa.entity.DraftPage draftPageEntity = null;
+  private DraftPageEntity convertDraftPageToDraftPageEntity(DraftPage draftPage) {
+    DraftPageEntity draftPageEntity = null;
     if(draftPage != null) {
-      draftPageEntity = new org.exoplatform.wiki.jpa.entity.DraftPage();
+      draftPageEntity = new DraftPageEntity();
       draftPageEntity.setName(draftPage.getName());
       draftPageEntity.setTitle(draftPage.getTitle());
       draftPageEntity.setAuthor(draftPage.getAuthor());
@@ -877,13 +1069,13 @@ public class JPADataStorage implements DataStorage {
   }
 
 
-  private Template convertTemplateEntityToTemplate(org.exoplatform.wiki.jpa.entity.Template templateEntity) {
+  private Template convertTemplateEntityToTemplate(TemplateEntity templateEntity) {
     Template template = null;
     if(templateEntity != null) {
       template = new Template();
       template.setId(String.valueOf(templateEntity.getId()));
       template.setName(templateEntity.getName());
-      org.exoplatform.wiki.jpa.entity.Wiki wiki = templateEntity.getWiki();
+      WikiEntity wiki = templateEntity.getWiki();
       if(wiki != null) {
         template.setWikiId(String.valueOf(wiki.getId()));
         template.setWikiType(wiki.getType());
@@ -896,13 +1088,13 @@ public class JPADataStorage implements DataStorage {
     return template;
   }
 
-  private org.exoplatform.wiki.jpa.entity.Template convertTemplateToTemplateEntity(Template template) {
-    org.exoplatform.wiki.jpa.entity.Template templateEntry = null;
+  private TemplateEntity convertTemplateToTemplateEntity(Template template) {
+    TemplateEntity templateEntry = null;
     if(template != null) {
-      templateEntry = new org.exoplatform.wiki.jpa.entity.Template();
+      templateEntry = new TemplateEntity();
       templateEntry.setName(template.getName());
       if(template.getWikiId() != null) {
-        org.exoplatform.wiki.jpa.entity.Wiki wiki = wikiDAO.find(Long.parseLong(template.getWikiId()));
+        WikiEntity wiki = wikiDAO.find(Long.parseLong(template.getWikiId()));
         if (wiki != null) {
           templateEntry.setWiki(wiki);
         }
@@ -914,7 +1106,7 @@ public class JPADataStorage implements DataStorage {
     return templateEntry;
   }
 
-  private EmotionIcon convertEmotionIconEntityToEmotionIcon(org.exoplatform.wiki.jpa.entity.EmotionIcon emotionIconEntity) {
+  private EmotionIcon convertEmotionIconEntityToEmotionIcon(EmotionIconEntity emotionIconEntity) {
     EmotionIcon emotionIcon = null;
     if(emotionIconEntity != null) {
       emotionIcon = new EmotionIcon();
@@ -924,14 +1116,24 @@ public class JPADataStorage implements DataStorage {
     return emotionIcon;
   }
 
-  private org.exoplatform.wiki.jpa.entity.EmotionIcon convertEmotionIconToEmotionIconEntity(EmotionIcon emotionIcon) {
-    org.exoplatform.wiki.jpa.entity.EmotionIcon emotionIconEntity = null;
+  private EmotionIconEntity convertEmotionIconToEmotionIconEntity(EmotionIcon emotionIcon) {
+    EmotionIconEntity emotionIconEntity = null;
     if(emotionIcon != null) {
-      emotionIconEntity = new org.exoplatform.wiki.jpa.entity.EmotionIcon();
+      emotionIconEntity = new EmotionIconEntity();
       emotionIconEntity.setName(emotionIcon.getName());
       emotionIconEntity.setImage(emotionIcon.getImage());
     }
     return emotionIconEntity;
   }
 
+  private PermissionEntry convertPermissionEntityToPermissionEntry(PermissionEntity permissionEntity) {
+    PermissionEntry permissionEntry = null;
+    if(permissionEntity != null) {
+      permissionEntry = new PermissionEntry();
+      permissionEntry.setId(permissionEntity.getIdentity());
+      permissionEntry.setIdType(IDType.valueOf(permissionEntity.getIdentityType().toUpperCase()));
+      permissionEntry.setPermissions(new Permission[]{new Permission(permissionEntity.getPermissionType(), true)});
+    }
+    return permissionEntry;
+  }
 }

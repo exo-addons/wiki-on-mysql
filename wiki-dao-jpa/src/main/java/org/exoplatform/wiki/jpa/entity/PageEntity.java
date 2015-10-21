@@ -20,13 +20,12 @@
 package org.exoplatform.wiki.jpa.entity;
 
 import org.exoplatform.commons.api.persistence.ExoEntity;
-import org.hibernate.envers.Audited;
-import org.hibernate.envers.RelationTargetAuditMode;
 
 import javax.persistence.*;
-
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by The eXo Platform SAS
@@ -36,14 +35,13 @@ import java.util.List;
  */
 @Entity
 @ExoEntity
-@Audited
 @Table(name = "WIKI_PAGES")
 @NamedQueries({
-        @NamedQuery(name = "wikiPage.getAllIds", query = "SELECT p.id FROM Page p ORDER BY p.id"),
-        @NamedQuery(name = "wikiPage.getPageOfWikiByName", query = "SELECT p FROM Page p JOIN p.wiki w WHERE p.name = :name AND w.type = :type AND w.owner = :owner"),
-        @NamedQuery(name = "wikiPage.getChildrenPages", query = "SELECT p FROM Page p WHERE p.parentPage.id = :id")
+        @NamedQuery(name = "wikiPage.getAllIds", query = "SELECT p.id FROM PageEntity p ORDER BY p.id"),
+        @NamedQuery(name = "wikiPage.getPageOfWikiByName", query = "SELECT p FROM PageEntity p JOIN p.wiki w WHERE p.name = :name AND w.type = :type AND w.owner = :owner"),
+        @NamedQuery(name = "wikiPage.getChildrenPages", query = "SELECT p FROM PageEntity p WHERE p.parentPage.id = :id")
 })
-public class Page extends BasePage {
+public class PageEntity extends BasePageEntity {
   private static final String YES = "Y";
   private static final String NO  = "N";
 
@@ -54,16 +52,21 @@ public class Page extends BasePage {
 
   @ManyToOne(cascade = CascadeType.PERSIST)
   @JoinColumn(name = "WIKI_ID")
-  @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-  private Wiki wiki;
+  private WikiEntity wiki;
 
   @ManyToOne(cascade = CascadeType.PERSIST)
   @JoinColumn(name = "PARENT_PAGE_ID")
-  private Page parentPage;
+  private PageEntity parentPage;
 
   @OneToMany(mappedBy = "page", cascade = CascadeType.ALL)
-  @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-  private List<Attachment> attachments;
+  private List<AttachmentEntity> attachments;
+
+  @ManyToMany(cascade = CascadeType.PERSIST)
+  @JoinTable(name = "WIKI_PAGES_RELATED_PAGES",
+    joinColumns = {@JoinColumn(name = "PAGE_ID")},
+    inverseJoinColumns = {@JoinColumn(name = "RELATED_PAGE_ID")}
+  )
+  private List<PageEntity> relatedPages;
 
   @Column(name = "AUTHOR")
   private String author;
@@ -105,13 +108,20 @@ public class Page extends BasePage {
   @Column(name = "ACTIVITY_ID")
   private String activityId;
 
-  @ManyToMany(cascade = CascadeType.ALL)
-  @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-  private List<Watcher> watchers;
+  @ElementCollection
+  @CollectionTable(
+          name = "WIKI_WATCHERS",
+          joinColumns=@JoinColumn(name = "PAGE_ID")
+  )
+  @Column(name="USERNAME")
+  private Set<String> watchers = new HashSet<>();
 
-  @OneToMany(cascade = CascadeType.ALL)
-  @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-  private List<Permission> permissions;
+  @ElementCollection
+  @CollectionTable(
+          name = "WIKI_PAGE_PERMISSIONS",
+          joinColumns=@JoinColumn(name = "PAGE_ID")
+  )
+  private List<PermissionEntity> permissions;
 
   public String getAuthor() {
     return author;
@@ -209,43 +219,51 @@ public class Page extends BasePage {
     this.activityId = activityId;
   }
 
-  public List<Permission> getPermissions() {
+  public List<PermissionEntity> getPermissions() {
     return permissions;
   }
 
-  public void setPermissions(List<Permission> permission) {
+  public void setPermissions(List<PermissionEntity> permission) {
     this.permissions = permission;
   }
 
-  public Wiki getWiki() {
+  public WikiEntity getWiki() {
     return wiki;
   }
 
-  public void setWiki(Wiki wiki) {
+  public void setWiki(WikiEntity wiki) {
     this.wiki = wiki;
   }
 
-  public Page getParentPage() {
+  public PageEntity getParentPage() {
     return parentPage;
   }
 
-  public void setParentPage(Page parentPage) {
+  public void setParentPage(PageEntity parentPage) {
     this.parentPage = parentPage;
   }
 
-  public List<Attachment> getAttachments() {
+  public List<AttachmentEntity> getAttachments() {
     return attachments;
   }
 
-  public void setAttachments(List<Attachment> attachments) {
+  public void setAttachments(List<AttachmentEntity> attachments) {
     this.attachments = attachments;
   }
 
-  public List<Watcher> getWatchers() {
+  public Set<String> getWatchers() {
     return watchers;
   }
 
-  public void setWatchers(List<Watcher> watchers) {
+  public void setWatchers(Set<String> watchers) {
     this.watchers = watchers;
+  }
+
+  public List<PageEntity> getRelatedPages() {
+    return relatedPages;
+  }
+
+  public void setRelatedPages(List<PageEntity> relatedPages) {
+    this.relatedPages = relatedPages;
   }
 }

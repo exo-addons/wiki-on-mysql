@@ -33,11 +33,11 @@ import javax.persistence.*;
 @ExoEntity
 @Table(name = "WIKI_TEMPLATES")
 @NamedQueries({
-        @NamedQuery(name = "template.getTemplatesOfWiki", query = "SELECT t FROM Template t JOIN t.wiki w WHERE w.type = :type AND w.owner = :owner"),
-        @NamedQuery(name = "template.getTemplateOfWikiByName", query = "SELECT t FROM Template t JOIN t.wiki w WHERE t.name = :name AND w.type = :type AND w.owner = :owner"),
-        @NamedQuery(name = "template.searchTemplatesByTitle", query = "SELECT t FROM Template t JOIN t.wiki w WHERE w.type = :type AND w.owner = :owner AND t.title like :searchText")
+        @NamedQuery(name = "template.getTemplatesOfWiki", query = "SELECT t FROM TemplateEntity t JOIN t.wiki w WHERE w.type = :type AND w.owner = :owner"),
+        @NamedQuery(name = "template.getTemplateOfWikiByName", query = "SELECT t FROM TemplateEntity t JOIN t.wiki w WHERE t.name = :name AND w.type = :type AND w.owner = :owner"),
+        @NamedQuery(name = "template.searchTemplatesByTitle", query = "SELECT t FROM TemplateEntity t JOIN t.wiki w WHERE w.type = :type AND w.owner = :owner AND t.title like :searchText")
 })
-public class Template extends BasePage {
+public class TemplateEntity extends BasePageEntity {
 
   @Id
   @Column(name = "TEMPLATE_ID")
@@ -46,7 +46,7 @@ public class Template extends BasePage {
 
   @ManyToOne(cascade = CascadeType.PERSIST)
   @JoinColumn(name = "WIKI_ID")
-  private Wiki wiki;
+  private WikiEntity wiki;
 
   public long getId() {
     return id;
@@ -96,11 +96,11 @@ public class Template extends BasePage {
     this.title = title;
   }
 
-  public Wiki getWiki() {
+  public WikiEntity getWiki() {
     return wiki;
   }
 
-  public void setWiki(Wiki wiki) {
+  public void setWiki(WikiEntity wiki) {
     this.wiki = wiki;
   }
 }

@@ -7,11 +7,12 @@ import javax.persistence.*;
 @Entity
 @ExoEntity
 @Table(name = "WIKI_WATCHERS")
-public class Watcher {
-  public Watcher() {
+//TODO Delete
+public class WatcherEntity {
+  public WatcherEntity() {
   }
 
-  public Watcher(String username) {
+  public WatcherEntity(String username) {
     this.username = username;
   }
 
@@ -35,9 +36,9 @@ public class Watcher {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof Watcher)) return false;
+    if (!(o instanceof WatcherEntity)) return false;
 
-    Watcher watcher = (Watcher) o;
+    WatcherEntity watcher = (WatcherEntity) o;
 
     return username.equals(watcher.username);
 

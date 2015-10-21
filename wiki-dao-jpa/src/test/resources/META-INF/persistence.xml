@@ -5,15 +5,15 @@
 
     <persistence-unit name="exo-pu" transaction-type="RESOURCE_LOCAL">
 
-        <class>org.exoplatform.wiki.jpa.entity.Attachment</class>
-        <class>org.exoplatform.wiki.jpa.entity.BasePage</class>
-        <class>org.exoplatform.wiki.jpa.entity.DraftPage</class>
-        <class>org.exoplatform.wiki.jpa.entity.Page</class>
-        <class>org.exoplatform.wiki.jpa.entity.Template</class>
-        <class>org.exoplatform.wiki.jpa.entity.Permission</class>
-        <class>org.exoplatform.wiki.jpa.entity.Wiki</class>
-        <class>org.exoplatform.wiki.jpa.entity.EmotionIcon</class>
-        <class>org.exoplatform.wiki.jpa.entity.Watcher</class>
+        <class>org.exoplatform.wiki.jpa.entity.AttachmentEntity</class>
+        <class>org.exoplatform.wiki.jpa.entity.BasePageEntity</class>
+        <class>org.exoplatform.wiki.jpa.entity.DraftPageEntity</class>
+        <class>org.exoplatform.wiki.jpa.entity.PageEntity</class>
+        <class>org.exoplatform.wiki.jpa.entity.TemplateEntity</class>
+        <class>org.exoplatform.wiki.jpa.entity.PermissionEntity</class>
+        <class>org.exoplatform.wiki.jpa.entity.WikiEntity</class>
+        <class>org.exoplatform.wiki.jpa.entity.EmotionIconEntity</class>
+        <class>org.exoplatform.wiki.jpa.entity.WatcherEntity</class>
         <class>org.exoplatform.addons.es.domain.IndexingOperation</class>
 
         <properties>
@@ -25,7 +25,6 @@
 
             <property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/>
             <property name="hibernate.show_sql" value="true"/>
-            <property name="org.hibernate.envers.store_data_at_delete" value="true"/>
         </properties>
 
     </persistence-unit>

@@ -17,7 +17,7 @@
 package org.exoplatform.wiki.jpa.dao;
 
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
-import org.exoplatform.wiki.jpa.entity.Attachment;
+import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
 
 /**
  * Created by The eXo Platform SAS
@@ -25,6 +25,6 @@ import org.exoplatform.wiki.jpa.entity.Attachment;
  *          exo@exoplatform.com
  * Jun 24, 2015  
  */
-public class AttachmentDAO extends GenericDAOJPAImpl<Attachment,Long> {
+public class AttachmentDAO extends GenericDAOJPAImpl<AttachmentEntity,Long> {
 
 }

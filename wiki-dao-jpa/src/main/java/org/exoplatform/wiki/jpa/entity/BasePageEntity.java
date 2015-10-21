@@ -16,67 +16,18 @@
  */
 package org.exoplatform.wiki.jpa.entity;
 
-import javax.persistence.*;
-
 import org.exoplatform.commons.api.persistence.ExoEntity;
+
+import javax.persistence.*;
 
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  *          exo@exoplatform.com
- * Jun 26, 2015  
+ * Jun 23, 2015  
  */
-@Entity
+@MappedSuperclass
 @ExoEntity
-@Table(name = "WIKI_PERMISSIONS")
-public class Permission {
-
-  @Id
-  @Column(name = "PERMISSION_ID")
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  private Long id;
-
-  /**
-   * User or Group
-   */
-  @Column(name = "USER")
-  private String user;
-
-  @Column(name="TYPE")
-  @Enumerated
-  private PermissionType type;
-
-
-  public Permission() {
-    //Default constructor
-  }
-
-  public Permission(String user, PermissionType type) {
-    this.user = user;
-    this.type = type;
-  }
-
-  public long getId(){
-    return this.id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public String getUser() {
-    return user;
-  }
-
-  public void setUser(String user) {
-    this.user = user;
-  }
-
-  public PermissionType getType() {
-    return type;
-  }
-
-  public void setType(PermissionType type) {
-    this.type = type;
-  }
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+public abstract class BasePageEntity {
 }

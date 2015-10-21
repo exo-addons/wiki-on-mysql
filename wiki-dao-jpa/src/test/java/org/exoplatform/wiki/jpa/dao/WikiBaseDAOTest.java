@@ -17,7 +17,9 @@
 package org.exoplatform.wiki.jpa.dao;
 
 import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
-import org.exoplatform.wiki.jpa.entity.Attachment;
+import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
+
+import java.util.Date;
 
 /**
  * Created by The eXo Platform SAS
@@ -30,7 +32,10 @@ public class WikiBaseDAOTest extends BaseWikiJPAIntegrationTest {
   public void testRollBackTransaction(){
     //Given
     //When
-    Attachment att = attachmentDAO.create(new Attachment());
+    AttachmentEntity attachment = new AttachmentEntity();
+    attachment.setCreatedDate(new Date());
+    attachment.setUpdatedDate(new Date());
+    AttachmentEntity att = attachmentDAO.create(attachment);
     //Then
     assertNotNull(attachmentDAO.find(att.getId()));
   }
@@ -39,7 +44,10 @@ public class WikiBaseDAOTest extends BaseWikiJPAIntegrationTest {
     //Given
     long count = attachmentDAO.count();
     //When
-    Attachment att = attachmentDAO.create(new Attachment());
+    AttachmentEntity attachment = new AttachmentEntity();
+    attachment.setCreatedDate(new Date());
+    attachment.setUpdatedDate(new Date());
+    AttachmentEntity att = attachmentDAO.create(attachment);
     //Then
     assertEquals(new Long(count + 1), attachmentDAO.count());
   }

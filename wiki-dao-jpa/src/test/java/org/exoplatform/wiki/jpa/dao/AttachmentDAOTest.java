@@ -27,9 +27,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
-import org.exoplatform.wiki.jpa.entity.Attachment;
-import org.exoplatform.wiki.jpa.entity.Permission;
-import org.exoplatform.wiki.jpa.entity.PermissionType;
+import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
+import org.exoplatform.wiki.jpa.entity.PermissionEntity;
+import org.exoplatform.wiki.mow.api.PermissionType;
 
 /**
  * Created by The eXo Platform SAS
@@ -42,13 +42,15 @@ public class AttachmentDAOTest extends BaseWikiJPAIntegrationTest {
   public void testInsertDelete() throws IOException, URISyntaxException {
     //Given
     URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
-    Attachment att = new Attachment();
+    AttachmentEntity att = new AttachmentEntity();
     att.setContent(Files.readAllBytes(Paths.get(fileResource.toURI())));
+    att.setCreatedDate(new Date());
+    att.setUpdatedDate(new Date());
     //When
     attachmentDAO.create(att);
     Long id = att.getId();
     //Then
-    Attachment got = attachmentDAO.find(id);
+    AttachmentEntity got = attachmentDAO.find(id);
     assertNotNull(got.getContent());
     assertEquals(new File(fileResource.toURI()).length(), got.getWeightInBytes());
     //Delete
@@ -59,15 +61,17 @@ public class AttachmentDAOTest extends BaseWikiJPAIntegrationTest {
   public void testUpdate() throws IOException, URISyntaxException {
     //Given
     URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
-    Attachment att = new Attachment();
+    AttachmentEntity att = new AttachmentEntity();
     att.setContent(Files.readAllBytes(Paths.get(fileResource.toURI())));
+    att.setCreatedDate(new Date());
+    att.setUpdatedDate(new Date());
     //When
     attachmentDAO.create(att);
     Long id = att.getId();
-    Permission per = new Permission();
-    per.setUser("user");
-    per.setType(PermissionType.ADMINPAGE);
-    List<Permission> permissions = new ArrayList<>();
+    PermissionEntity per = new PermissionEntity();
+    per.setIdentity("user");
+    per.setPermissionType(PermissionType.ADMINPAGE);
+    List<PermissionEntity> permissions = new ArrayList<>();
     permissions.add(per);
     att.setPermissions(permissions);
     att.setCreator("creator");
@@ -77,12 +81,12 @@ public class AttachmentDAOTest extends BaseWikiJPAIntegrationTest {
     att.setUpdatedDate(date);
     //Then
     attachmentDAO.update(att);
-    Attachment got = attachmentDAO.find(id);
+    AttachmentEntity got = attachmentDAO.find(id);
     assertEquals("http://exoplatform.com", got.getDownloadURL());
     assertEquals("title", got.getTitle());
     assertEquals("creator", got.getCreator());
     assertEquals(date, got.getUpdatedDate());
-    Permission got_per = got.getPermissions().get(0);
-    assertEquals("user", got_per.getUser());
+    PermissionEntity got_per = got.getPermissions().get(0);
+    assertEquals("user", got_per.getIdentity());
   }
 }
