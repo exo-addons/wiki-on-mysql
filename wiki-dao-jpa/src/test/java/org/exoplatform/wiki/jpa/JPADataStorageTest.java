@@ -79,8 +79,8 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
                                                IDType.USER,
                                                new Permission[] { new Permission(PermissionType.VIEWPAGE, true) }));
     List<PermissionEntry> updatedPermissions = new ArrayList<>();
-    updatedPermissions.add(new PermissionEntry("john", "", IDType.USER, new Permission[] {
-        new Permission(PermissionType.VIEWPAGE, true), new Permission(PermissionType.EDITPAGE, true) }));
+    updatedPermissions.add(new PermissionEntry("john", "", IDType.USER, new Permission[]{
+            new Permission(PermissionType.VIEWPAGE, true), new Permission(PermissionType.EDITPAGE, true)}));
 
     // When
     storage.createWiki(wiki);
@@ -95,30 +95,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertNotNull(fetchedUpdatedPermissions);
     assertEquals(2, fetchedUpdatedPermissions.size());
   }
-
-  @Test
-  public void testSearchWikiByName() throws Exception {
-    // Given
-    indexWiki("My Wiki", "BCH", null);
-    WikiSearchData searchData = new WikiSearchData("My Wiki", null, null, null);
-    // When
-    PageList<SearchResult> results = storage.search(searchData);
-    // Then
-    assertEquals(1, results.getAll().size());
-  }
-
-  @Test
-  public void testSearchPageByName() throws Exception {
-    // Given
-    indexPage("My Page", "My Page", "This is the content of my Page", "This is a comment", "BCH", null);
-    WikiSearchData searchData = new WikiSearchData("Page", null, null, null);
-    // When
-    PageList<SearchResult> results = storage.search(searchData);
-    // Then
-    assertEquals(1, results.getAll().size());
-  }
-
-  // TODO test search on all the fields
   // TODO test with wrong field in the configuration
 
   @Test
