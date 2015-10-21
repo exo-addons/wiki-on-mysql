@@ -70,6 +70,7 @@ public class AttachmentDAOTest extends BaseWikiJPAIntegrationTest {
     Long id = att.getId();
     PermissionEntity per = new PermissionEntity();
     per.setIdentity("user");
+    per.setIdentityType("User");
     per.setPermissionType(PermissionType.ADMINPAGE);
     List<PermissionEntity> permissions = new ArrayList<>();
     permissions.add(per);
