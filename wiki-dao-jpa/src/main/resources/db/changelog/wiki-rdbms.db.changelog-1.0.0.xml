@@ -45,8 +45,8 @@
             <column name="UPDATED_DATE" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
-            <column name="CONTENT" type="TEXT(5000)"/>
-            <column name="SYNTAX" type="TEXT(5000)"/>
+            <column name="CONTENT" type="VARCHAR(5000)"/>
+            <column name="SYNTAX" type="VARCHAR(5000)"/>
             <column name="TITLE" type="VARCHAR(250)"/>
             <column name="COMMENT" type="VARCHAR(2000)"/>
             <column name="URL" type="VARCHAR(500)"/>
@@ -103,8 +103,8 @@
             </column>
             <column name="WIKI_ID" type="BIGINT"/>
             <column name="NAME" type="VARCHAR(50)"/>
-            <column name="CONTENT" type="TEXT(5000)"/>
-            <column name="SYNTAX" type="TEXT(5000)"/>
+            <column name="CONTENT" type="VARCHAR(5000)"/>
+            <column name="SYNTAX" type="VARCHAR(5000)"/>
             <column name="TITLE" type="VARCHAR(250)"/>
         </createTable>
     </changeSet>
@@ -120,8 +120,8 @@
             <column name="AUTHOR" type="VARCHAR(36)"/>
             <column name="NAME" type="VARCHAR(50)"/>
             <column name="TITLE" type="VARCHAR(250)"/>
-            <column name="CONTENT" type="TEXT(5000)"/>
-            <column name="SYNTAX" type="TEXT(5000)"/>
+            <column name="CONTENT" type="VARCHAR(5000)"/>
+            <column name="SYNTAX" type="VARCHAR(5000)"/>
             <column name="CREATED_DATE" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
