@@ -95,7 +95,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertNotNull(fetchedUpdatedPermissions);
     assertEquals(2, fetchedUpdatedPermissions.size());
   }
-  // TODO test with wrong field in the configuration
 
   @Test
   public void testParentPageOfPage() throws WikiException {

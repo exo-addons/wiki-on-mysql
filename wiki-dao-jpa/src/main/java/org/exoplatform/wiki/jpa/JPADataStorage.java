@@ -49,17 +49,11 @@ import org.exoplatform.wiki.utils.WikiConstants;
  * 9/8/15
  */
 public class JPADataStorage implements DataStorage {
-
   private WikiDAO        wikiDAO;
-
   private PageDAO        pageDAO;
-
   private AttachmentDAO  attachmentDAO;
-
   private DraftPageDAO   draftPageDAO;
-
   private TemplateDAO    templateDAO;
-
   private EmotionIconDAO emotionIconDAO;
 
   public JPADataStorage(WikiDAO wikiDAO,
