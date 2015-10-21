@@ -13,7 +13,6 @@
         <class>org.exoplatform.wiki.jpa.entity.PermissionEntity</class>
         <class>org.exoplatform.wiki.jpa.entity.WikiEntity</class>
         <class>org.exoplatform.wiki.jpa.entity.EmotionIconEntity</class>
-        <class>org.exoplatform.wiki.jpa.entity.WatcherEntity</class>
         <class>org.exoplatform.addons.es.domain.IndexingOperation</class>
 
         <properties>
