@@ -22,6 +22,10 @@ package org.exoplatform.wiki.jpa;
 import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
+import org.exoplatform.addons.es.index.IndexingOperationProcessor;
+import org.exoplatform.container.PortalContainer;
+import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.xml.ValuesParam;
 import org.junit.Test;
 
 import org.exoplatform.commons.utils.PageList;
@@ -1135,5 +1139,25 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertTrue(step2Watchers.contains("user2"));
     assertEquals(1, step3Watchers.size());
     assertTrue(step3Watchers.contains("user2"));
+  }
+
+  @Test
+  public void testHelpPages() throws WikiException {
+    // Given
+    List<ValuesParam> syntaxHelpParams = new ArrayList<>();
+    ValuesParam valuesParam = new ValuesParam();
+    valuesParam.setName("xwiki/2.0");
+    valuesParam.setValues(Arrays.asList("jar:/wikisyntax/help/xWiki2.0_Short.txt", "jar:/wikisyntax/help/xWiki2.0_Full.txt"));
+    syntaxHelpParams.add(valuesParam);
+
+    ConfigurationManager configurationManager = PortalContainer.getInstance().getComponentInstanceOfType(ConfigurationManager.class);
+
+    // When
+    Page shortHelpPage = storage.getHelpSyntaxPage("xwiki/2.0", false, syntaxHelpParams, configurationManager);
+    Page fullHelpPage = storage.getHelpSyntaxPage("xwiki/2.0", true, syntaxHelpParams, configurationManager);
+
+    // Then
+    assertNotNull(shortHelpPage);
+    assertNotNull(fullHelpPage);
   }
 }
