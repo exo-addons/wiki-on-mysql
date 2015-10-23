@@ -18,6 +18,7 @@ package org.exoplatform.wiki.jpa.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
 import org.exoplatform.commons.api.persistence.ExoEntity;
@@ -42,7 +43,7 @@ public class PermissionEntity {
   private String identityType;
 
   @Column(name="PERMISSION")
-  @Enumerated
+  @Enumerated(EnumType.STRING)
   private PermissionType permissionType;
 
 
