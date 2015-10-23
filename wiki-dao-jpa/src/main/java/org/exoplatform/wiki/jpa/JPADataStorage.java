@@ -20,6 +20,7 @@
 package org.exoplatform.wiki.jpa;
 
 import org.apache.commons.lang.StringUtils;
+import org.exoplatform.commons.api.persistence.DataInitializer;
 import org.exoplatform.commons.api.search.SearchService;
 import org.exoplatform.commons.utils.ObjectPageList;
 import org.exoplatform.commons.utils.PageList;
@@ -61,12 +62,16 @@ public class JPADataStorage implements DataStorage {
   private TemplateDAO    templateDAO;
   private EmotionIconDAO emotionIconDAO;
 
+  /**
+   * JPADataStorage must depends on DataInitializer to make sure data structure is created before initializing it
+   */
   public JPADataStorage(WikiDAO wikiDAO,
                         PageDAO pageDAO,
                         AttachmentDAO attachmentDAO,
                         DraftPageDAO draftPageDAO,
                         TemplateDAO templateDAO,
-                        EmotionIconDAO emotionIconDAO) {
+                        EmotionIconDAO emotionIconDAO,
+                        DataInitializer dataInitializer) {
     this.wikiDAO = wikiDAO;
     this.pageDAO = pageDAO;
     this.attachmentDAO = attachmentDAO;
