@@ -19,6 +19,7 @@
 
 package org.exoplatform.wiki.jpa;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.exoplatform.commons.api.persistence.DataInitializer;
 import org.exoplatform.commons.api.search.SearchService;
@@ -149,6 +150,21 @@ public class JPADataStorage implements DataStorage {
     wikiHomePage.setCreatedDate(now);
     wikiHomePage.setUpdatedDate(now);
     wikiHomePage.setContent("= Welcome to " + wiki.getOwner() + " =");
+    // inherit home page permissions from wiki permissions
+    List<PermissionEntry> homePagePermissions = new ArrayList<>();
+    List<PermissionEntry> wikiPermissions = createdWiki.getPermissions();
+    for(PermissionEntry wikiPermission : wikiPermissions) {
+      PermissionEntry homePagePermission = new PermissionEntry(wikiPermission.getId(), wikiPermission.getFullName(), wikiPermission.getIdType(), null);
+      List<Permission> newPermissions = new ArrayList<>();
+      for(Permission permission : wikiPermission.getPermissions()) {
+        if(permission.getPermissionType().equals(PermissionType.VIEWPAGE) || permission.getPermissionType().equals(PermissionType.EDITPAGE)) {
+          newPermissions.add(permission);
+        }
+      }
+      homePagePermission.setPermissions(newPermissions.toArray(new Permission[]{}));
+      homePagePermissions.add(homePagePermission);
+    }
+    wikiHomePage.setPermissions(homePagePermissions);
 
     Page createdWikiHomePage = createPage(createdWiki, null, wikiHomePage);
     createdWiki.setWikiHome(createdWikiHomePage);
