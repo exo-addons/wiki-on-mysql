@@ -684,9 +684,6 @@ public class JPADataStorage implements DataStorage {
 
     AttachmentEntity attachmentEntity = convertAttachmentToAttachmentEntity(attachment);
     attachmentEntity.setPage(pageEntity);
-    // attachment must be saved here because of Hibernate bug HHH-6776
-    attachmentDAO.create(attachmentEntity);
-
     Date now = GregorianCalendar.getInstance().getTime();
     if (attachmentEntity.getCreatedDate() == null) {
       attachmentEntity.setCreatedDate(now);
@@ -694,6 +691,8 @@ public class JPADataStorage implements DataStorage {
     if (attachmentEntity.getUpdatedDate() == null) {
       attachmentEntity.setUpdatedDate(now);
     }
+    // attachment must be saved here because of Hibernate bug HHH-6776
+    attachmentDAO.create(attachmentEntity);
 
     List<AttachmentEntity> attachmentsEntities = pageEntity.getAttachments();
     if (attachmentsEntities == null) {
@@ -1028,39 +1027,33 @@ public class JPADataStorage implements DataStorage {
     return pageEntity;
   }
 
-  public String getDownloadURL(AttachmentEntity attachmentEntity) {
+  /**
+   * Build the download URL of an attachment
+   * @param attachmentEntity
+   * @return
+   */
+  private String getDownloadURL(AttachmentEntity attachmentEntity) {
     StringBuilder sb = new StringBuilder();
-    String mimeType = attachmentEntity.getMimeType();
     PageEntity page = attachmentEntity.getPage();
     WikiEntity wiki = page.getWiki();
-    if (mimeType != null && mimeType.startsWith("image/") && wiki != null) {
-      // Build REST url to view image
-      sb.append(Utils.getDefaultRestBaseURI())
-        .append("/wiki/images/")
-        .append(wiki.getType())
-        .append("/")
-        .append(Utils.SPACE)
-        .append("/")
-        .append(Utils.validateWikiOwner(wiki.getType(), wiki.getOwner()))
-        .append("/")
-        .append(Utils.PAGE)
-        .append("/")
-        .append(page.getName());
-      try {
-        sb.append("/").append(URLEncoder.encode(attachmentEntity.getName(), "UTF-8"));
-      } catch (UnsupportedEncodingException e) {
-        sb.append("/").append(attachmentEntity.getName());
-      }
-    } else {
-      // TODO Manage download of attachments
-      /*
-       * sb.append(JCRUtils.getCurrentRepositoryWebDavUri());
-       * sb.append(getWorkspace()); String path = getPath(); try { String
-       * parentPath = path.substring(0, path.lastIndexOf("/"));
-       * sb.append(parentPath + "/" + URLEncoder.encode(getName(), "UTF-8")); }
-       * catch (UnsupportedEncodingException e) { sb.append(path); }
-       */
+
+    sb.append(Utils.getDefaultRestBaseURI())
+      .append("/wiki/attachments/")
+      .append(wiki.getType())
+      .append("/")
+      .append(Utils.SPACE)
+      .append("/")
+      .append(Utils.validateWikiOwner(wiki.getType(), wiki.getOwner()))
+      .append("/")
+      .append(Utils.PAGE)
+      .append("/")
+      .append(page.getName());
+    try {
+      sb.append("/").append(URLEncoder.encode(attachmentEntity.getName(), "UTF-8"));
+    } catch (UnsupportedEncodingException e) {
+      sb.append("/").append(attachmentEntity.getName());
     }
+
     return sb.toString();
   }
 }

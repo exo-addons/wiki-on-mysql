@@ -296,8 +296,8 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertEquals(3, pageDAO.findAll().size());
     assertEquals(2, storage.getChildrenPageOf(wiki.getWikiHome()).size());
     storage.movePage(new WikiPageParams(wiki.getType(), wiki.getOwner(), page2.getName()), new WikiPageParams(wiki.getType(),
-                                                                                                              wiki.getOwner(),
-                                                                                                              page1.getName()));
+            wiki.getOwner(),
+            page1.getName()));
 
     // Then
     assertEquals(3, pageDAO.findAll().size());
@@ -467,7 +467,7 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     Attachment attachment2 = new Attachment();
     attachment2.setCreatedDate(Calendar.getInstance());
     attachment2.setUpdatedDate(Calendar.getInstance());
-    attachment1.setName("attachment2");
+    attachment2.setName("attachment2");
 
     // When
     storage.createPage(wiki, wiki.getWikiHome(), page1);
@@ -1190,8 +1190,8 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
 
     // When
     List<TemplateSearchResult> searchResults1 = storage.searchTemplate(new TemplateSearchData("Template",
-                                                                                              wiki.getType(),
-                                                                                              wiki.getOwner()));
+            wiki.getType(),
+            wiki.getOwner()));
     List<TemplateSearchResult> searchResults2 = storage.searchTemplate(new TemplateSearchData("Title 1",
                                                                                               wiki.getType(),
                                                                                               wiki.getOwner()));
