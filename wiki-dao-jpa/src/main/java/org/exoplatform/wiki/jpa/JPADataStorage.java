@@ -381,14 +381,8 @@ public class JPADataStorage implements DataStorage {
       throw new WikiException("Cannot get permissions of wiki " + wikiType + ":" + wikiOwner + " because wiki does not exist.");
     }
 
-    List<PermissionEntry> permissionEntries = new ArrayList<>();
-    if (wikiEntity.getPermissions() != null) {
-      for (PermissionEntity permissionEntity : wikiEntity.getPermissions()) {
-        permissionEntries.add(convertPermissionEntityToPermissionEntry(permissionEntity));
-      }
-    }
-
-    return permissionEntries;
+    return convertPermissionEntitiesToPermissionEntries(wikiEntity.getPermissions(),
+            Arrays.asList(PermissionType.VIEWPAGE, PermissionType.EDITPAGE, PermissionType.ADMINPAGE, PermissionType.ADMINSPACE));
   }
 
   @Override
@@ -399,15 +393,7 @@ public class JPADataStorage implements DataStorage {
       throw new WikiException("Cannot update permissions of wiki " + wikiType + ":" + wikiOwner + " because wiki does not exist.");
     }
 
-    List<PermissionEntity> permissionEntities = new ArrayList<>();
-    for (PermissionEntry permissionEntry : permissionEntries) {
-      for (Permission permission : permissionEntry.getPermissions()) {
-        permissionEntities.add(new PermissionEntity(permissionEntry.getId(),
-                                                    permissionEntry.getIdType().toString(),
-                                                    permission.getPermissionType()));
-      }
-    }
-    wikiEntity.setPermissions(permissionEntities);
+    wikiEntity.setPermissions(convertPermissionEntriesToPermissionEntities(permissionEntries));
 
     wikiDAO.update(wikiEntity);
   }
@@ -798,7 +784,7 @@ public class JPADataStorage implements DataStorage {
       // SYSTEM has permission everywhere
       return true;
     } else if (userId.equals(page.getOwner())) {
-      // Current user is owner of node so has all privileges
+      // Current user is owner of the page so has all privileges
       return true;
     }
 
@@ -817,51 +803,95 @@ public class JPADataStorage implements DataStorage {
       // no permissions on the page
       return true;
     } else {
-      // for each permission set on the page
-      for(PermissionEntry pagePermission : pagePermissions) {
-        // for each type of permission (VIEWPAGE, EDITPAGE, ...)
-        for(Permission permission : pagePermission.getPermissions()) {
-          // if the permission type equals the type we want to test
-          if(permission.isAllowed() && permission.getPermissionType().equals(permissionType)) {
-            // if the user belongs to this identity (user, membership or any)
-            if(IdentityConstants.ANY.equals(pagePermission.getId())) {
-              return true;
-            } else {
-              switch(pagePermission.getIdType()) {
-                case USER:
-                  if(userId.equals(pagePermission.getId())) {
-                    return true;
-                  }
-                case GROUP:
-                  if(identity.isMemberOf(pagePermission.getId())) {
-                    return true;
-                  }
-                case MEMBERSHIP:
-                  UserACL.Permission membershipPermission = new UserACL.Permission();
-                  membershipPermission.setPermissionExpression(pagePermission.getId());
-                  if(identity.isMemberOf(membershipPermission.getGroupId(), membershipPermission.getMembership())) {
-                    return true;
-                  }
-              }
+      return hasPermission(pagePermissions, identity, permissionType);
+    }
+  }
+
+  @Override
+  public boolean hasAdminSpacePermission(String wikiType, String owner, Identity identity) throws WikiException {
+    return hasPermissionOnWiki(wikiType, owner, identity, PermissionType.ADMINSPACE);
+  }
+
+  @Override
+  public boolean hasAdminPagePermission(String wikiType, String owner, Identity identity) throws WikiException {
+    return hasPermissionOnWiki(wikiType, owner, identity, PermissionType.ADMINPAGE);
+  }
+
+  /**
+   * Check if the identity has the given permission type on a wiki
+   * @param wikiType Type of the wiki
+   * @param owner Owner of the wiki
+   * @param identity Identity of the user
+   * @param permissionType Permission type to check
+   * @return true if the user has the given permission type on the wiki
+   * @throws WikiException
+   */
+  private boolean hasPermissionOnWiki(String wikiType, String owner, Identity identity, PermissionType permissionType) throws WikiException {
+    String userId = identity.getUserId();
+    if (userId.equals(IdentityConstants.SYSTEM)) {
+      // SYSTEM has permission everywhere
+      return true;
+    } else if (userId.equals(owner)) {
+      // Current user is owner of the wiki so has all privileges
+      return true;
+    }
+
+    Wiki wiki = getWikiByTypeAndOwner(wikiType, owner);
+
+    if(wiki != null) {
+      List<PermissionEntry> wikiPermissions = wiki.getPermissions();
+      if (wikiPermissions == null || wikiPermissions.isEmpty()) {
+        // no permissions on the page
+        return true;
+      } else {
+        return hasPermission(wikiPermissions, identity, permissionType);
+      }
+    } else {
+      throw new WikiException("Cannot check admin space permission on wiki " + wikiType + ":" + owner + " for user "
+              + identity.getUserId() + " because the wiki cannot be fetched");
+    }
+  }
+
+  /**
+   * Check if the identity has the permission of type permissionType in the resourcePermissions
+   * @param resourcePermissions List of permissions of the resource (wiki, page, ...)
+   * @param identity The identity of the user
+   * @param permissionType The permission type to check
+   * @return true of the user has the given permission type in the list of the given permission entries
+   */
+  private boolean hasPermission(List<PermissionEntry> resourcePermissions, Identity identity, PermissionType permissionType) {
+    String userId = identity.getUserId();
+    // for each permission set on the page
+    for(PermissionEntry pagePermission : resourcePermissions) {
+      // for each type of permission (VIEWPAGE, EDITPAGE, ...)
+      for(Permission permission : pagePermission.getPermissions()) {
+        // if the permission type equals the type we want to test
+        if(permission.isAllowed() && permission.getPermissionType().equals(permissionType)) {
+          // if the user belongs to this identity (user, membership or any)
+          if(IdentityConstants.ANY.equals(pagePermission.getId())) {
+            return true;
+          } else {
+            switch(pagePermission.getIdType()) {
+              case USER:
+                if(userId.equals(pagePermission.getId())) {
+                  return true;
+                }
+              case GROUP:
+                if(identity.isMemberOf(pagePermission.getId())) {
+                  return true;
+                }
+              case MEMBERSHIP:
+                UserACL.Permission membershipPermission = new UserACL.Permission();
+                membershipPermission.setPermissionExpression(pagePermission.getId());
+                if(identity.isMemberOf(membershipPermission.getGroupId(), membershipPermission.getMembership())) {
+                  return true;
+                }
             }
           }
         }
       }
     }
-
     return false;
-  }
-
-  @Override
-  public boolean hasAdminSpacePermission(String s, String s1, Identity identity) throws WikiException {
-    // TODO Implement it !
-    return true;
-  }
-
-  @Override
-  public boolean hasAdminPagePermission(String s, String s1, Identity identity) throws WikiException {
-    // TODO Implement it !
-    return true;
   }
 
   @Override

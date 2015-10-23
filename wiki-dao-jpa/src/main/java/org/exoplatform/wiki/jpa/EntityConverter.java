@@ -26,7 +26,8 @@ public class EntityConverter {
       if (wikiHomePageEntity != null) {
         wiki.setWikiHome(convertPageEntityToPage(wikiHomePageEntity));
       }
-      // wiki.setPermissions(wikiEntity.getPermissions());
+      wiki.setPermissions(convertPermissionEntitiesToPermissionEntries(wikiEntity.getPermissions(),
+              Arrays.asList(PermissionType.VIEWPAGE, PermissionType.EDITPAGE, PermissionType.ADMINPAGE, PermissionType.ADMINSPACE)));
       // wiki.setDefaultPermissionsInited();
       wiki.setPreferences(wiki.getPreferences());
     }
@@ -40,7 +41,7 @@ public class EntityConverter {
       wikiEntity.setType(wiki.getType());
       wikiEntity.setOwner(wiki.getOwner());
       wikiEntity.setWikiHome(convertPageToPageEntity(wiki.getWikiHome(), wikiDAO));
-      // wikiEntity.setPermissions(wiki.getPermissions());
+      wikiEntity.setPermissions(convertPermissionEntriesToPermissionEntities(wiki.getPermissions()));
     }
     return wikiEntity;
   }
@@ -66,21 +67,22 @@ public class EntityConverter {
       page.setMinorEdit(pageEntity.isMinorEdit());
       page.setComment(pageEntity.getComment());
       page.setUrl(pageEntity.getUrl());
-      page.setPermissions(convertPermissionEntitiesToPermissionEntries(pageEntity.getPermissions()));
+      page.setPermissions(convertPermissionEntitiesToPermissionEntries(pageEntity.getPermissions(),
+              Arrays.asList(PermissionType.VIEWPAGE, PermissionType.EDITPAGE)));
       page.setActivityId(pageEntity.getActivityId());
     }
     return page;
   }
 
-  public static List<PermissionEntry> convertPermissionEntitiesToPermissionEntries(List<PermissionEntity> permissionEntities) {
+  public static List<PermissionEntry> convertPermissionEntitiesToPermissionEntries(List<PermissionEntity> permissionEntities,
+                                                                                   List<PermissionType> filteredPermissionTypes) {
     List<PermissionEntry> permissionEntries = new ArrayList<>();
     if(permissionEntities != null) {
       // we fill a map to prevent duplicated entries
       Map<String, PermissionEntry> permissionEntriesMap = new HashMap<>();
       for(PermissionEntity permissionEntity : permissionEntities) {
         // only permission types relevant for pages are used
-        if(permissionEntity.getPermissionType().equals(PermissionType.VIEWPAGE)
-                || permissionEntity.getPermissionType().equals(PermissionType.EDITPAGE)) {
+        if(filteredPermissionTypes.contains(permissionEntity.getPermissionType())) {
           Permission newPermission = new Permission(permissionEntity.getPermissionType(), true);
           if (permissionEntriesMap.get(permissionEntity.getIdentity()) != null) {
             PermissionEntry permissionEntry = permissionEntriesMap.get(permissionEntity.getIdentity());
@@ -103,9 +105,8 @@ public class EntityConverter {
       permissionEntries = new ArrayList(permissionEntriesMap.values());
 
       // fill missing Permission (all PermissionEntry must have all Permission Types with isAllowed to true or false)
-      List<PermissionType> pagepermissionTypes = Arrays.asList(PermissionType.VIEWPAGE, PermissionType.EDITPAGE);
       for(PermissionEntry permissionEntry : permissionEntries) {
-        for(PermissionType permissionType : pagepermissionTypes) {
+        for(PermissionType permissionType : filteredPermissionTypes) {
           boolean permissionTypeFound = false;
           for(Permission permission : permissionEntry.getPermissions()) {
             if(permission.getPermissionType().equals(permissionType)) {
