@@ -52,50 +52,6 @@ public class TemplateEntity extends BasePageEntity {
     return id;
   }
 
-  @Column(name = "NAME")
-  private String name;
-
-  @Column(name = "CONTENT")
-  private String content;
-
-  @Column(name = "SYNTAX")
-  private String syntax;
-
-  @Column(name = "TITLE")
-  private String title;
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getContent() {
-    return content;
-  }
-
-  public void setContent(String content) {
-    this.content = content;
-  }
-
-  public String getSyntax() {
-    return syntax;
-  }
-
-  public void setSyntax(String syntax) {
-    this.syntax = syntax;
-  }
-
-  public String getTitle() {
-    return title;
-  }
-
-  public void setTitle(String title) {
-    this.title = title;
-  }
-
   public WikiEntity getWiki() {
     return wiki;
   }

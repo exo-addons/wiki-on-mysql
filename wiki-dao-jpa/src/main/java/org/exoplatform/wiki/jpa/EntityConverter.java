@@ -272,26 +272,30 @@ public class EntityConverter {
       template.setTitle(templateEntity.getTitle());
       template.setContent(templateEntity.getContent());
       template.setSyntax(templateEntity.getSyntax());
+      template.setCreatedDate(templateEntity.getCreatedDate());
+      template.setUpdatedDate(templateEntity.getUpdatedDate());
     }
     return template;
   }
 
   public static TemplateEntity convertTemplateToTemplateEntity(Template template, WikiDAO wikiDAO) {
-    TemplateEntity templateEntry = null;
+    TemplateEntity templateEntity = null;
     if (template != null) {
-      templateEntry = new TemplateEntity();
-      templateEntry.setName(template.getName());
+      templateEntity = new TemplateEntity();
+      templateEntity.setName(template.getName());
       if (template.getWikiId() != null) {
         WikiEntity wiki = wikiDAO.find(Long.parseLong(template.getWikiId()));
         if (wiki != null) {
-          templateEntry.setWiki(wiki);
+          templateEntity.setWiki(wiki);
         }
       }
-      templateEntry.setTitle(template.getTitle());
-      templateEntry.setContent(template.getContent());
-      templateEntry.setSyntax(template.getSyntax());
+      templateEntity.setTitle(template.getTitle());
+      templateEntity.setContent(template.getContent());
+      templateEntity.setSyntax(template.getSyntax());
+      templateEntity.setCreatedDate(template.getCreatedDate());
+      templateEntity.setUpdatedDate(template.getUpdatedDate());
     }
-    return templateEntry;
+    return templateEntity;
   }
 
   public static EmotionIcon convertEmotionIconEntityToEmotionIcon(EmotionIconEntity emotionIconEntity) {

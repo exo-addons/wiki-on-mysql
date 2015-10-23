@@ -271,6 +271,17 @@ public class JPADataStorage implements DataStorage {
     template.setWikiId(wiki.getId());
     template.setWikiType(wiki.getType());
     template.setWikiOwner(wiki.getOwner());
+    Date createdDate = template.getCreatedDate();
+    Date updatedDate = template.getUpdatedDate();
+    if(createdDate == null || updatedDate == null) {
+      Date now = Calendar.getInstance().getTime();
+      if(createdDate == null) {
+        template.setCreatedDate(now);
+      }
+      if(updatedDate == null) {
+        template.setUpdatedDate(now);
+      }
+    }
     templateDAO.create(convertTemplateToTemplateEntity(template, wikiDAO));
   }
 
@@ -292,6 +303,7 @@ public class JPADataStorage implements DataStorage {
     templateEntity.setTitle(template.getTitle());
     templateEntity.setContent(template.getContent());
     templateEntity.setSyntax(template.getSyntax());
+    templateEntity.setUpdatedDate(Calendar.getInstance().getTime());
 
     templateDAO.update(templateEntity);
   }
@@ -587,14 +599,26 @@ public class JPADataStorage implements DataStorage {
     List<TemplateSearchResult> searchResults = new ArrayList<>();
     if (templates != null) {
       for (TemplateEntity templateEntity : templates) {
+        Calendar createdDateCalendar = null;
+        Date createdDate = templateEntity.getCreatedDate();
+        if(createdDate != null) {
+          createdDateCalendar = Calendar.getInstance();
+          createdDateCalendar.setTime(createdDate);
+        }
+        Calendar updatedDateCalendar = null;
+        Date updatedDate = templateEntity.getUpdatedDate();
+        if(updatedDate != null) {
+          updatedDateCalendar = Calendar.getInstance();
+          updatedDateCalendar.setTime(updatedDate);
+        }
         TemplateSearchResult templateSearchResult = new TemplateSearchResult(templateEntity.getWiki().getType(),
                                                                              templateEntity.getWiki().getOwner(),
                                                                              templateEntity.getName(),
                                                                              templateEntity.getTitle(),
                                                                              null,
                                                                              SearchResultType.TEMPLATE,
-                                                                             null,
-                                                                             null,
+                                                                             updatedDateCalendar,
+                                                                             createdDateCalendar,
                                                                              null);
         searchResults.add(templateSearchResult);
       }

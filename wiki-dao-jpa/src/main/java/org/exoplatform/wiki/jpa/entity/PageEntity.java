@@ -68,33 +68,12 @@ public class PageEntity extends BasePageEntity {
   )
   private List<PageEntity> relatedPages;
 
-  @Column(name = "AUTHOR")
-  private String author;
-
   public long getId() {
     return id;
   }
 
-  @Column(name = "NAME")
-  private String name;
-
   @Column(name = "OWNER")
   private String owner;
-
-  @Column(name = "CREATED_DATE")
-  private Date createdDate;
-
-  @Column(name = "UPDATED_DATE")
-  private Date updatedDate;
-
-  @Column(name = "CONTENT")
-  private String content;
-
-  @Column(name = "SYNTAX")
-  private String syntax;
-
-  @Column(name = "TITLE")
-  private String title;
 
   @Column(name = "COMMENT")
   private String comment;
@@ -123,68 +102,12 @@ public class PageEntity extends BasePageEntity {
   )
   private List<PermissionEntity> permissions;
 
-  public String getAuthor() {
-    return author;
-  }
-
-  public void setAuthor(String author) {
-    this.author = author;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
   public String getOwner() {
     return owner;
   }
 
   public void setOwner(String owner) {
     this.owner = owner;
-  }
-
-  public Date getCreatedDate() {
-    return createdDate;
-  }
-
-  public void setCreatedDate(Date createdDate) {
-    this.createdDate = createdDate;
-  }
-
-  public Date getUpdatedDate() {
-    return updatedDate;
-  }
-
-  public void setUpdatedDate(Date updatedDate) {
-    this.updatedDate = updatedDate;
-  }
-
-  public String getContent() {
-    return content;
-  }
-
-  public void setContent(String content) {
-    this.content = content;
-  }
-
-  public String getSyntax() {
-    return syntax;
-  }
-
-  public void setSyntax(String syntax) {
-    this.syntax = syntax;
-  }
-
-  public String getTitle() {
-    return title;
-  }
-
-  public void setTitle(String title) {
-    this.title = title;
   }
 
   public String getComment() {

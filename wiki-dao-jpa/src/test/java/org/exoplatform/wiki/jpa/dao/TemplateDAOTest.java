@@ -20,6 +20,8 @@
 package org.exoplatform.wiki.jpa.dao;
 
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Test;
@@ -47,6 +49,9 @@ public class TemplateDAOTest extends BaseWikiJPAIntegrationTest {
     template.setName("template1");
     template.setTitle("Template 1");
     template.setContent("Template 1 Content");
+    Date now = Calendar.getInstance().getTime();
+    template.setCreatedDate(now);
+    template.setUpdatedDate(now);
     templateDAO.create(template);
 
     //When
@@ -75,11 +80,15 @@ public class TemplateDAOTest extends BaseWikiJPAIntegrationTest {
     wiki.setOwner("wiki1");
     wiki = wikiDAO.create(wiki);
 
+    Date now = Calendar.getInstance().getTime();
+
     TemplateEntity template1 = new TemplateEntity();
     template1.setWiki(wiki);
     template1.setName("template1");
     template1.setTitle("Template 1");
     template1.setContent("Template 1 Content");
+    template1.setCreatedDate(now);
+    template1.setUpdatedDate(now);
     templateDAO.create(template1);
 
     TemplateEntity template2 = new TemplateEntity();
@@ -87,6 +96,8 @@ public class TemplateDAOTest extends BaseWikiJPAIntegrationTest {
     template2.setName("template2");
     template2.setTitle("Template 2");
     template2.setContent("Template 2 Content");
+    template2.setCreatedDate(now);
+    template2.setUpdatedDate(now);
     templateDAO.create(template2);
 
     //When
@@ -109,11 +120,15 @@ public class TemplateDAOTest extends BaseWikiJPAIntegrationTest {
     wiki.setOwner("wiki1");
     wiki = wikiDAO.create(wiki);
 
+    Date now = Calendar.getInstance().getTime();
+
     TemplateEntity template1 = new TemplateEntity();
     template1.setWiki(wiki);
     template1.setName("template1");
     template1.setTitle("Template with Title 1");
     template1.setContent("Template 1 Content");
+    template1.setCreatedDate(now);
+    template1.setUpdatedDate(now);
     templateDAO.create(template1);
 
     TemplateEntity template2 = new TemplateEntity();
@@ -121,6 +136,8 @@ public class TemplateDAOTest extends BaseWikiJPAIntegrationTest {
     template2.setName("template2");
     template2.setTitle("Template with Title 2");
     template2.setContent("Template 2 Content");
+    template2.setCreatedDate(now);
+    template2.setUpdatedDate(now);
     templateDAO.create(template2);
 
     //When
