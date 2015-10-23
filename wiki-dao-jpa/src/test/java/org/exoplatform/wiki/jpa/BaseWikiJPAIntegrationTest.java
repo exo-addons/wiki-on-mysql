@@ -54,7 +54,7 @@ public abstract class BaseWikiJPAIntegrationTest extends BaseTest {
       Class.forName("org.hsqldb.jdbcDriver");
       conn = DriverManager.getConnection("jdbc:hsqldb:mem:db1", "sa", "");
       Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(conn));
-      liquibase = new Liquibase("db/changelog/wiki-rdbms.db.changelog-test.xml", new ClassLoaderResourceAccessor(), database);
+      liquibase = new Liquibase("db/changelog/wiki.db.changelog-test.xml", new ClassLoaderResourceAccessor(), database);
       liquibase.update((String) null);
     } catch (ClassNotFoundException | SQLException | LiquibaseException e) {
       fail(e.getMessage());

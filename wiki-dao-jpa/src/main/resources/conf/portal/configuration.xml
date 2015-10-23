@@ -61,7 +61,7 @@
                 <values-param>
                     <name>changelogs</name>
                     <description>Change logs of task management</description>
-                    <value>db/changelog/wiki-rdbms.db.changelog-1.0.0.xml</value>
+                    <value>db/changelog/wiki.db.changelog-1.0.0.xml</value>
                 </values-param>
             </init-params>
         </component-plugin>
