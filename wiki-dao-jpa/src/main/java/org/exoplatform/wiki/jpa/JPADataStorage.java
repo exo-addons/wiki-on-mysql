@@ -19,23 +19,18 @@
 
 package org.exoplatform.wiki.jpa;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.*;
-
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-
 import org.exoplatform.commons.api.search.SearchService;
 import org.exoplatform.commons.utils.ObjectPageList;
 import org.exoplatform.commons.utils.PageList;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.ValuesParam;
+import org.exoplatform.portal.config.UserACL;
 import org.exoplatform.portal.config.model.PortalConfig;
 import org.exoplatform.services.security.Identity;
+import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.jpa.dao.*;
 import org.exoplatform.wiki.jpa.entity.*;
@@ -46,6 +41,13 @@ import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.search.*;
 import org.exoplatform.wiki.utils.Utils;
 import org.exoplatform.wiki.utils.WikiConstants;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.*;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
@@ -791,8 +793,63 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public boolean hasPermissionOnPage(Page page, PermissionType permissionType, Identity identity) throws WikiException {
-    // TODO Implement it !
-    return true;
+    String userId = identity.getUserId();
+    if (userId.equals(IdentityConstants.SYSTEM)) {
+      // SYSTEM has permission everywhere
+      return true;
+    } else if (userId.equals(page.getOwner())) {
+      // Current user is owner of node so has all privileges
+      return true;
+    }
+
+    List<PermissionEntry> pagePermissions = page.getPermissions();
+    if(pagePermissions == null) {
+      Page fetchedPage;
+      if(page.getId() != null && !page.getId().isEmpty()) {
+        fetchedPage = getPageById(page.getId());
+      } else {
+        fetchedPage = getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
+      }
+      pagePermissions = fetchedPage.getPermissions();
+    }
+
+    if(pagePermissions == null || pagePermissions.isEmpty()) {
+      // no permissions on the page
+      return true;
+    } else {
+      // for each permission set on the page
+      for(PermissionEntry pagePermission : pagePermissions) {
+        // for each type of permission (VIEWPAGE, EDITPAGE, ...)
+        for(Permission permission : pagePermission.getPermissions()) {
+          // if the permission type equals the type we want to test
+          if(permission.isAllowed() && permission.getPermissionType().equals(permissionType)) {
+            // if the user belongs to this identity (user, membership or any)
+            if(IdentityConstants.ANY.equals(pagePermission.getId())) {
+              return true;
+            } else {
+              switch(pagePermission.getIdType()) {
+                case USER:
+                  if(userId.equals(pagePermission.getId())) {
+                    return true;
+                  }
+                case GROUP:
+                  if(identity.isMemberOf(pagePermission.getId())) {
+                    return true;
+                  }
+                case MEMBERSHIP:
+                  UserACL.Permission membershipPermission = new UserACL.Permission();
+                  membershipPermission.setPermissionExpression(pagePermission.getId());
+                  if(identity.isMemberOf(membershipPermission.getGroupId(), membershipPermission.getMembership())) {
+                    return true;
+                  }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return false;
   }
 
   @Override
@@ -842,7 +899,7 @@ public class JPADataStorage implements DataStorage {
     pageEntity.setMinorEdit(page.isMinorEdit());
     pageEntity.setComment(page.getComment());
     pageEntity.setUrl(page.getUrl());
-    // page.setPermissions(pageEntity.getPermissions());
+    pageEntity.setPermissions(convertPermissionEntriesToPermissionEntities(page.getPermissions()));
     pageEntity.setActivityId(page.getActivityId());
 
     pageDAO.update(pageEntity);
@@ -1006,10 +1063,61 @@ public class JPADataStorage implements DataStorage {
       page.setMinorEdit(pageEntity.isMinorEdit());
       page.setComment(pageEntity.getComment());
       page.setUrl(pageEntity.getUrl());
-      // page.setPermissions(pageEntity.getPermissions());
+      page.setPermissions(convertPermissionEntitiesToPermissionEntries(pageEntity.getPermissions()));
       page.setActivityId(pageEntity.getActivityId());
     }
     return page;
+  }
+
+  private List<PermissionEntry> convertPermissionEntitiesToPermissionEntries(List<PermissionEntity> permissionEntities) {
+    List<PermissionEntry> permissionEntries = new ArrayList<>();
+    if(permissionEntities != null) {
+      // we fill a map to prevent duplicated entries
+      Map<String, PermissionEntry> permissionEntriesMap = new HashMap<>();
+      for(PermissionEntity permissionEntity : permissionEntities) {
+        // only permission types relevant for pages are used
+        if(permissionEntity.getPermissionType().equals(PermissionType.VIEWPAGE)
+                || permissionEntity.getPermissionType().equals(PermissionType.EDITPAGE)) {
+          Permission newPermission = new Permission(permissionEntity.getPermissionType(), true);
+          if (permissionEntriesMap.get(permissionEntity.getIdentity()) != null) {
+            PermissionEntry permissionEntry = permissionEntriesMap.get(permissionEntity.getIdentity());
+            Permission[] permissions = permissionEntry.getPermissions();
+            // add the new permission only if it does not exist yet
+            if (!ArrayUtils.contains(permissions, newPermission)) {
+              permissionEntry.setPermissions((Permission[]) ArrayUtils.add(permissions,
+                      newPermission));
+              permissionEntriesMap.put(permissionEntity.getIdentity(), permissionEntry);
+            }
+          } else {
+            permissionEntriesMap.put(permissionEntity.getIdentity(), new PermissionEntry(
+                    permissionEntity.getIdentity(),
+                    null,
+                    IDType.valueOf(permissionEntity.getIdentityType()),
+                    new Permission[]{newPermission}));
+          }
+        }
+      }
+      permissionEntries = new ArrayList(permissionEntriesMap.values());
+
+      // fill missing Permission (all PermissionEntry must have all Permission Types with isAllowed to true or false)
+      List<PermissionType> pagepermissionTypes = Arrays.asList(PermissionType.VIEWPAGE, PermissionType.EDITPAGE);
+      for(PermissionEntry permissionEntry : permissionEntries) {
+        for(PermissionType permissionType : pagepermissionTypes) {
+          boolean permissionTypeFound = false;
+          for(Permission permission : permissionEntry.getPermissions()) {
+            if(permission.getPermissionType().equals(permissionType)) {
+              permissionTypeFound = true;
+              break;
+            }
+          }
+          if(!permissionTypeFound) {
+            Permission newPermission = new Permission(permissionType, false);
+            permissionEntry.setPermissions((Permission[])ArrayUtils.add(permissionEntry.getPermissions(), newPermission));
+          }
+        }
+      }
+    }
+    return permissionEntries;
   }
 
   private PageEntity convertPageToPageEntity(Page page) {
@@ -1032,10 +1140,29 @@ public class JPADataStorage implements DataStorage {
       pageEntity.setMinorEdit(page.isMinorEdit());
       pageEntity.setComment(page.getComment());
       pageEntity.setUrl(page.getUrl());
-      // page.setPermissions(pageEntity.getPermissions());
+      pageEntity.setPermissions(convertPermissionEntriesToPermissionEntities(page.getPermissions()));
       pageEntity.setActivityId(page.getActivityId());
     }
     return pageEntity;
+  }
+
+  private List<PermissionEntity> convertPermissionEntriesToPermissionEntities(List<PermissionEntry> permissionEntries) {
+    List<PermissionEntity> permissionEntities = null;
+    if(permissionEntries != null) {
+      permissionEntities = new ArrayList<>();
+      for (PermissionEntry permissionEntry : permissionEntries) {
+        for (Permission permission : permissionEntry.getPermissions()) {
+          if (permission.isAllowed()) {
+            permissionEntities.add(new PermissionEntity(
+                    permissionEntry.getId(),
+                    permissionEntry.getIdType().toString(),
+                    permission.getPermissionType()
+            ));
+          }
+        }
+      }
+    }
+    return permissionEntities;
   }
 
   private Attachment convertAttachmentEntityToAttachment(AttachmentEntity attachmentEntity) {
