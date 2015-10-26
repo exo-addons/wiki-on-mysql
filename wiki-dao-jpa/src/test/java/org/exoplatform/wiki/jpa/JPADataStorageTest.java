@@ -233,7 +233,7 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     storage.deletePage(wiki.getType(), wiki.getOwner(), page1.getName());
 
     // Then
-    assertEquals(1, pageDAO.findAll().size());
+    assertEquals(1, pageDAO.findAllIds(0, 0).size());
   }
 
   @Test
@@ -265,7 +265,7 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     storage.deletePage(wiki.getType(), wiki.getOwner(), page1.getName());
 
     // Then
-    assertEquals(1, pageDAO.findAll().size());
+    assertEquals(1, pageDAO.findAllIds(0, 0).size());
   }
 
   @Test

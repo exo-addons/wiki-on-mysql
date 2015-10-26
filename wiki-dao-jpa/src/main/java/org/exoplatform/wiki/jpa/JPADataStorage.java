@@ -200,6 +200,8 @@ public class JPADataStorage implements DataStorage {
       pageEntity.setUpdatedDate(now);
     }
 
+    pageEntity.setDeleted(false);
+
     PageEntity createdPageEntity = pageDAO.create(pageEntity);
 
     // if the page to create is the wiki home, update the wiki
@@ -284,7 +286,8 @@ public class JPADataStorage implements DataStorage {
       }
     }
 
-    pageDAO.delete(pageEntity);
+    pageEntity.setDeleted(true);
+    pageDAO.update(pageEntity);
   }
 
   @Override

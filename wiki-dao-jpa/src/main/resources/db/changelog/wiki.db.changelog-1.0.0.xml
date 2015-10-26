@@ -52,6 +52,7 @@
             <column name="URL" type="VARCHAR(500)"/>
             <column name="IS_MINOR_EDIT" type="CHAR(1)"/>
             <column name="ACTIVITY_ID" type="VARCHAR(36)"/>
+            <column name="DELETED" type="BIT" defaultValue="0"/>
         </createTable>
     </changeSet>
 
