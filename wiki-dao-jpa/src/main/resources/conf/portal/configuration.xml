@@ -44,6 +44,9 @@
         <type>org.exoplatform.wiki.jpa.dao.DraftPageDAO</type>
     </component>
     <component>
+        <type>org.exoplatform.wiki.jpa.dao.PageVersionDAO</type>
+    </component>
+    <component>
         <type>org.exoplatform.wiki.jpa.dao.TemplateDAO</type>
     </component>
     <component>

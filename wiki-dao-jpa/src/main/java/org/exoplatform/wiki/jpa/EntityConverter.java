@@ -257,6 +257,19 @@ public class EntityConverter {
     return draftPageEntity;
   }
 
+  public static PageVersion convertPageVersionEntityToPageVersion(PageVersionEntity pageVersionEntity) {
+    PageVersion pageVersion = null;
+    if (pageVersionEntity != null) {
+      pageVersion = new PageVersion();
+      pageVersion.setName(String.valueOf(pageVersionEntity.getVersionNumber()));
+      pageVersion.setAuthor(pageVersionEntity.getAuthor());
+      pageVersion.setContent(pageVersionEntity.getContent());
+      pageVersion.setCreatedDate(pageVersionEntity.getCreatedDate());
+      pageVersion.setUpdatedDate(pageVersionEntity.getUpdatedDate());
+    }
+    return pageVersion;
+  }
+
   public static Template convertTemplateEntityToTemplate(TemplateEntity templateEntity) {
     Template template = null;
     if (templateEntity != null) {

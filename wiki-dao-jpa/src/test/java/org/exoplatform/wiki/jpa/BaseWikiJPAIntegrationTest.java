@@ -42,6 +42,7 @@ public abstract class BaseWikiJPAIntegrationTest extends BaseTest {
   protected PageDAO        pageDAO;
   protected AttachmentDAO  attachmentDAO;
   protected DraftPageDAO   draftPageDAO;
+  protected PageVersionDAO pageVersionDAO;
   protected TemplateDAO    templateDAO;
   protected EmotionIconDAO emotionIconDAO;
   private Connection       conn;
@@ -65,6 +66,7 @@ public abstract class BaseWikiJPAIntegrationTest extends BaseTest {
     pageDAO = PortalContainer.getInstance().getComponentInstanceOfType(PageDAO.class);
     attachmentDAO = PortalContainer.getInstance().getComponentInstanceOfType(AttachmentDAO.class);
     draftPageDAO = PortalContainer.getInstance().getComponentInstanceOfType(DraftPageDAO.class);
+    pageVersionDAO = PortalContainer.getInstance().getComponentInstanceOfType(PageVersionDAO.class);
     templateDAO = PortalContainer.getInstance().getComponentInstanceOfType(TemplateDAO.class);
     emotionIconDAO = PortalContainer.getInstance().getComponentInstanceOfType(EmotionIconDAO.class);
     // Clean Data

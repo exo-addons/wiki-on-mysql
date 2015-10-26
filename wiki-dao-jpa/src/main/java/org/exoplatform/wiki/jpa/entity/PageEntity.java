@@ -20,6 +20,7 @@
 package org.exoplatform.wiki.jpa.entity;
 
 import org.exoplatform.commons.api.persistence.ExoEntity;
+import org.exoplatform.wiki.mow.api.PageVersion;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -57,6 +58,9 @@ public class PageEntity extends BasePageEntity {
   @ManyToOne(cascade = CascadeType.PERSIST)
   @JoinColumn(name = "PARENT_PAGE_ID")
   private PageEntity parentPage;
+
+  @OneToMany(mappedBy = "page", cascade = CascadeType.ALL)
+  private List<PageVersionEntity> versions;
 
   @OneToMany(mappedBy = "page", cascade = CascadeType.ALL)
   private List<AttachmentEntity> attachments;
@@ -167,6 +171,14 @@ public class PageEntity extends BasePageEntity {
 
   public void setParentPage(PageEntity parentPage) {
     this.parentPage = parentPage;
+  }
+
+  public List<PageVersionEntity> getVersions() {
+    return versions;
+  }
+
+  public void setVersions(List<PageVersionEntity> versions) {
+    this.versions = versions;
   }
 
   public List<AttachmentEntity> getAttachments() {

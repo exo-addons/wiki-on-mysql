@@ -40,6 +40,7 @@ import org.exoplatform.wiki.service.DataStorage;
 import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.search.*;
 import org.exoplatform.wiki.utils.Utils;
+import org.exoplatform.wiki.utils.VersionNameComparatorDesc;
 import org.exoplatform.wiki.utils.WikiConstants;
 
 import java.io.BufferedReader;
@@ -60,6 +61,7 @@ public class JPADataStorage implements DataStorage {
   private PageDAO        pageDAO;
   private AttachmentDAO  attachmentDAO;
   private DraftPageDAO   draftPageDAO;
+  private PageVersionDAO pageVersionDAO;
   private TemplateDAO    templateDAO;
   private EmotionIconDAO emotionIconDAO;
 
@@ -70,6 +72,7 @@ public class JPADataStorage implements DataStorage {
                         PageDAO pageDAO,
                         AttachmentDAO attachmentDAO,
                         DraftPageDAO draftPageDAO,
+                        PageVersionDAO pageVersionDAO,
                         TemplateDAO templateDAO,
                         EmotionIconDAO emotionIconDAO,
                         DataInitializer dataInitializer) {
@@ -77,6 +80,7 @@ public class JPADataStorage implements DataStorage {
     this.pageDAO = pageDAO;
     this.attachmentDAO = attachmentDAO;
     this.draftPageDAO = draftPageDAO;
+    this.pageVersionDAO = pageVersionDAO;
     this.templateDAO = templateDAO;
     this.emotionIconDAO = emotionIconDAO;
   }
@@ -943,13 +947,70 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public List<PageVersion> getVersionsOfPage(Page page) throws WikiException {
-    // TODO Implement it !
-    return new ArrayList<>();
+    PageEntity pageEntity = fetchPageEntity(page);
+
+    if (pageEntity == null) {
+      throw new WikiException("Cannot get versions of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":" + page.getName()
+              + " because page does not exist.");
+    }
+
+    List<PageVersion> pageVersions = new ArrayList<>();
+    List<PageVersionEntity> pageVersionEntities = pageEntity.getVersions();
+    if(pageVersionEntities != null) {
+      for (PageVersionEntity pageVersionEntity : pageVersionEntities) {
+        pageVersions.add(convertPageVersionEntityToPageVersion(pageVersionEntity));
+      }
+    }
+
+    Collections.sort(pageVersions, new VersionNameComparatorDesc());
+
+    return pageVersions;
   }
 
   @Override
   public void addPageVersion(Page page) throws WikiException {
-    // TODO Implement it !
+    if(page != null) {
+      PageEntity pageEntity = fetchPageEntity(page);
+
+      if (pageEntity == null) {
+        throw new WikiException("Cannot add version of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":" + page.getName()
+                + " because page does not exist.");
+      }
+
+      PageVersionEntity pageVersionEntity = new PageVersionEntity();
+
+      Long versionNumber = pageVersionDAO.getLastversionNumberOfPage(pageEntity.getId());
+      if(versionNumber == null) {
+        versionNumber = 1L;
+      } else {
+        versionNumber = versionNumber + 1;
+      }
+
+      pageVersionEntity.setPage(pageEntity);
+      pageVersionEntity.setVersionNumber(versionNumber);
+      pageVersionEntity.setName(pageEntity.getName());
+      pageVersionEntity.setTitle(pageEntity.getTitle());
+      pageVersionEntity.setAuthor(pageEntity.getAuthor());
+      pageVersionEntity.setContent(pageEntity.getContent());
+      Date now = Calendar.getInstance().getTime();
+      pageVersionEntity.setCreatedDate(now);
+      pageVersionEntity.setUpdatedDate(now);
+
+      // attachment must be saved here because of Hibernate bug HHH-6776
+      pageVersionDAO.create(pageVersionEntity);
+
+      List<PageVersionEntity> pageVersionEntities = pageEntity.getVersions();
+      if (pageVersionEntities == null) {
+        pageVersionEntities = new ArrayList<>();
+      }
+
+      pageVersionEntities.add(pageVersionEntity);
+      pageEntity.setVersions(pageVersionEntities);
+
+      pageDAO.update(pageEntity);
+    } else {
+      throw new WikiException("Cannot create version of a page null");
+    }
   }
 
   @Override
