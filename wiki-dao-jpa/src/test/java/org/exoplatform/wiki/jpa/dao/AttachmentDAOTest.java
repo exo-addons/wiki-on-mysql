@@ -41,7 +41,7 @@ public class AttachmentDAOTest extends BaseWikiJPAIntegrationTest {
 
   public void testInsertDelete() throws IOException, URISyntaxException {
     //Given
-    URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
+    URL fileResource = this.getClass().getClassLoader().getResource("wcm-cache-diagram.pdf");
     AttachmentEntity att = new AttachmentEntity();
     att.setContent(Files.readAllBytes(Paths.get(fileResource.toURI())));
     att.setCreatedDate(new Date());
@@ -60,7 +60,7 @@ public class AttachmentDAOTest extends BaseWikiJPAIntegrationTest {
 
   public void testUpdate() throws IOException, URISyntaxException {
     //Given
-    URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
+    URL fileResource = this.getClass().getClassLoader().getResource("wcm-cache-diagram.pdf");
     AttachmentEntity att = new AttachmentEntity();
     att.setContent(Files.readAllBytes(Paths.get(fileResource.toURI())));
     att.setCreatedDate(new Date());
