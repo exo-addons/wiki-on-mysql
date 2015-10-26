@@ -39,7 +39,7 @@ import java.util.List;
 public class PageVersionDAOTest extends BaseWikiJPAIntegrationTest {
 
   @Test
-  public void testPageOfWikiByName() {
+  public void testLastversionNumberOfPage() {
     WikiEntity wiki = new WikiEntity();
     wiki.setType("portal");
     wiki.setOwner("wiki1");
@@ -73,6 +73,51 @@ public class PageVersionDAOTest extends BaseWikiJPAIntegrationTest {
     pageVersionDAO.create(pageVersion2);
 
     assertEquals(2, pageVersionDAO.getLastversionNumberOfPage(page.getId()).longValue());
+  }
+
+  @Test
+  public void testPageversionByPageIdAndVersion() {
+    WikiEntity wiki = new WikiEntity();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = wikiDAO.create(wiki);
+    PageEntity parentPage = new PageEntity();
+    parentPage.setCreatedDate(new Date());
+    parentPage.setUpdatedDate(new Date());
+
+    PageEntity page = new PageEntity();
+    page.setWiki(wiki);
+    page.setParentPage(parentPage);
+    page.setCreatedDate(new Date());
+    page.setUpdatedDate(new Date());
+    page.setName("page1");
+    page.setTitle("Page 1");
+
+    pageDAO.create(page);
+
+    PageVersionEntity pageVersion1 = new PageVersionEntity();
+    pageVersion1.setPage(page);
+    pageVersion1.setCreatedDate(new Date());
+    pageVersion1.setUpdatedDate(new Date());
+    pageVersion1.setVersionNumber(1);
+    pageVersion1.setContent("Content Version 1");
+    pageVersionDAO.create(pageVersion1);
+
+    PageVersionEntity pageVersion2 = new PageVersionEntity();
+    pageVersion2.setPage(page);
+    pageVersion2.setCreatedDate(new Date());
+    pageVersion2.setUpdatedDate(new Date());
+    pageVersion2.setVersionNumber(2);
+    pageVersion2.setContent("Content Version 2");
+    pageVersionDAO.create(pageVersion2);
+
+    PageVersionEntity fetchedPageVersion1 = pageVersionDAO.getPageversionByPageIdAndVersion(page.getId(), 1L);
+    PageVersionEntity fetchedPageVersion2 = pageVersionDAO.getPageversionByPageIdAndVersion(page.getId(), 2L);
+
+    assertNotNull(fetchedPageVersion1);
+    assertEquals("Content Version 1", fetchedPageVersion1.getContent());
+    assertNotNull(fetchedPageVersion2);
+    assertEquals("Content Version 2", fetchedPageVersion2.getContent());
   }
 
 }

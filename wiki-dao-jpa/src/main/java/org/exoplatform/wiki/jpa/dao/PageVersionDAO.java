@@ -36,4 +36,16 @@ public class PageVersionDAO extends GenericDAOJPAImpl<PageVersionEntity, Long> {
        return null;
      }
    }
+
+  public PageVersionEntity getPageversionByPageIdAndVersion(Long pageId, Long versionNumber) {
+    TypedQuery<PageVersionEntity> query = getEntityManager().createNamedQuery("wikiPageVersion.getPageversionByPageIdAndVersion", PageVersionEntity.class)
+            .setParameter("pageId", pageId)
+            .setParameter("versionNumber", versionNumber);
+
+    try {
+      return query.getSingleResult();
+    } catch (NoResultException e) {
+      return null;
+    }
+  }
 }

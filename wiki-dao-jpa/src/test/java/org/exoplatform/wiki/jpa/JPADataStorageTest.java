@@ -1029,7 +1029,41 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertEquals("1", pageVersions2.get(1).getName());
   }
 
-    @Test
+  @Test
+  public void testRestorePageVersions() throws WikiException {
+    // Given
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Page page = new Page();
+    page.setWikiId(wiki.getId());
+    page.setWikiType(wiki.getType());
+    page.setWikiOwner(wiki.getOwner());
+    page.setName("page1");
+    page.setTitle("Page 1");
+    page.setContent("Content Page Version 1");
+    Page createdPage = storage.createPage(wiki, wiki.getWikiHome(), page);
+    storage.addPageVersion(createdPage);
+    createdPage.setContent("Content Page Version 2");
+    storage.updatePage(createdPage);
+    storage.addPageVersion(createdPage);
+
+
+    // When
+    Page pageBeforeRestore = storage.getPageById(createdPage.getId());
+    storage.restoreVersionOfPage("1", createdPage);
+    Page pageAfterRestore = storage.getPageById(createdPage.getId());
+
+    // Then
+    assertNotNull(pageBeforeRestore);
+    assertEquals("Content Page Version 2", pageBeforeRestore.getContent());
+    assertNotNull(pageAfterRestore);
+    assertEquals("Content Page Version 1", pageAfterRestore.getContent());
+  }
+
+  @Test
   public void testGetEmotionIcons() throws WikiException {
     // Given
     EmotionIcon emotionIcon1 = new EmotionIcon();

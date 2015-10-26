@@ -1014,8 +1014,27 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
-  public void restoreVersionOfPage(String s, Page page) throws WikiException {
-    // TODO Implement it !
+  public void restoreVersionOfPage(String versionName, Page page) throws WikiException {
+    if(page != null) {
+      PageEntity pageEntity = fetchPageEntity(page);
+
+      if (pageEntity == null) {
+        throw new WikiException("Cannot restore version of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":" + page.getName()
+                + " because page does not exist.");
+      }
+
+      PageVersionEntity versionToRestore = pageVersionDAO.getPageversionByPageIdAndVersion(Long.parseLong(page.getId()), Long.parseLong(versionName));
+      if(versionToRestore != null) {
+        pageEntity.setContent(versionToRestore.getContent());
+        pageEntity.setUpdatedDate(Calendar.getInstance().getTime());
+        pageDAO.update(pageEntity);
+      } else {
+        throw new WikiException("Cannot restore version " + versionName + " of a page " + page.getWikiType() + ":"
+                + page.getWikiOwner() + ":" + page.getName() + " because version does not exist.");
+      }
+    } else {
+      throw new WikiException("Cannot restore version of a page null");
+    }
   }
 
   @Override
