@@ -664,12 +664,6 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
-  public List<SearchResult> searchRenamedPage(WikiSearchData wikiSearchData) throws WikiException {
-    // TODO Implement it !
-    return new ArrayList<>();
-  }
-
-  @Override
   public List<Attachment> getAttachmentsOfPage(Page page) throws WikiException {
     List<AttachmentEntity> attachmentsEntities;
     if (page instanceof DraftPage) {
