@@ -1050,7 +1050,6 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     storage.updatePage(createdPage);
     storage.addPageVersion(createdPage);
 
-
     // When
     Page pageBeforeRestore = storage.getPageById(createdPage.getId());
     storage.restoreVersionOfPage("1", createdPage);
@@ -1061,6 +1060,31 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     assertEquals("Content Page Version 2", pageBeforeRestore.getContent());
     assertNotNull(pageAfterRestore);
     assertEquals("Content Page Version 1", pageAfterRestore.getContent());
+  }
+
+  @Test
+  public void testPageNames() throws WikiException {
+    // Given
+    Wiki wiki = new Wiki();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = storage.createWiki(wiki);
+
+    Page page = new Page();
+    page.setName("page1");
+    page.setTitle("Page 1");
+    Page createdPage = storage.createPage(wiki, wiki.getWikiHome(), page);
+
+    // When
+    storage.renamePage(wiki.getType(), wiki.getOwner(), createdPage.getName(), "page2", "Page 1");
+    storage.renamePage(wiki.getType(), wiki.getOwner(), "page2", "page3", "Page 1");
+
+    // Then
+    List<String> previousNames = storage.getPreviousNamesOfPage(createdPage);
+    assertNotNull(previousNames);
+    assertEquals(2, previousNames.size());
+    assertTrue(previousNames.contains("page1"));
+    assertTrue(previousNames.contains("page2"));
   }
 
   @Test

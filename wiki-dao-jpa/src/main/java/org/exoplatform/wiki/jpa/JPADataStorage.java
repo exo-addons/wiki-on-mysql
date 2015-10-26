@@ -387,6 +387,14 @@ public class JPADataStorage implements DataStorage {
 
     pageEntity.setName(newName);
     pageEntity.setTitle(newTitle);
+
+    Set<String> previousNames = pageEntity.getPreviousNames();
+    if(previousNames == null) {
+      previousNames = new HashSet<>();
+    }
+    previousNames.add(pageName);
+    pageEntity.setPreviousNames(previousNames);
+
     pageDAO.update(pageEntity);
   }
 
@@ -1064,8 +1072,14 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public List<String> getPreviousNamesOfPage(Page page) throws WikiException {
-    // TODO Implement it !
-    return new ArrayList<>();
+    PageEntity pageEntity = fetchPageEntity(page);
+
+    if (pageEntity == null) {
+      throw new WikiException("Cannot get previous names of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+              + page.getName() + " because page does not exist.");
+    }
+
+    return new ArrayList<>(pageEntity.getPreviousNames());
   }
 
   @Override

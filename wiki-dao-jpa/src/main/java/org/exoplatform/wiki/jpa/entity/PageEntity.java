@@ -106,6 +106,14 @@ public class PageEntity extends BasePageEntity {
   )
   private List<PermissionEntity> permissions;
 
+  @ElementCollection
+  @CollectionTable(
+          name = "WIKI_PAGE_NAMES",
+          joinColumns=@JoinColumn(name = "PAGE_ID")
+  )
+  @Column(name="PAGE_NAME")
+  private Set<String> previousNames = new HashSet<>();
+
   @Column(name = "DELETED")
   private boolean deleted;
 
@@ -203,6 +211,14 @@ public class PageEntity extends BasePageEntity {
 
   public void setRelatedPages(List<PageEntity> relatedPages) {
     this.relatedPages = relatedPages;
+  }
+
+  public Set<String> getPreviousNames() {
+    return previousNames;
+  }
+
+  public void setPreviousNames(Set<String> previousNames) {
+    this.previousNames = previousNames;
   }
 
   public boolean isDeleted() {
