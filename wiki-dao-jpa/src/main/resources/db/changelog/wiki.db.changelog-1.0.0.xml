@@ -50,7 +50,7 @@
             <column name="TITLE" type="VARCHAR(250)"/>
             <column name="COMMENT" type="VARCHAR(2000)"/>
             <column name="URL" type="VARCHAR(500)"/>
-            <column name="IS_MINOR_EDIT" type="BOOLEAN"/>
+            <column name="MINOR_EDIT" type="BOOLEAN"/>
             <column name="ACTIVITY_ID" type="VARCHAR(36)"/>
             <column name="DELETED" type="BOOLEAN" defaultValueBoolean="false"/>
         </createTable>
