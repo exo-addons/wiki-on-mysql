@@ -90,7 +90,7 @@ public class PageEntity extends BasePageEntity {
   private String url;
 
   @Column(name = "IS_MINOR_EDIT")
-  private String isMinorEdit;
+  private boolean isMinorEdit;
 
   @Column(name = "ACTIVITY_ID")
   private String activityId;
@@ -146,11 +146,11 @@ public class PageEntity extends BasePageEntity {
   }
 
   public boolean isMinorEdit() {
-    return YES.equals(isMinorEdit);
+    return isMinorEdit;
   }
 
   public void setMinorEdit(boolean isMinorEdit) {
-    this.isMinorEdit = isMinorEdit?YES:NO;
+    this.isMinorEdit = isMinorEdit;
   }
 
   public String getActivityId() {

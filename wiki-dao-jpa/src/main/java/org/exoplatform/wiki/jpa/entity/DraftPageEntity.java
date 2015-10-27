@@ -55,7 +55,7 @@ public class DraftPageEntity extends BasePageEntity {
   private String targetRevision;
 
   @Column(name = "NEW_PAGE")
-  private String newPage;
+  private boolean newPage;
 
   @OneToMany(cascade = CascadeType.ALL)
   @JoinTable(name = "WIKI_DRAFT_PAGES_ATTACHMENTS",
@@ -81,11 +81,11 @@ public class DraftPageEntity extends BasePageEntity {
   }
 
   public boolean isNewPage() {
-    return YES.equals(newPage);
+    return newPage;
   }
 
   public void setNewPage(boolean newPage) {
-    this.newPage = newPage?YES:NO;
+    this.newPage = newPage;
   }
 
   public long getId() {
