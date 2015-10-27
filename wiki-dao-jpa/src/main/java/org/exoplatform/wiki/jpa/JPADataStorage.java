@@ -19,7 +19,6 @@
 
 package org.exoplatform.wiki.jpa;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.exoplatform.commons.api.persistence.DataInitializer;
 import org.exoplatform.commons.api.search.SearchService;
@@ -57,6 +56,8 @@ import static org.exoplatform.wiki.jpa.EntityConverter.*;
  * 9/8/15
  */
 public class JPADataStorage implements DataStorage {
+  public static final String WIKI_TYPE_DRAFT = "draft";
+
   private WikiDAO        wikiDAO;
   private PageDAO        pageDAO;
   private AttachmentDAO  attachmentDAO;
@@ -219,7 +220,11 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public Page getPageOfWikiByName(String wikiType, String wikiOwner, String pageName) throws WikiException {
-    return convertPageEntityToPage(pageDAO.getPageOfWikiByName(wikiType, wikiOwner, pageName));
+    if(WIKI_TYPE_DRAFT.equals(wikiType)) {
+      return convertDraftPageEntityToDraftPage(draftPageDAO.findLatestDraftPageByUserAndName(wikiOwner, pageName));
+    } else {
+      return convertPageEntityToPage(pageDAO.getPageOfWikiByName(wikiType, wikiOwner, pageName));
+    }
   }
 
   @Override
@@ -537,10 +542,16 @@ public class JPADataStorage implements DataStorage {
   public Page getExsitedOrNewDraftPageById(String wikiType, String wikiOwner, String pageName, String username) throws WikiException {
     Page page;
 
-    PageEntity pageEntity = pageDAO.getPageOfWikiByName(wikiType, wikiOwner, pageName);
-    if (pageEntity == null) {
+    if(pageName.contains(Utils.SPLIT_TEXT_OF_DRAFT_FOR_NEW_PAGE)) {
+      String[] pageNameParts = pageName.split(Utils.SPLIT_TEXT_OF_DRAFT_FOR_NEW_PAGE);
+      username = pageNameParts[0];
+    }
+
+    page = getDraft(pageName, username);
+
+    if (page == null) {
       Date now = GregorianCalendar.getInstance().getTime();
-      // create page for non existing page
+      // create draft page for non existing draft page
       DraftPage draftPage = new DraftPage();
       draftPage.setWikiType(PortalConfig.USER_TYPE);
       draftPage.setWikiOwner(username);
@@ -553,8 +564,6 @@ public class JPADataStorage implements DataStorage {
       draftPage.setUpdatedDate(now);
       createDraftPageForUser(draftPage, username);
       page = draftPage;
-    } else {
-      page = convertPageEntityToPage(pageEntity);
     }
 
     return page;
@@ -666,14 +675,27 @@ public class JPADataStorage implements DataStorage {
   @Override
   public List<Attachment> getAttachmentsOfPage(Page page) throws WikiException {
     List<AttachmentEntity> attachmentsEntities;
+    String wikiType;
+    String wikiOwner;
+    String pageName;
     if (page instanceof DraftPage) {
-      DraftPageEntity draftPageEntity = draftPageDAO.findLatestDraftPageByUserAndName(page.getWikiOwner(), page.getName());
+      DraftPageEntity draftPageEntity = draftPageDAO.findLatestDraftPageByUserAndName(page.getAuthor(), page.getName());
       if (draftPageEntity == null) {
         throw new WikiException("Cannot get attachments of draft page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
             + page.getName() + " because draft page does not exist.");
       }
-      // TODO add attachments to DraftPage JPA entity
-      attachmentsEntities = new ArrayList<>();
+      attachmentsEntities = draftPageEntity.getAttachments();
+      if(draftPageEntity.isNewPage()) {
+        wikiType = WIKI_TYPE_DRAFT;
+        wikiOwner = draftPageEntity.getAuthor();
+        pageName = draftPageEntity.getName();
+      } else {
+        PageEntity targetPage = draftPageEntity.getTargetPage();
+        WikiEntity wiki = targetPage.getWiki();
+        wikiType = wiki.getType();
+        wikiOwner = wiki.getOwner();
+        pageName = targetPage.getName();
+      }
     } else {
       PageEntity pageEntity = fetchPageEntity(page);
       if (pageEntity == null) {
@@ -681,6 +703,10 @@ public class JPADataStorage implements DataStorage {
             + page.getName() + " because page does not exist.");
       }
       attachmentsEntities = pageEntity.getAttachments();
+      WikiEntity wikiEntity = pageEntity.getWiki();
+      wikiType = wikiEntity.getType();
+      wikiOwner = wikiEntity.getOwner();
+      pageName = pageEntity.getName();
     }
 
     List<Attachment> attachments = new ArrayList<>();
@@ -695,7 +721,7 @@ public class JPADataStorage implements DataStorage {
           attachment.setFullTitle(attachment.getTitle());
         }
         // build download url
-        attachment.setDownloadURL(getDownloadURL(attachmentEntity));
+        attachment.setDownloadURL(getDownloadURL(wikiType, wikiOwner, pageName, attachmentEntity));
         attachments.add(attachment);
       }
     }
@@ -705,15 +731,7 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void addAttachmentToPage(Attachment attachment, Page page) throws WikiException {
-    PageEntity pageEntity = fetchPageEntity(page);
-
-    if (pageEntity == null) {
-      throw new WikiException("Cannot add an attachment to page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
-          + page.getName() + " because page does not exist.");
-    }
-
     AttachmentEntity attachmentEntity = convertAttachmentToAttachmentEntity(attachment);
-    attachmentEntity.setPage(pageEntity);
     Date now = GregorianCalendar.getInstance().getTime();
     if (attachmentEntity.getCreatedDate() == null) {
       attachmentEntity.setCreatedDate(now);
@@ -721,17 +739,46 @@ public class JPADataStorage implements DataStorage {
     if (attachmentEntity.getUpdatedDate() == null) {
       attachmentEntity.setUpdatedDate(now);
     }
-    // attachment must be saved here because of Hibernate bug HHH-6776
-    attachmentDAO.create(attachmentEntity);
 
-    List<AttachmentEntity> attachmentsEntities = pageEntity.getAttachments();
-    if (attachmentsEntities == null) {
-      attachmentsEntities = new ArrayList<>();
+    if(page instanceof DraftPage) {
+      DraftPageEntity draftPageEntity = draftPageDAO.findLatestDraftPageByUserAndName(Utils.getCurrentUser(), page.getName());
+
+      if (draftPageEntity == null) {
+        throw new WikiException("Cannot add an attachment to draft page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+                + page.getName() + " because draft page does not exist.");
+      }
+
+      // attachment must be saved here because of Hibernate bug HHH-6776
+      attachmentDAO.create(attachmentEntity);
+
+      List<AttachmentEntity> attachmentsEntities = draftPageEntity.getAttachments();
+      if (attachmentsEntities == null) {
+        attachmentsEntities = new ArrayList<>();
+      }
+
+      attachmentsEntities.add(attachmentEntity);
+      draftPageEntity.setAttachments(attachmentsEntities);
+      draftPageDAO.update(draftPageEntity);
+    } else {
+      PageEntity pageEntity = fetchPageEntity(page);
+
+      if (pageEntity == null) {
+        throw new WikiException("Cannot add an attachment to page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+                + page.getName() + " because page does not exist.");
+      }
+
+      // attachment must be saved here because of Hibernate bug HHH-6776
+      attachmentDAO.create(attachmentEntity);
+
+      List<AttachmentEntity> attachmentsEntities = pageEntity.getAttachments();
+      if (attachmentsEntities == null) {
+        attachmentsEntities = new ArrayList<>();
+      }
+
+      attachmentsEntities.add(attachmentEntity);
+      pageEntity.setAttachments(attachmentsEntities);
+      pageDAO.update(pageEntity);
     }
-
-    attachmentsEntities.add(attachmentEntity);
-    pageEntity.setAttachments(attachmentsEntities);
-    pageDAO.update(pageEntity);
   }
 
   @Override
@@ -1041,27 +1088,42 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void updatePage(Page page) throws WikiException {
-    PageEntity pageEntity = fetchPageEntity(page);
+    if(page instanceof DraftPage) {
+      DraftPageEntity draftPageEntity = draftPageDAO.findLatestDraftPageByUserAndName(page.getAuthor(), page.getName());
 
-    if (pageEntity == null) {
-      throw new WikiException("Cannot update page " + page.getWikiType() + ":" + page.getWikiOwner() + ":" + page.getName()
-          + " because page does not exist.");
+      if (draftPageEntity == null) {
+        throw new WikiException("Cannot add an attachment to draft page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
+                + page.getName() + " because draft page does not exist.");
+      }
+
+      draftPageEntity.setTitle(page.getTitle());
+      draftPageEntity.setContent(page.getContent());
+      draftPageEntity.setUpdatedDate(page.getUpdatedDate());
+
+      draftPageDAO.update(draftPageEntity);
+    } else {
+      PageEntity pageEntity = fetchPageEntity(page);
+
+      if (pageEntity == null) {
+        throw new WikiException("Cannot update page " + page.getWikiType() + ":" + page.getWikiOwner() + ":" + page.getName()
+                + " because page does not exist.");
+      }
+
+      pageEntity.setName(page.getName());
+      pageEntity.setTitle(page.getTitle());
+      pageEntity.setAuthor(page.getAuthor());
+      pageEntity.setContent(page.getContent());
+      pageEntity.setSyntax(page.getSyntax());
+      pageEntity.setCreatedDate(page.getCreatedDate());
+      pageEntity.setUpdatedDate(page.getUpdatedDate());
+      pageEntity.setMinorEdit(page.isMinorEdit());
+      pageEntity.setComment(page.getComment());
+      pageEntity.setUrl(page.getUrl());
+      pageEntity.setPermissions(convertPermissionEntriesToPermissionEntities(page.getPermissions()));
+      pageEntity.setActivityId(page.getActivityId());
+
+      pageDAO.update(pageEntity);
     }
-
-    pageEntity.setName(page.getName());
-    pageEntity.setTitle(page.getTitle());
-    pageEntity.setAuthor(page.getAuthor());
-    pageEntity.setContent(page.getContent());
-    pageEntity.setSyntax(page.getSyntax());
-    pageEntity.setCreatedDate(page.getCreatedDate());
-    pageEntity.setUpdatedDate(page.getUpdatedDate());
-    pageEntity.setMinorEdit(page.isMinorEdit());
-    pageEntity.setComment(page.getComment());
-    pageEntity.setUrl(page.getUrl());
-    pageEntity.setPermissions(convertPermissionEntriesToPermissionEntities(page.getPermissions()));
-    pageEntity.setActivityId(page.getActivityId());
-
-    pageDAO.update(pageEntity);
   }
 
   @Override
@@ -1144,22 +1206,20 @@ public class JPADataStorage implements DataStorage {
    * @param attachmentEntity
    * @return
    */
-  private String getDownloadURL(AttachmentEntity attachmentEntity) {
+  private String getDownloadURL(String wikiType, String wikiOwner, String pageName, AttachmentEntity attachmentEntity) {
     StringBuilder sb = new StringBuilder();
-    PageEntity page = attachmentEntity.getPage();
-    WikiEntity wiki = page.getWiki();
 
     sb.append(Utils.getDefaultRestBaseURI())
       .append("/wiki/attachments/")
-      .append(wiki.getType())
+      .append(wikiType)
       .append("/")
       .append(Utils.SPACE)
       .append("/")
-      .append(Utils.validateWikiOwner(wiki.getType(), wiki.getOwner()))
+      .append(Utils.validateWikiOwner(wikiType, wikiOwner))
       .append("/")
       .append(Utils.PAGE)
       .append("/")
-      .append(page.getName());
+      .append(pageName);
     try {
       sb.append("/").append(URLEncoder.encode(attachmentEntity.getName(), "UTF-8"));
     } catch (UnsupportedEncodingException e) {

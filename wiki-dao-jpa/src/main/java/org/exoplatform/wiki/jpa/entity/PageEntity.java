@@ -62,7 +62,11 @@ public class PageEntity extends BasePageEntity {
   @OneToMany(mappedBy = "page", cascade = CascadeType.ALL)
   private List<PageVersionEntity> versions;
 
-  @OneToMany(mappedBy = "page", cascade = CascadeType.ALL)
+  @OneToMany(cascade = CascadeType.ALL)
+  @JoinTable(name = "WIKI_PAGES_ATTACHMENTS",
+          joinColumns = {@JoinColumn(name = "PAGE_ID")},
+          inverseJoinColumns = {@JoinColumn(name = "ATTACHMENT_ID")}
+  )
   private List<AttachmentEntity> attachments;
 
   @ManyToMany(cascade = CascadeType.PERSIST)

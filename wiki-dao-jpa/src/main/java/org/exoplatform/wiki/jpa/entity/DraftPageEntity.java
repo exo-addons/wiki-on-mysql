@@ -20,6 +20,7 @@ import org.exoplatform.commons.api.persistence.ExoEntity;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
@@ -56,6 +57,13 @@ public class DraftPageEntity extends BasePageEntity {
   @Column(name = "NEW_PAGE")
   private String newPage;
 
+  @OneToMany(cascade = CascadeType.ALL)
+  @JoinTable(name = "WIKI_DRAFT_PAGES_ATTACHMENTS",
+          joinColumns = {@JoinColumn(name = "DRAFT_PAGE_ID")},
+          inverseJoinColumns = {@JoinColumn(name = "ATTACHMENT_ID")}
+  )
+  private List<AttachmentEntity> attachments;
+
   public PageEntity getTargetPage() {
     return targetPage;
   }
@@ -82,5 +90,13 @@ public class DraftPageEntity extends BasePageEntity {
 
   public long getId() {
     return id;
+  }
+
+  public List<AttachmentEntity> getAttachments() {
+    return attachments;
+  }
+
+  public void setAttachments(List<AttachmentEntity> attachments) {
+    this.attachments = attachments;
   }
 }

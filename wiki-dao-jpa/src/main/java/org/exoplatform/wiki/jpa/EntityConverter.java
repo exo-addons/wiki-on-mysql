@@ -228,6 +228,7 @@ public class EntityConverter {
       draftPage.setSyntax(draftPageEntity.getSyntax());
       draftPage.setCreatedDate(draftPageEntity.getCreatedDate());
       draftPage.setUpdatedDate(draftPageEntity.getUpdatedDate());
+      draftPage.setNewPage(draftPageEntity.isNewPage());
       PageEntity targetPage = draftPageEntity.getTargetPage();
       if (targetPage != null) {
         draftPage.setTargetPageId(String.valueOf(draftPageEntity.getTargetPage().getId()));
@@ -248,6 +249,7 @@ public class EntityConverter {
       draftPageEntity.setSyntax(draftPage.getSyntax());
       draftPageEntity.setCreatedDate(draftPage.getCreatedDate());
       draftPageEntity.setUpdatedDate(draftPage.getUpdatedDate());
+      draftPageEntity.setNewPage(draftPage.isNewPage());
       String targetPageId = draftPage.getTargetPageId();
       if (StringUtils.isNotEmpty(targetPageId)) {
         draftPageEntity.setTargetPage(pageDAO.find(Long.valueOf(targetPageId)));

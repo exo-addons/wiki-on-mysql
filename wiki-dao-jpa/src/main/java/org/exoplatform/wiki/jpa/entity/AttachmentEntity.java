@@ -69,10 +69,6 @@ public class AttachmentEntity {
   @Column(name = "MIMETYPE")
   private String mimeType;
 
-  @ManyToOne
-  @JoinColumn(name = "PAGE_ID")
-  private PageEntity page;
-
   @ElementCollection
   @CollectionTable(
     name = "WIKI_ATTACHMENT_PERMISSIONS",
@@ -160,14 +156,6 @@ public class AttachmentEntity {
 
   public void setMimeType(String mimeType) {
     this.mimeType = mimeType;
-  }
-
-  public PageEntity getPage() {
-    return page;
-  }
-
-  public void setPage(PageEntity page) {
-    this.page = page;
   }
 
   public List<PermissionEntity> getPermissions(){

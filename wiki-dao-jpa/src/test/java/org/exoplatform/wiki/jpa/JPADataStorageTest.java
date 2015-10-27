@@ -847,37 +847,13 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
 
     // When
     Page page1 = storage.getExsitedOrNewDraftPageById("portal", "wiki1", "page1", "user1");
-    Page page2 = storage.getExsitedOrNewDraftPageById("portal", "wiki2", "page1", "user1");
-    Page page3 = storage.getExsitedOrNewDraftPageById("portal", "wiki1", "page2", "user1");
-    Page page4 = storage.getExsitedOrNewDraftPageById("portal", "wiki1", "page1", "user2");
-    Page page5 = storage.getExsitedOrNewDraftPageById(null, null, "page3", "user1");
 
     // Then
     assertNotNull(page1);
-    assertTrue(page1 instanceof Page);
-    assertEquals("portal", page1.getWikiType());
-    assertEquals("wiki1", page1.getWikiOwner());
+    assertTrue(page1 instanceof DraftPage);
+    assertEquals(PortalConfig.USER_TYPE, page1.getWikiType());
+    assertEquals("user1", page1.getWikiOwner());
     assertEquals("page1", page1.getName());
-    assertNotNull(page2);
-    assertTrue(page2 instanceof DraftPage);
-    assertEquals(PortalConfig.USER_TYPE, page2.getWikiType());
-    assertEquals("user1", page2.getWikiOwner());
-    assertEquals("page1", page2.getName());
-    assertNotNull(page3);
-    assertTrue(page3 instanceof DraftPage);
-    assertEquals(PortalConfig.USER_TYPE, page3.getWikiType());
-    assertEquals("user1", page3.getWikiOwner());
-    assertEquals("page2", page3.getName());
-    assertNotNull(page4);
-    assertTrue(page4 instanceof Page);
-    assertEquals("portal", page4.getWikiType());
-    assertEquals("wiki1", page4.getWikiOwner());
-    assertEquals("page1", page4.getName());
-    assertNotNull(page5);
-    assertTrue(page5 instanceof DraftPage);
-    assertEquals(PortalConfig.USER_TYPE, page5.getWikiType());
-    assertEquals("user1", page5.getWikiOwner());
-    assertEquals("page3", page5.getName());
   }
 
   @Test
