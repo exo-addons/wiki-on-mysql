@@ -44,12 +44,23 @@ public class TemplateEntity extends BasePageEntity {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private long id;
 
+  @Column(name = "DESCRIPTION")
+  private String description;
+
   @ManyToOne(cascade = CascadeType.PERSIST)
   @JoinColumn(name = "WIKI_ID")
   private WikiEntity wiki;
 
   public long getId() {
     return id;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
   }
 
   public WikiEntity getWiki() {

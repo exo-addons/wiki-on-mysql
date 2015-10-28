@@ -300,6 +300,7 @@ public class EntityConverter {
         template.setWikiOwner(wiki.getOwner());
       }
       template.setTitle(templateEntity.getTitle());
+      template.setDescription(templateEntity.getDescription());
       template.setContent(templateEntity.getContent());
       template.setSyntax(templateEntity.getSyntax());
       template.setCreatedDate(templateEntity.getCreatedDate());
@@ -320,6 +321,7 @@ public class EntityConverter {
         }
       }
       templateEntity.setTitle(template.getTitle());
+      templateEntity.setDescription(template.getDescription());
       templateEntity.setContent(template.getContent());
       templateEntity.setSyntax(template.getSyntax());
       templateEntity.setCreatedDate(template.getCreatedDate());
