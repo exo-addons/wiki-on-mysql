@@ -29,6 +29,11 @@ public class EntityConverter {
       wiki.setPermissions(convertPermissionEntitiesToPermissionEntries(wikiEntity.getPermissions(),
               Arrays.asList(PermissionType.VIEWPAGE, PermissionType.EDITPAGE, PermissionType.ADMINPAGE, PermissionType.ADMINSPACE)));
       // wiki.setDefaultPermissionsInited();
+      WikiPreferences wikiPreferences = new WikiPreferences();
+      WikiPreferencesSyntax wikiPreferencesSyntax = new WikiPreferencesSyntax();
+      wikiPreferencesSyntax.setDefaultSyntax(wikiEntity.getSyntax());
+      wikiPreferencesSyntax.setAllowMultipleSyntaxes(wikiEntity.isAllowMultipleSyntax());
+      wikiPreferences.setWikiPreferencesSyntax(wikiPreferencesSyntax);
       wiki.setPreferences(wiki.getPreferences());
     }
     return wiki;
@@ -42,6 +47,14 @@ public class EntityConverter {
       wikiEntity.setOwner(wiki.getOwner());
       wikiEntity.setWikiHome(convertPageToPageEntity(wiki.getWikiHome(), wikiDAO));
       wikiEntity.setPermissions(convertPermissionEntriesToPermissionEntities(wiki.getPermissions()));
+      WikiPreferences wikiPreferences = wiki.getPreferences();
+      if(wikiPreferences != null) {
+        WikiPreferencesSyntax wikiPreferencesSyntax = wikiPreferences.getWikiPreferencesSyntax();
+        if(wikiPreferencesSyntax != null) {
+          wikiEntity.setSyntax(wikiPreferencesSyntax.getDefaultSyntax());
+          wikiEntity.setAllowMultipleSyntax(wikiPreferencesSyntax.isAllowMultipleSyntaxes());
+        }
+      }
     }
     return wikiEntity;
   }

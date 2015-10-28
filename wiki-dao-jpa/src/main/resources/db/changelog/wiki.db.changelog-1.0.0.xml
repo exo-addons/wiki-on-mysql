@@ -26,6 +26,8 @@
             </column>
             <column name="TYPE" type="VARCHAR(50)"/>
             <column name="WIKI_HOME" type="BIGINT"/>
+            <column name="SYNTAX" type="VARCHAR(30)"/>
+            <column name="ALLOW_MULTI_SYNTAX" type="BOOLEAN"/>
         </createTable>
     </changeSet>
 

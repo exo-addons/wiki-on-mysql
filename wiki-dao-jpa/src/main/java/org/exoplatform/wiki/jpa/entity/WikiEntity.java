@@ -61,6 +61,12 @@ public class WikiEntity {
   )
   private List<PermissionEntity> permissions;
 
+  @Column(name = "SYNTAX")
+  private String syntax;
+
+  @Column(name = "ALLOW_MULTI_SYNTAX")
+  private boolean allowMultipleSyntax;
+
   public long getId() {
     return id;
   }
@@ -108,5 +114,21 @@ public class WikiEntity {
   public WikiEntity setPermissions(List<PermissionEntity> permissions) {
     this.permissions = permissions;
     return this;
+  }
+
+  public String getSyntax() {
+    return syntax;
+  }
+
+  public void setSyntax(String syntax) {
+    this.syntax = syntax;
+  }
+
+  public boolean isAllowMultipleSyntax() {
+    return allowMultipleSyntax;
+  }
+
+  public void setAllowMultipleSyntax(boolean allowMultipleSyntax) {
+    this.allowMultipleSyntax = allowMultipleSyntax;
   }
 }
