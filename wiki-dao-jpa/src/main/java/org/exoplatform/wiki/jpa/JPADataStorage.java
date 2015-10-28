@@ -339,6 +339,7 @@ public class JPADataStorage implements DataStorage {
 
     templateEntity.setName(template.getName());
     templateEntity.setTitle(template.getTitle());
+    templateEntity.setDescription(template.getDescription());
     templateEntity.setContent(template.getContent());
     templateEntity.setSyntax(template.getSyntax());
     templateEntity.setUpdatedDate(Calendar.getInstance().getTime());
