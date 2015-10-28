@@ -28,7 +28,11 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 
+import org.elasticsearch.action.admin.cluster.node.info.NodeInfo;
+import org.elasticsearch.action.admin.cluster.node.info.NodesInfoRequest;
+import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.internal.InternalNode;
 import org.elasticsearch.plugins.PluginsService;
@@ -36,6 +40,7 @@ import org.elasticsearch.rest.RestController;
 
 import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.IndexingService;
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
@@ -70,6 +75,14 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
     node.client().admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
     assertNotNull(node);
     assertFalse(node.isClosed());
+    // Set URL of server in property
+    NodesInfoRequest nodesInfoRequest = new NodesInfoRequest().transport(true);
+    NodesInfoResponse response = node.client().admin().cluster().nodesInfo(nodesInfoRequest).actionGet();
+    NodeInfo nodeInfo = response.iterator().next();
+    InetSocketTransportAddress address = (InetSocketTransportAddress) nodeInfo.getHttp().getAddress().publishAddress();
+    String url = "http://" + address.address().getHostName() + ":" + address.address().getPort();
+    PropertyManager.setProperty("exo.es.index.server.url", url);
+    PropertyManager.setProperty("exo.es.search.server.url", url);
     // Init services
     indexingService = PortalContainer.getInstance().getComponentInstanceOfType(IndexingService.class);
     indexingOperationProcessor = PortalContainer.getInstance().getComponentInstanceOfType(IndexingOperationProcessor.class);
