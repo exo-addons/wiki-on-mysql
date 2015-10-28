@@ -59,6 +59,7 @@ public class EntityConverter {
         page.setWikiOwner(wiki.getOwner());
       }
       page.setTitle(pageEntity.getTitle());
+      page.setOwner(pageEntity.getOwner());
       page.setAuthor(pageEntity.getAuthor());
       page.setContent(pageEntity.getContent());
       page.setSyntax(pageEntity.getSyntax());
@@ -136,6 +137,7 @@ public class EntityConverter {
         }
       }
       pageEntity.setTitle(page.getTitle());
+      pageEntity.setOwner(page.getOwner());
       pageEntity.setAuthor(page.getAuthor());
       pageEntity.setContent(page.getContent());
       pageEntity.setSyntax(page.getSyntax());
