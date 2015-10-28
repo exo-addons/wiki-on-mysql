@@ -108,8 +108,16 @@
     </changeSet>
 
     <changeSet author="wiki" id="1.0.0-6">
-        <createTable tableName="WIKI_PAGE_NAMES">
-            <column name="PAGE_NAME" type="VARCHAR(100)"/>
+        <createTable tableName="WIKI_PAGE_MOVES">
+            <column name="PAGE_MOVE_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="PK_WIKI_PAGE_MOVES_MOVE_ID"/>
+            </column>
+            <column name="WIKI_TYPE" type="VARCHAR(50)"/>
+            <column name="WIKI_OWNER" type="VARCHAR(50)"/>
+            <column name="PAGE_NAME" type="VARCHAR(50)"/>
+            <column name="CREATED_DATE" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
             <column name="PAGE_ID" type="BIGINT"/>
         </createTable>
     </changeSet>
@@ -236,8 +244,8 @@
     </changeSet>
 
     <changeSet author="wiki" id="1.0.0-19">
-        <addForeignKeyConstraint baseColumnNames="PAGE_ID" baseTableName="WIKI_PAGE_NAMES"
-                                 constraintName="FK_WIKI_PAGE_NAMES_WIKI_PAGES_01" deferrable="false" initiallyDeferred="false"
+        <addForeignKeyConstraint baseColumnNames="PAGE_ID" baseTableName="WIKI_PAGE_MOVES"
+                                 constraintName="FK_WIKI_PAGE_MOVES_WIKI_PAGES_01" deferrable="false" initiallyDeferred="false"
                                  onDelete="NO ACTION" onUpdate="NO ACTION"
                                  referencedColumnNames="PAGE_ID" referencedTableName="WIKI_PAGES"/>
     </changeSet>

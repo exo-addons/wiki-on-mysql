@@ -63,6 +63,7 @@ public class JPADataStorage implements DataStorage {
   private AttachmentDAO  attachmentDAO;
   private DraftPageDAO   draftPageDAO;
   private PageVersionDAO pageVersionDAO;
+  private PageMoveDAO    pageMoveDAO;
   private TemplateDAO    templateDAO;
   private EmotionIconDAO emotionIconDAO;
 
@@ -74,6 +75,7 @@ public class JPADataStorage implements DataStorage {
                         AttachmentDAO attachmentDAO,
                         DraftPageDAO draftPageDAO,
                         PageVersionDAO pageVersionDAO,
+                        PageMoveDAO pageMoveDAO,
                         TemplateDAO templateDAO,
                         EmotionIconDAO emotionIconDAO,
                         DataInitializer dataInitializer) {
@@ -82,6 +84,7 @@ public class JPADataStorage implements DataStorage {
     this.attachmentDAO = attachmentDAO;
     this.draftPageDAO = draftPageDAO;
     this.pageVersionDAO = pageVersionDAO;
+    this.pageMoveDAO = pageMoveDAO;
     this.templateDAO = templateDAO;
     this.emotionIconDAO = emotionIconDAO;
   }
@@ -390,15 +393,20 @@ public class JPADataStorage implements DataStorage {
           + " because page does not exist.");
     }
 
+    // save the move in the page moves history
+    List<PageMoveEntity> pageMoves = pageEntity.getMoves();
+    if(pageMoves == null) {
+      pageMoves = new ArrayList<>();
+    }
+    PageMoveEntity move = new PageMoveEntity(wikiType, wikiOwner, pageName, Calendar.getInstance().getTime());
+    move.setPage(pageEntity);
+    pageMoves.add(move);
+    // move must be saved here because of Hibernate bug HHH-6776
+    pageMoveDAO.create(move);
+
     pageEntity.setName(newName);
     pageEntity.setTitle(newTitle);
-
-    Set<String> previousNames = pageEntity.getPreviousNames();
-    if(previousNames == null) {
-      previousNames = new HashSet<>();
-    }
-    previousNames.add(pageName);
-    pageEntity.setPreviousNames(previousNames);
+    pageEntity.setMoves(pageMoves);
 
     pageDAO.update(pageEntity);
   }
@@ -422,7 +430,23 @@ public class JPADataStorage implements DataStorage {
           + newLocationParams.getOwner() + ":" + newLocationParams.getPageName() + " because destination page does not exist.");
     }
 
+    // save the move in the page moves history
+    List<PageMoveEntity> pageMoves = pageEntity.getMoves();
+    if(pageMoves == null) {
+      pageMoves = new ArrayList<>();
+    }
+    PageMoveEntity move = new PageMoveEntity(currentLocationParams.getType(), currentLocationParams.getOwner(),
+            currentLocationParams.getPageName(), Calendar.getInstance().getTime());
+    move.setPage(pageEntity);
+    // move must be saved here because of Hibernate bug HHH-6776
+    pageMoveDAO.create(move);
+
+    pageEntity.setWiki(destinationPageEntity.getWiki());
     pageEntity.setParentPage(destinationPageEntity);
+
+    pageMoves.add(move);
+    pageEntity.setMoves(pageMoves);
+
     pageDAO.update(pageEntity);
   }
 
@@ -472,9 +496,14 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
-  public Page getRelatedPage(String wikiType, String wikiOwner, String pageId) throws WikiException {
-    // TODO Implement it !
-    return null;
+  public Page getRelatedPage(String wikiType, String wikiOwner, String pageName) throws WikiException {
+    Page relatedPage = null;
+    List<PageMoveEntity> pageMoveEntities = pageMoveDAO.findInPageMoves(wikiType, wikiOwner, pageName);
+    if(pageMoveEntities != null && !pageMoveEntities.isEmpty()) {
+      // take first result
+      relatedPage = convertPageEntityToPage(pageMoveEntities.get(0).getPage());
+    }
+    return relatedPage;
   }
 
   @Override
@@ -1135,7 +1164,15 @@ public class JPADataStorage implements DataStorage {
               + page.getName() + " because page does not exist.");
     }
 
-    return new ArrayList<>(pageEntity.getPreviousNames());
+    List<String> previousPageName = new ArrayList<>();
+    List<PageMoveEntity> moves = pageEntity.getMoves();
+    if(moves != null) {
+      for(PageMoveEntity pageMoveEntity : moves) {
+        previousPageName.add(pageMoveEntity.getPageName());
+      }
+    }
+
+    return previousPageName;
   }
 
   @Override

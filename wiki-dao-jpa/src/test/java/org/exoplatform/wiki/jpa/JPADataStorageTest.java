@@ -1064,6 +1064,45 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
   }
 
   @Test
+  public void testPageMoves() throws WikiException {
+    // Given
+    Wiki wiki1 = new Wiki();
+    wiki1.setType("portal");
+    wiki1.setOwner("wiki1");
+    wiki1 = storage.createWiki(wiki1);
+    Wiki wiki2 = new Wiki();
+    wiki2.setType("portal");
+    wiki2.setOwner("wiki2");
+    wiki2 = storage.createWiki(wiki2);
+
+    Page page1 = new Page();
+    page1.setName("page1");
+    page1.setTitle("Page 1");
+    Page createdPage1 = storage.createPage(wiki1, wiki1.getWikiHome(), page1);
+
+    // When
+    // rename the page (so we keep the page in the same wiki)
+    storage.renamePage(wiki1.getType(), wiki1.getOwner(), createdPage1.getName(), "page2", "Page 1");
+    // move the page to another wiki
+    storage.movePage(new WikiPageParams(wiki1.getType(), wiki1.getOwner(), "page2"), new WikiPageParams(wiki2.getType(), wiki2.getOwner(), wiki2.getWikiHome().getName()));
+
+    Page relatedPage1 = storage.getRelatedPage(wiki1.getType(), wiki1.getOwner(), "page1");
+    Page relatedPage2 = storage.getRelatedPage(wiki1.getType(), wiki1.getOwner(), "page2");
+    Page relatedPage3 = storage.getRelatedPage(wiki1.getType(), wiki1.getOwner(), "page3");
+
+    // Then
+    assertNotNull(relatedPage1);
+    assertEquals("portal", relatedPage1.getWikiType());
+    assertEquals("wiki2", relatedPage1.getWikiOwner());
+    assertEquals("page2", relatedPage1.getName());
+    assertNotNull(relatedPage2);
+    assertEquals("portal", relatedPage2.getWikiType());
+    assertEquals("wiki2", relatedPage2.getWikiOwner());
+    assertEquals("page2", relatedPage2.getName());
+    assertNull(relatedPage3);
+  }
+
+  @Test
   public void testGetEmotionIcons() throws WikiException {
     // Given
     EmotionIcon emotionIcon1 = new EmotionIcon();

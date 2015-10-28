@@ -23,10 +23,7 @@ import org.exoplatform.commons.api.persistence.ExoEntity;
 import org.exoplatform.wiki.mow.api.PageVersion;
 
 import javax.persistence.*;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by The eXo Platform SAS
@@ -76,10 +73,6 @@ public class PageEntity extends BasePageEntity {
   )
   private List<PageEntity> relatedPages;
 
-  public long getId() {
-    return id;
-  }
-
   @Column(name = "OWNER")
   private String owner;
 
@@ -110,16 +103,15 @@ public class PageEntity extends BasePageEntity {
   )
   private List<PermissionEntity> permissions;
 
-  @ElementCollection
-  @CollectionTable(
-          name = "WIKI_PAGE_NAMES",
-          joinColumns=@JoinColumn(name = "PAGE_ID")
-  )
-  @Column(name="PAGE_NAME")
-  private Set<String> previousNames = new HashSet<>();
+  @OneToMany(mappedBy = "page", cascade = CascadeType.ALL)
+  private List<PageMoveEntity> moves = new ArrayList<>();
 
   @Column(name = "DELETED")
   private boolean deleted;
+
+  public long getId() {
+    return id;
+  }
 
   public String getOwner() {
     return owner;
@@ -217,12 +209,12 @@ public class PageEntity extends BasePageEntity {
     this.relatedPages = relatedPages;
   }
 
-  public Set<String> getPreviousNames() {
-    return previousNames;
+  public List<PageMoveEntity> getMoves() {
+    return moves;
   }
 
-  public void setPreviousNames(Set<String> previousNames) {
-    this.previousNames = previousNames;
+  public void setMoves(List<PageMoveEntity> moves) {
+    this.moves = moves;
   }
 
   public boolean isDeleted() {

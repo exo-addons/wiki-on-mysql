@@ -23,6 +23,9 @@
         <type>org.exoplatform.wiki.jpa.dao.PageVersionDAO</type>
     </component>
     <component>
+        <type>org.exoplatform.wiki.jpa.dao.PageMoveDAO</type>
+    </component>
+    <component>
         <type>org.exoplatform.wiki.jpa.dao.TemplateDAO</type>
     </component>
     <component>
