@@ -19,13 +19,7 @@
 
 package org.exoplatform.wiki.jpa.search;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang.StringUtils;
-
 import org.exoplatform.addons.es.domain.Document;
 import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
 import org.exoplatform.container.xml.InitParams;
@@ -34,6 +28,11 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.wiki.jpa.dao.AttachmentDAO;
 import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
 import org.exoplatform.wiki.jpa.entity.PermissionEntity;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by The eXo Platform SAS
@@ -63,7 +62,8 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
             return null;
         }
         Map<String,String> fields = new HashMap<>();
-        Document doc = new Document(TYPE, id, attachment.getDownloadURL(), attachment.getUpdatedDate(), computePermissions(attachment), fields);
+        Document doc = new Document(TYPE, id, getUrl(attachment
+        ), attachment.getUpdatedDate(), computePermissions(attachment), fields);
         doc.addField("title", attachment.getTitle());
         doc.addField("file", attachment.getContent());
         return doc;
@@ -104,5 +104,10 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
     @Override
     public List<String> getAllIds(int offset, int limit) {
         throw new RuntimeException("Not implemented");
+    }
+
+    private String getUrl(AttachmentEntity attachment) {
+        //TODO
+        return null;
     }
 }

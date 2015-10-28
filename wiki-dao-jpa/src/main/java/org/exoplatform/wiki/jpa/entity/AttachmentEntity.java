@@ -52,10 +52,6 @@ public class AttachmentEntity {
   @Temporal(TemporalType.TIMESTAMP)
   private Date updatedDate;
 
-  // TODO To remove
-  @Column(name = "DOWNLOAD_URL")
-  private String downloadURL;
-
   @Column(name = "TITLE")
   private String title;
 
@@ -116,14 +112,6 @@ public class AttachmentEntity {
 
   public void setUpdatedDate(Date updatedDate) {
     this.updatedDate = updatedDate;
-  }
-
-  public String getDownloadURL(){
-    return downloadURL;
-  }
-
-  public void setDownloadURL(String downloadURL) {
-    this.downloadURL = downloadURL;
   }
 
   public String getTitle(){

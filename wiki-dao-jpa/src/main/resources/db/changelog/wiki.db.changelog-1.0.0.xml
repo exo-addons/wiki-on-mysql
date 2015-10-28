@@ -71,7 +71,6 @@
             <column name="UPDATED_DATE" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
-            <column name="DOWNLOAD_URL" type="VARCHAR(500)"/>
             <column name="TITLE" type="VARCHAR(250)"/>
             <column name="FULL_TITLE" type="VARCHAR(250)"/>
             <column name="CONTENT" type="LONGBLOB"/>

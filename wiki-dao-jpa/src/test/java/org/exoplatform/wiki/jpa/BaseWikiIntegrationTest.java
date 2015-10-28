@@ -131,7 +131,6 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
                                                                                      IllegalAccessException,
                                                                                      IOException {
     AttachmentEntity attachment = new AttachmentEntity();
-    attachment.setDownloadURL(downloadedUrl);
     attachment.setTitle(title);
     attachment.setContent(Files.readAllBytes(Paths.get(filePath)));
     attachment.setCreatedDate(new Date());

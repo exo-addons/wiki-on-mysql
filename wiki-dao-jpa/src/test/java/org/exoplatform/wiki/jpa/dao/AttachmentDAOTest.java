@@ -76,14 +76,12 @@ public class AttachmentDAOTest extends BaseWikiJPAIntegrationTest {
     permissions.add(per);
     att.setPermissions(permissions);
     att.setCreator("creator");
-    att.setDownloadURL("http://exoplatform.com");
     att.setTitle("title");
     Date date = new Date();
     att.setUpdatedDate(date);
     //Then
     attachmentDAO.update(att);
     AttachmentEntity got = attachmentDAO.find(id);
-    assertEquals("http://exoplatform.com", got.getDownloadURL());
     assertEquals("title", got.getTitle());
     assertEquals("creator", got.getCreator());
     assertEquals(date, got.getUpdatedDate());
