@@ -34,7 +34,7 @@ public class EntityConverter {
       wikiPreferencesSyntax.setDefaultSyntax(wikiEntity.getSyntax());
       wikiPreferencesSyntax.setAllowMultipleSyntaxes(wikiEntity.isAllowMultipleSyntax());
       wikiPreferences.setWikiPreferencesSyntax(wikiPreferencesSyntax);
-      wiki.setPreferences(wiki.getPreferences());
+      wiki.setPreferences(wikiPreferences);
     }
     return wiki;
   }

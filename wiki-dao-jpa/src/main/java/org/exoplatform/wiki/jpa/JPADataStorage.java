@@ -158,6 +158,8 @@ public class JPADataStorage implements DataStorage {
     wikiHomePage.setCreatedDate(now);
     wikiHomePage.setUpdatedDate(now);
     wikiHomePage.setContent("= Welcome to " + wiki.getOwner() + " =");
+    // inherit syntax from wiki
+    wikiHomePage.setSyntax(createdWiki.getPreferences().getWikiPreferencesSyntax().getDefaultSyntax());
     // inherit home page permissions from wiki permissions
     List<PermissionEntry> homePagePermissions = new ArrayList<>();
     List<PermissionEntry> wikiPermissions = createdWiki.getPermissions();
