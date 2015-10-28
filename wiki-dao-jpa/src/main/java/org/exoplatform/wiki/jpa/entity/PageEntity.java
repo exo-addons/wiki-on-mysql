@@ -40,8 +40,6 @@ import java.util.*;
         @NamedQuery(name = "wikiPage.getChildrenPages", query = "SELECT p FROM PageEntity p WHERE p.parentPage.id = :id AND p.deleted = false")
 })
 public class PageEntity extends BasePageEntity {
-  private static final String YES = "Y";
-  private static final String NO  = "N";
 
   @Id
   @Column(name = "PAGE_ID")

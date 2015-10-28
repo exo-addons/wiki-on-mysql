@@ -39,8 +39,6 @@ import java.util.List;
         @NamedQuery(name = "wikiDraftPage.deleteDraftPagesByUserAndName", query = "DELETE FROM DraftPageEntity d WHERE d.author = :username AND d.name = :draftPageName")
 })
 public class DraftPageEntity extends BasePageEntity {
-  private static final String YES = "Y";
-  private static final String NO  = "N";
 
   @Id
   @Column(name = "DRAFT_PAGE_ID")
