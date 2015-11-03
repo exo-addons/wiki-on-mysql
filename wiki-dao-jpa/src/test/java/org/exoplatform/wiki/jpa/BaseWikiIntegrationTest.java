@@ -42,6 +42,8 @@ import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.PortalContainer;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.jpa.entity.PermissionEntity;
@@ -55,6 +57,7 @@ import org.exoplatform.wiki.jpa.search.WikiPageIndexingServiceConnector;
  * 10/1/15
  */
 public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest {
+  private static final Log LOGGER = ExoLogger.getExoLogger(BaseWikiIntegrationTest.class);
   protected Node                       node;
   protected IndexingService            indexingService;
   protected IndexingOperationProcessor indexingOperationProcessor;
@@ -63,6 +66,7 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
   public void setUp() {
     super.setUp();
     // Init ES
+    LOGGER.info("Embedded ES instance - Starting");
     ImmutableSettings.Builder elasticsearchSettings = ImmutableSettings.settingsBuilder()
                                                                        .put(RestController.HTTP_JSON_ENABLE, true)
                                                                        .put(InternalNode.HTTP_ENABLED, true)
@@ -75,6 +79,7 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
     node.client().admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
     assertNotNull(node);
     assertFalse(node.isClosed());
+    LOGGER.info("Embedded ES instance - Started");
     // Set URL of server in property
     NodesInfoRequest nodesInfoRequest = new NodesInfoRequest().transport(true);
     NodesInfoResponse response = node.client().admin().cluster().nodesInfo(nodesInfoRequest).actionGet();
