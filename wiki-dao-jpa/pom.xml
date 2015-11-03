@@ -23,20 +23,12 @@
   <name>Wiki DAO RDBMS </name>
   <description>Wiki DAO RDBMS </description>
 
-  <properties>
-    <!-- Issue with the PLF pom parent that trigger lucene 3.6.2 (Only working with elastic version < 0.20.6) -->
-    <elasticsearch.version>1.7.0</elasticsearch.version>
-    <lucene.version>4.10.4</lucene.version>
-    <randomizedtesting-runner.version>2.1.14</randomizedtesting-runner.version>
-    <elasticsearch-mapper-attachments.version>2.7.1</elasticsearch-mapper-attachments.version>
-  </properties>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-core</artifactId>
-        <version>4.10.4</version>
+        <version>${lucene.version}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
@@ -46,7 +38,7 @@
     <dependency>
       <groupId>org.exoplatform.addons.es</groupId>
       <artifactId>exo-es-search-service</artifactId>
-      <version>1.0.x-SNAPSHOT</version>
+      <version>${exo.es.search.version}</version>
     </dependency>
 
     <dependency>
@@ -130,13 +122,13 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.1.3</version>
+      <version>${logback.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.1.3</version>
+      <version>${jackson.version}</version>
       <scope>test</scope>
     </dependency>
 
