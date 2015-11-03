@@ -21,6 +21,7 @@ package org.exoplatform.wiki.jpa;
 
 import org.apache.commons.lang.StringUtils;
 import org.exoplatform.commons.api.persistence.DataInitializer;
+import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.commons.api.search.SearchService;
 import org.exoplatform.commons.utils.ObjectPageList;
 import org.exoplatform.commons.utils.PageList;
@@ -144,6 +145,7 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
+  @ExoTransactional
   public Wiki createWiki(Wiki wiki) throws WikiException {
     WikiEntity createdWikiEntity = wikiDAO.create(convertWikiToWikiEntity(wiki, wikiDAO));
     Wiki createdWiki = convertWikiEntityToWiki(createdWikiEntity);
@@ -183,6 +185,7 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
+  @ExoTransactional
   public Page createPage(Wiki wiki, Page parentPage, Page page) throws WikiException {
     WikiEntity wikiEntity = wikiDAO.getWikiByTypeAndOwner(wiki.getType(), wiki.getOwner());
     if (wikiEntity == null) {
@@ -275,6 +278,7 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
+  @ExoTransactional
   public void deletePage(String wikiType, String wikiOwner, String pageName) throws WikiException {
     PageEntity pageEntity = pageDAO.getPageOfWikiByName(wikiType, wikiOwner, pageName);
     if (pageEntity == null) {
@@ -389,6 +393,7 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
+  @ExoTransactional
   public void renamePage(String wikiType, String wikiOwner, String pageName, String newName, String newTitle) throws WikiException {
     PageEntity pageEntity = pageDAO.getPageOfWikiByName(wikiType, wikiOwner, pageName);
     if (pageEntity == null) {
@@ -415,6 +420,7 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
+  @ExoTransactional
   public void movePage(WikiPageParams currentLocationParams, WikiPageParams newLocationParams) throws WikiException {
     PageEntity pageEntity = pageDAO.getPageOfWikiByName(currentLocationParams.getType(),
                                                         currentLocationParams.getOwner(),
@@ -762,6 +768,7 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
+  @ExoTransactional
   public void addAttachmentToPage(Attachment attachment, Page page) throws WikiException {
     AttachmentEntity attachmentEntity = convertAttachmentToAttachmentEntity(attachment);
     Date now = GregorianCalendar.getInstance().getTime();
@@ -814,6 +821,7 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
+  @ExoTransactional
   public void deleteAttachmentOfPage(String attachmentName, Page page) throws WikiException {
     PageEntity pageEntity = fetchPageEntity(page);
 
@@ -1049,6 +1057,7 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
+  @ExoTransactional
   public void addPageVersion(Page page) throws WikiException {
     if(page != null) {
       PageEntity pageEntity = fetchPageEntity(page);
@@ -1119,6 +1128,7 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
+  @ExoTransactional
   public void updatePage(Page page) throws WikiException {
     if(page instanceof DraftPage) {
       DraftPageEntity draftPageEntity = draftPageDAO.findLatestDraftPageByUserAndName(page.getAuthor(), page.getName());
