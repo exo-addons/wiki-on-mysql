@@ -29,6 +29,9 @@
             <column name="SYNTAX" type="VARCHAR(30)"/>
             <column name="ALLOW_MULTI_SYNTAX" type="BOOLEAN"/>
         </createTable>
+        <modifySql dbms="mysql">
+            <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
+        </modifySql>
     </changeSet>
 
     <changeSet author="wiki" id="1.0.0-2">
@@ -56,6 +59,9 @@
             <column name="ACTIVITY_ID" type="VARCHAR(36)"/>
             <column name="DELETED" type="BOOLEAN" defaultValueBoolean="false"/>
         </createTable>
+        <modifySql dbms="mysql">
+            <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
+        </modifySql>
     </changeSet>
 
     <changeSet author="wiki" id="1.0.0-3">
@@ -78,6 +84,9 @@
             <column name="CONTENT" type="LONGBLOB"/>
             <column name="MIMETYPE" type="VARCHAR(50)"/>
         </createTable>
+        <modifySql dbms="mysql">
+            <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
+        </modifySql>
     </changeSet>
 
     <changeSet author="wiki" id="1.0.0-4">
@@ -85,6 +94,9 @@
             <column name="PAGE_ID" type="BIGINT"/>
             <column name="ATTACHMENT_ID" type="BIGINT"/>
         </createTable>
+        <modifySql dbms="mysql">
+            <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
+        </modifySql>
     </changeSet>
 
     <changeSet author="wiki" id="1.0.0-5">
@@ -106,6 +118,9 @@
             <column name="SYNTAX" type="TEXT(30)"/>
             <column name="PAGE_ID" type="BIGINT"/>
         </createTable>
+        <modifySql dbms="mysql">
+            <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
+        </modifySql>
     </changeSet>
 
     <changeSet author="wiki" id="1.0.0-6">
@@ -121,6 +136,9 @@
             </column>
             <column name="PAGE_ID" type="BIGINT"/>
         </createTable>
+        <modifySql dbms="mysql">
+            <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
+        </modifySql>
     </changeSet>
 
     <changeSet author="wiki" id="1.0.0-7">
@@ -128,6 +146,9 @@
             <column name="USERNAME" type="VARCHAR(36)"/>
             <column name="PAGE_ID" type="BIGINT"/>
         </createTable>
+        <modifySql dbms="mysql">
+            <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
+        </modifySql>
     </changeSet>
 
     <changeSet author="wiki" id="1.0.0-8">
@@ -138,6 +159,9 @@
             <column name="NAME" type="VARCHAR(50)"/>
             <column name="IMAGE" type="LONGBLOB"/>
         </createTable>
+        <modifySql dbms="mysql">
+            <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
+        </modifySql>
     </changeSet>
 
     <changeSet author="wiki" id="1.0.0-9">
@@ -159,6 +183,9 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <modifySql dbms="mysql">
+            <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
+        </modifySql>
     </changeSet>
 
     <changeSet author="wiki" id="1.0.0-10">
@@ -181,6 +208,9 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <modifySql dbms="mysql">
+            <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
+        </modifySql>
     </changeSet>
 
     <changeSet author="wiki" id="1.0.0-11">
@@ -188,6 +218,9 @@
             <column name="DRAFT_PAGE_ID" type="BIGINT"/>
             <column name="ATTACHMENT_ID" type="BIGINT"/>
         </createTable>
+        <modifySql dbms="mysql">
+            <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
+        </modifySql>
     </changeSet>
 
     <changeSet author="wiki" id="1.0.0-12">
@@ -197,6 +230,9 @@
             <column name="IDENTITY_TYPE" type="VARCHAR(50)"/>
             <column name="PERMISSION" type="VARCHAR(15)"/>
         </createTable>
+        <modifySql dbms="mysql">
+            <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
+        </modifySql>
     </changeSet>
 
     <changeSet author="wiki" id="1.0.0-13">
@@ -206,6 +242,9 @@
             <column name="IDENTITY_TYPE" type="VARCHAR(50)"/>
             <column name="PERMISSION" type="VARCHAR(15)"/>
         </createTable>
+        <modifySql dbms="mysql">
+            <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
+        </modifySql>
     </changeSet>
 
     <changeSet author="wiki" id="1.0.0-14">
@@ -215,6 +254,9 @@
             <column name="IDENTITY_TYPE" type="VARCHAR(50)"/>
             <column name="PERMISSION" type="VARCHAR(15)"/>
         </createTable>
+        <modifySql dbms="mysql">
+            <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
+        </modifySql>
     </changeSet>
 
     <changeSet author="wiki" id="1.0.0-15">
@@ -222,6 +264,9 @@
             <column name="PAGE_ID" type="BIGINT"/>
             <column name="RELATED_PAGE_ID" type="BIGINT"/>
         </createTable>
+        <modifySql dbms="mysql">
+            <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
+        </modifySql>
     </changeSet>
 
     <changeSet author="wiki" id="1.0.0-16">
