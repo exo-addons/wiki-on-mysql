@@ -901,6 +901,7 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
+  @ExoTransactional
   public List<EmotionIcon> getEmotionIcons() throws WikiException {
     List<EmotionIcon> emotionIcons = new ArrayList<>();
     List<EmotionIconEntity> emotionIconsEntities = emotionIconDAO.findAll();
