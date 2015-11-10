@@ -107,6 +107,7 @@
                     <property name="searchType" value="wiki-page"/>
                     <property name="displayName" value="Wiki Page"/>
                     <property name="index" value="wiki"/>
+                    <property name="type" value="wiki-page"/>
                     <property name="titleField" value="title"/>
                     <property name="searchFields" value="name,title,content,comment"/>
                 </properties-param>
@@ -126,6 +127,7 @@
                     <property name="searchType" value="wiki-attachment"/>
                     <property name="displayName" value="Wiki Attachment"/>
                     <property name="index" value="wiki"/>
+                    <property name="type" value="wiki-attachment"/>
                     <property name="titleField" value="title"/>
                     <property name="searchFields" value="title,file"/>
                 </properties-param>
