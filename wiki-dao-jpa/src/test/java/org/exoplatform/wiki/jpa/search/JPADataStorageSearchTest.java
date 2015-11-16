@@ -86,22 +86,22 @@ public class JPADataStorageSearchTest extends BaseWikiIntegrationTest {
     @Test
     public void testSearchAttachmentByTitle() throws NoSuchFieldException, IllegalAccessException, IOException {
         // Given
-        URL fileResource = this.getClass().getClassLoader().getResource("wcm-cache-diagram.pdf");
+        URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
         // When
-        indexAttachment("How works eXo WCM Cache Management ?", fileResource.getPath(), "www.exo.com", "BCH", null);
+        indexAttachment("Scrum @eXo - Collector", fileResource.getPath(), "www.exo.com", "BCH", null);
         // Then
-        assertEquals(1, storage.search(new WikiSearchData("Cache", null, null, null)).getPageSize());
-        assertEquals(1, storage.search(new WikiSearchData(null, "Cache", null, null)).getPageSize());
+        assertEquals(1, storage.search(new WikiSearchData("Collector", null, null, null)).getPageSize());
+        assertEquals(1, storage.search(new WikiSearchData(null, "Collector", null, null)).getPageSize());
     }
 
     @Test
     public void testSearchAttachmentByContent() throws NoSuchFieldException, IllegalAccessException, IOException {
         // Given
-        URL fileResource = this.getClass().getClassLoader().getResource("wcm-cache-diagram.pdf");
+        URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
         // When
-        indexAttachment("How works eXo WCM Cache Management ?", fileResource.getPath(), "www.exo.com", "BCH", null);
+        indexAttachment("Scrum @eXo - Collector", fileResource.getPath(), "www.exo.com", "BCH", null);
         // Then
-        assertEquals(1, storage.search(new WikiSearchData("Cache", null, null, null)).getPageSize());
-        assertEquals(1, storage.search(new WikiSearchData(null, "Cache", null, null)).getPageSize());
+        assertEquals(1, storage.search(new WikiSearchData("Agile", null, null, null)).getPageSize());
+        assertEquals(1, storage.search(new WikiSearchData(null, "Agile", null, null)).getPageSize());
     }
 }
