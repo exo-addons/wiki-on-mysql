@@ -87,52 +87,10 @@
                     <property name="searchType" value="wiki"/>
                     <property name="displayName" value="wiki"/>
                     <property name="index" value="wiki"/>
-                    <property name="type" value="wiki"/>
+                    <property name="type" value="wiki,wiki-page,wiki-attachment"/>
                     <property name="enable" value="${exo.unified-search.connector.wiki.enable:true}"/>
                     <property name="titleField" value="name"/>
-                    <property name="searchFields" value="name"/>
-                </properties-param>
-            </init-params>
-        </component-plugin>
-    </external-component-plugins>
-    <external-component-plugins>
-        <target-component>org.exoplatform.commons.api.search.SearchService</target-component>
-        <component-plugin>
-            <name>ElasticSearchConnector</name>
-            <set-method>addConnector</set-method>
-            <type>org.exoplatform.addons.es.search.ElasticSearchServiceConnector</type>
-            <description>Page ElasticSearch Connector</description>
-            <init-params>
-                <properties-param>
-                    <name>constructor.params</name>
-                    <property name="searchType" value="wiki-page"/>
-                    <property name="displayName" value="Wiki Page"/>
-                    <property name="index" value="wiki"/>
-                    <property name="type" value="wiki-page"/>
-                    <property name="enable" value="${exo.unified-search.connector.wiki-page.enable:true}"/>
-                    <property name="titleField" value="title"/>
-                    <property name="searchFields" value="name,title,content,comment"/>
-                </properties-param>
-            </init-params>
-        </component-plugin>
-    </external-component-plugins>
-    <external-component-plugins>
-        <target-component>org.exoplatform.commons.api.search.SearchService</target-component>
-        <component-plugin>
-            <name>ElasticSearchConnector</name>
-            <set-method>addConnector</set-method>
-            <type>org.exoplatform.addons.es.search.ElasticSearchServiceConnector</type>
-            <description>Attachment ElasticSearch Connector</description>
-            <init-params>
-                <properties-param>
-                    <name>constructor.params</name>
-                    <property name="searchType" value="wiki-attachment"/>
-                    <property name="displayName" value="Wiki Attachment"/>
-                    <property name="index" value="wiki"/>
-                    <property name="enable" value="${exo.unified-search.connector.wiki-attachment.enable:true}"/>
-                    <property name="type" value="wiki-attachment"/>
-                    <property name="titleField" value="title"/>
-                    <property name="searchFields" value="title,file"/>
+                    <property name="searchFields" value="name,title,content,comment,file"/>
                 </properties-param>
             </init-params>
         </component-plugin>
