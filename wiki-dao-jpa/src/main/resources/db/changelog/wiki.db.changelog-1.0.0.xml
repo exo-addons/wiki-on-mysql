@@ -375,4 +375,33 @@
                        tableName="WIKI_ATTACHMENT_PERMISSIONS"
                        constraintName="UK_WIKI_ATTACHMENT_PERMISSIONS_01"/>
     </changeSet>
+
+    <changeSet author="wiki" id="1.0.0-32">
+        <addForeignKeyConstraint baseColumnNames="PAGE_ID" baseTableName="WIKI_PAGES_ATTACHMENTS"
+                                 constraintName="FK_WIKI_PAGES_ATTACHMENTS_WIKI_PAGES_01" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="PAGE_ID" referencedTableName="WIKI_PAGES"/>
+    </changeSet>
+
+    <changeSet author="wiki" id="1.0.0-33">
+        <addForeignKeyConstraint baseColumnNames="ATTACHMENT_ID" baseTableName="WIKI_PAGES_ATTACHMENTS"
+                                 constraintName="FK_WIKI_PAGES_ATTACHMENTS_WIKI_ATTACHMENTS_01" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="ATTACHMENT_ID" referencedTableName="WIKI_ATTACHMENTS"/>
+    </changeSet>
+
+    <changeSet author="wiki" id="1.0.0-34">
+        <addForeignKeyConstraint baseColumnNames="DRAFT_PAGE_ID" baseTableName="WIKI_DRAFT_PAGES_ATTACHMENTS"
+                                 constraintName="FK_WIKI_DRAFT_PAGES_ATTACHMENTS_WIKI_PAGES_01" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="DRAFT_PAGE_ID" referencedTableName="WIKI_DRAFT_PAGES"/>
+    </changeSet>
+
+    <changeSet author="wiki" id="1.0.0-35">
+        <addForeignKeyConstraint baseColumnNames="ATTACHMENT_ID" baseTableName="WIKI_DRAFT_PAGES_ATTACHMENTS"
+                                 constraintName="FK_WIKI_DRAFT_PAGES_ATTACHMENTS_WIKI_ATTACHMENTS_01" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="ATTACHMENT_ID" referencedTableName="WIKI_ATTACHMENTS"/>
+    </changeSet>
+
 </databaseChangeLog>
