@@ -80,11 +80,11 @@
       <init-params>
         <properties-param>
           <name>constructor.params</name>
-          <property name="searchType" value="wiki"/>
-          <property name="displayName" value="wiki"/>
+          <property name="searchType" value="wiki-es"/>
+          <property name="displayName" value="wiki-es"/>
           <property name="index" value="wiki"/>
           <property name="type" value="wiki,wiki-page,wiki-attachment"/>
-          <property name="enable" value="${exo.unified-search.connector.wiki.enable:true}"/>
+          <property name="enable" value="${exo.unified-search.connector.wiki-es.enable:true}"/>
           <property name="titleField" value="name"/>
           <property name="searchFields" value="name,title,content,comment,file"/>
         </properties-param>
