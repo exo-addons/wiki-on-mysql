@@ -19,10 +19,7 @@
 
 package org.exoplatform.wiki.jpa.search;
 
-import java.util.*;
-
 import org.apache.commons.lang.StringUtils;
-
 import org.exoplatform.addons.es.domain.Document;
 import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
 import org.exoplatform.container.xml.InitParams;
@@ -31,6 +28,8 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.wiki.jpa.dao.WikiDAO;
 import org.exoplatform.wiki.jpa.entity.PermissionEntity;
 import org.exoplatform.wiki.jpa.entity.WikiEntity;
+
+import java.util.*;
 
 /**
  * Created by The eXo Platform SAS
@@ -61,7 +60,7 @@ public class WikiIndexingServiceConnector extends ElasticIndexingServiceConnecto
         }
         Map<String,String> fields = new HashMap<>();
         //we just want to index the field "name"
-        fields.put("name", wiki.getName());
+        fields.put("title", wiki.getName());
         return new Document(TYPE, id, getUrl(wiki), getCreatedDate(wiki), computePermissions(wiki), fields);
     }
 

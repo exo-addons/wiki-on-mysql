@@ -85,7 +85,7 @@
           <property name="index" value="wiki"/>
           <property name="type" value="wiki,wiki-page,wiki-attachment"/>
           <property name="enable" value="${exo.unified-search.connector.wiki-es.enable:true}"/>
-          <property name="titleField" value="name"/>
+          <property name="titleField" value="title"/>
           <property name="searchFields" value="name,title,content,comment,file"/>
         </properties-param>
       </init-params>
