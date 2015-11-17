@@ -28,6 +28,7 @@ import org.elasticsearch.node.Node;
 import org.elasticsearch.node.internal.InternalNode;
 import org.elasticsearch.plugins.PluginsService;
 import org.elasticsearch.rest.RestController;
+import org.exoplatform.addons.es.dao.IndexingOperationDAO;
 import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.commons.utils.PropertyManager;
@@ -63,6 +64,7 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
   protected IndexingService            indexingService;
   protected IndexingOperationProcessor indexingOperationProcessor;
   protected JPADataStorage             storage;
+  protected IndexingOperationDAO       indexingOperationDAO;
 
   public void setUp() {
     super.setUp();
@@ -90,12 +92,18 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
     PropertyManager.setProperty("exo.es.index.server.url", url);
     PropertyManager.setProperty("exo.es.search.server.url", url);
     // Init services
+    indexingOperationDAO = PortalContainer.getInstance().getComponentInstanceOfType(IndexingOperationDAO.class);
     indexingService = PortalContainer.getInstance().getComponentInstanceOfType(IndexingService.class);
     indexingOperationProcessor = PortalContainer.getInstance().getComponentInstanceOfType(IndexingOperationProcessor.class);
     storage = PortalContainer.getInstance().getComponentInstanceOfType(JPADataStorage.class);
     // Init data
     deleteAllDocumentsInES();
+    cleanDB();
     SecurityUtils.setCurrentUser("BCH", "*:/admin");
+  }
+
+  private void cleanDB() {
+    indexingOperationDAO.deleteAll();
   }
 
   private void deleteAllDocumentsInES() {
@@ -108,6 +116,7 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
 
   public void tearDown() {
     super.tearDown();
+    cleanDB();
     // Close ES Node
     node.close();
   }

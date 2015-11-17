@@ -30,6 +30,7 @@ import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
 
+import org.exoplatform.commons.api.persistence.DataInitializer;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.wiki.jpa.dao.*;
 
@@ -46,23 +47,15 @@ public abstract class BaseWikiJPAIntegrationTest extends BaseTest {
   protected PageMoveDAO    pageMoveDAO;
   protected TemplateDAO    templateDAO;
   protected EmotionIconDAO emotionIconDAO;
-  private Connection       conn;
-  private Liquibase        liquibase;
 
   public void setUp() {
     super.setUp();
-    // Init Liquibase
-    try {
-      Class.forName("org.hsqldb.jdbcDriver");
-      conn = DriverManager.getConnection("jdbc:hsqldb:mem:db1", "sa", "");
-      Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(conn));
-      liquibase = new Liquibase("db/changelog/wiki.db.changelog-test.xml", new ClassLoaderResourceAccessor(), database);
-      liquibase.update((String) null);
-    } catch (ClassNotFoundException | SQLException | LiquibaseException e) {
-      fail(e.getMessage());
-    }
-    // Init DAO
 
+    // make sure data are well initialized for each test
+    DataInitializer dataInitializer = PortalContainer.getInstance().getComponentInstanceOfType(DataInitializer.class);
+    dataInitializer.initData();
+
+    // Init DAO
     wikiDAO = PortalContainer.getInstance().getComponentInstanceOfType(WikiDAO.class);
     pageDAO = PortalContainer.getInstance().getComponentInstanceOfType(PageDAO.class);
     attachmentDAO = PortalContainer.getInstance().getComponentInstanceOfType(AttachmentDAO.class);
@@ -76,19 +69,16 @@ public abstract class BaseWikiJPAIntegrationTest extends BaseTest {
   }
 
   public void tearDown() {
+    // Clean Data
+    cleanDB();
     super.tearDown();
-    // Close DB
-    try {
-      liquibase.rollback(1000, null);
-      conn.close();
-    } catch (SQLException | LiquibaseException e) {
-      fail(e.getMessage());
-    }
   }
 
   private void cleanDB() {
     emotionIconDAO.deleteAll();
     templateDAO.deleteAll();
+    pageMoveDAO.deleteAll();
+    pageVersionDAO.deleteAll();
     draftPageDAO.deleteAll();
     attachmentDAO.deleteAll();
     pageDAO.deleteAll();
