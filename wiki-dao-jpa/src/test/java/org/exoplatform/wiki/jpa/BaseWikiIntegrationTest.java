@@ -19,15 +19,6 @@
 
 package org.exoplatform.wiki.jpa;
 
-import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
-import static org.junit.Assert.assertNotEquals;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Date;
-import java.util.List;
-
 import org.elasticsearch.action.admin.cluster.node.info.NodeInfo;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoRequest;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
@@ -37,7 +28,6 @@ import org.elasticsearch.node.Node;
 import org.elasticsearch.node.internal.InternalNode;
 import org.elasticsearch.plugins.PluginsService;
 import org.elasticsearch.rest.RestController;
-
 import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.commons.utils.PropertyManager;
@@ -52,11 +42,22 @@ import org.exoplatform.wiki.jpa.search.AttachmentIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.WikiIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.WikiPageIndexingServiceConnector;
 
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Date;
+import java.util.List;
+
+import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
+import static org.junit.Assert.assertNotEquals;
+
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
  * 10/1/15
  */
 public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest {
+  protected final URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
   private static final Log LOGGER = ExoLogger.getExoLogger(BaseWikiIntegrationTest.class);
   protected Node                       node;
   protected IndexingService            indexingService;
@@ -144,7 +145,7 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
     return page;
   }
 
-  protected void indexAttachment(String title, String filePath, String downloadedUrl, String owner,
+  protected AttachmentEntity indexAttachment(String title, String filePath, String downloadedUrl, String owner,
                                  List<PermissionEntity> permissions) throws NoSuchFieldException,
                                                                                      IllegalAccessException,
                                                                                      IOException {
@@ -156,10 +157,10 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
     attachment.setCreator(owner);
     attachment.setPermissions(permissions);
     attachment = attachmentDAO.create(attachment);
-    assertEquals(1, attachmentDAO.findAll().size());
     assertNotEquals(attachment.getId(), 0);
     indexingService.index(AttachmentIndexingServiceConnector.TYPE, Long.toString(attachment.getId()));
     indexingOperationProcessor.process();
     node.client().admin().indices().prepareRefresh().execute().actionGet();
+    return attachment;
   }
 }

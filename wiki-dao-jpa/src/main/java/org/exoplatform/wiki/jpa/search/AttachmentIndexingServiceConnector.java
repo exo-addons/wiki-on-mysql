@@ -101,10 +101,23 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
                 "}";
     }
 
-    @Override
-    public List<String> getAllIds(int offset, int limit) {
-        throw new RuntimeException("Not implemented");
+  @Override
+  public List<String> getAllIds(int offset, int limit) {
+
+    List<String> result;
+
+    List<Long> ids = this.dao.findAllIds(offset, limit);
+    System.out.println("\n\n\n Number of Attachments find: "+ids.size());
+    if (ids==null) {
+      result = new ArrayList<>(0);
+    } else {
+      result = new ArrayList<>(ids.size());
+      for (Long id : ids) {
+        result.add(String.valueOf(id));
+      }
     }
+    return result;
+  }
 
     private String getUrl(AttachmentEntity attachment) {
         //TODO

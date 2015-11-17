@@ -16,12 +16,11 @@
  */
 package org.exoplatform.wiki.jpa.entity;
 
-import java.util.Date;
-import java.util.List;
+import org.exoplatform.commons.api.persistence.ExoEntity;
 
 import javax.persistence.*;
-
-import org.exoplatform.commons.api.persistence.ExoEntity;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
@@ -32,6 +31,9 @@ import org.exoplatform.commons.api.persistence.ExoEntity;
 @Entity
 @ExoEntity
 @Table(name = "WIKI_ATTACHMENTS")
+@NamedQueries({
+    @NamedQuery(name = "attachment.getAllIds", query = "SELECT a.id FROM AttachmentEntity a ORDER BY a.id")
+})
 public class AttachmentEntity {
   @Id
   @Column(name = "ATTACHMENT_ID")

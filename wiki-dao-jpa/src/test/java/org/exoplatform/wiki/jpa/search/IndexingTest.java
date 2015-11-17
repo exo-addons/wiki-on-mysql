@@ -19,15 +19,16 @@
 
 package org.exoplatform.wiki.jpa.search;
 
-import static org.junit.Assert.assertNotEquals;
-
-import java.io.IOException;
-
 import org.exoplatform.addons.es.index.impl.ElasticIndexingOperationProcessor;
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
+import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.jpa.entity.WikiEntity;
 import org.exoplatform.wiki.service.search.WikiSearchData;
+
+import java.io.IOException;
+
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
@@ -122,6 +123,31 @@ public class IndexingTest extends BaseWikiIntegrationTest {
     node.client().admin().indices().prepareRefresh().execute().actionGet();
     // Then
     assertEquals(1, storage.search(new WikiSearchData("Liquibase", null, null, null)).getPageSize());
+  }
+
+  public void testReindexingAttachmentAndSearch() throws NoSuchFieldException, IllegalAccessException, IOException {
+    // Given
+    AttachmentEntity attachment1 = indexAttachment("Scrum @eXo - Collector",
+        fileResource.getPath(),
+        "www.exo.com",
+        "BCH",
+        null);
+    attachmentDAO.create(attachment1);
+    AttachmentEntity attachment2 = indexAttachment("Scrum @eXo - Collector",
+        fileResource.getPath(),
+        "www.exo.com",
+        "BCH",
+        null);
+    attachmentDAO.create(attachment2);
+    assertEquals(2, attachmentDAO.findAll().size());
+    // When
+    indexingService.reindexAll(AttachmentIndexingServiceConnector.TYPE);
+    indexingOperationProcessor.process();
+    // Second time because operations were reinjected in the queue
+    indexingOperationProcessor.process();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
+    // Then
+    assertEquals(2, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
   }
 
 }

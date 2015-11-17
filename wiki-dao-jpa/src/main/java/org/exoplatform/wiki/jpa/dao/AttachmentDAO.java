@@ -19,6 +19,8 @@ package org.exoplatform.wiki.jpa.dao;
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
 
+import java.util.List;
+
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
@@ -26,5 +28,9 @@ import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
  * Jun 24, 2015  
  */
 public class AttachmentDAO extends GenericDAOJPAImpl<AttachmentEntity,Long> {
+
+  public List<Long> findAllIds(int offset, int limit) {
+    return getEntityManager().createNamedQuery("attachment.getAllIds").setFirstResult(offset).setMaxResults(limit).getResultList();
+  }
 
 }

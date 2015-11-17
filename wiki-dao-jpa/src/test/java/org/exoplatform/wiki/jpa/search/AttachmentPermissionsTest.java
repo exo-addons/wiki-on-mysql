@@ -19,22 +19,20 @@
 
 package org.exoplatform.wiki.jpa.search;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.Arrays;
-
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
 import org.exoplatform.wiki.jpa.SecurityUtils;
 import org.exoplatform.wiki.jpa.entity.PermissionEntity;
 import org.exoplatform.wiki.mow.api.PermissionType;
 import org.exoplatform.wiki.service.search.WikiSearchData;
 
+import java.io.IOException;
+import java.util.Arrays;
+
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
  * 9/14/15
  */
 public class AttachmentPermissionsTest extends BaseWikiIntegrationTest {
-  private final URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
 
   public void testSearchAttachment_byOwner_found() throws NoSuchFieldException, IllegalAccessException, IOException {
     // Given
