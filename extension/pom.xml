@@ -20,34 +20,34 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.exoplatform.addons.wiki</groupId>
-        <artifactId>wiki-rdbms-addons</artifactId>
-        <version>1.0.x-SNAPSHOT</version>
-    </parent>
-    <artifactId>wiki-rdbms-addons-extension</artifactId>
-    <packaging>war</packaging>
-    <name>Wiki RDBMS Addon Extension Webapp</name>
-    <description>Wiki RDBMS Addon Extension Webapp</description>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.exoplatform.addons.wiki</groupId>
+    <artifactId>wiki-rdbms-addons</artifactId>
+    <version>1.0.x-SNAPSHOT</version>
+  </parent>
+  <artifactId>wiki-rdbms-addons-extension</artifactId>
+  <packaging>war</packaging>
+  <name>Wiki RDBMS Addon Extension Webapp</name>
+  <description>Wiki RDBMS Addon Extension Webapp</description>
 
-    <build>
-        <finalName>wiki-rdbms-addons</finalName>
+  <build>
+    <finalName>wiki-rdbms-addons</finalName>
 
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <webResources>
-                        <resource>
-                            <directory>${basedir}/src/main/resources</directory>
-                        </resource>
-                    </webResources>
-                </configuration>
-            </plugin>
-        </plugins>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <webResources>
+            <resource>
+              <directory>${basedir}/src/main/resources</directory>
+            </resource>
+          </webResources>
+        </configuration>
+      </plugin>
+    </plugins>
 
-    </build>
+  </build>
 
 </project>

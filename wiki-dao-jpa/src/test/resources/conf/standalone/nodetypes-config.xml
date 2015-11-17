@@ -4,7 +4,7 @@
         xmlns:jcr="http://www.jcp.org/jcr/1.0"
         xmlns:exo="http://www.exoplatform.com/jcr/exo/1.0">
 
-  <nodeType name="exo:blog" isMixin="false" hasOrderableChildNodes="false" primaryItemName=""  >
+  <nodeType name="exo:blog" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
 
     <supertypes>
       <supertype>nt:base</supertype>
@@ -27,7 +27,7 @@
       </propertyDefinition>
 
       <propertyDefinition name="exo:blogViewCount" autoCreated="true" mandatory="false" multiple="false"
-                          onParentVersion="COPY" protected="false" requiredType="Long" >
+                          onParentVersion="COPY" protected="false" requiredType="Long">
         <valueConstraints/>
         <defaultValues>
           <defaultValue>1</defaultValue>
@@ -166,27 +166,33 @@
   <nodeType name="mix:commentable" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
   </nodeType>
 
-  <nodeType	name="exo:comments" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+  <nodeType name="exo:comments" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
     <supertypes>
       <supertype>nt:unstructured</supertype>
     </supertypes>
     <propertyDefinitions>
-      <propertyDefinition name="exo:commentor" requiredType="String" autoCreated="false" mandatory="false" onParentVersion="COPY" protected="false" multiple="false">
+      <propertyDefinition name="exo:commentor" requiredType="String" autoCreated="false" mandatory="false"
+                          onParentVersion="COPY" protected="false" multiple="false">
         <valueConstraints/>
       </propertyDefinition>
-      <propertyDefinition name="exo:commentorFullName" requiredType="String" autoCreated="false" mandatory="false" onParentVersion="COPY" protected="false" multiple="false">
+      <propertyDefinition name="exo:commentorFullName" requiredType="String" autoCreated="false" mandatory="false"
+                          onParentVersion="COPY" protected="false" multiple="false">
         <valueConstraints/>
       </propertyDefinition>
-      <propertyDefinition name="exo:commentorEmail" requiredType="String" autoCreated="false" mandatory="false" onParentVersion="COPY" protected="false" multiple="false">
+      <propertyDefinition name="exo:commentorEmail" requiredType="String" autoCreated="false" mandatory="false"
+                          onParentVersion="COPY" protected="false" multiple="false">
         <valueConstraints/>
       </propertyDefinition>
-      <propertyDefinition name="exo:commentorSite" requiredType="String" autoCreated="false" mandatory="false" onParentVersion="COPY" protected="false" multiple="false">
+      <propertyDefinition name="exo:commentorSite" requiredType="String" autoCreated="false" mandatory="false"
+                          onParentVersion="COPY" protected="false" multiple="false">
         <valueConstraints/>
       </propertyDefinition>
-      <propertyDefinition name="exo:commentDate" requiredType="Date" autoCreated="false" mandatory="false" onParentVersion="COPY" protected="false" multiple="false">
+      <propertyDefinition name="exo:commentDate" requiredType="Date" autoCreated="false" mandatory="false"
+                          onParentVersion="COPY" protected="false" multiple="false">
         <valueConstraints/>
       </propertyDefinition>
-      <propertyDefinition name="exo:commentContent" requiredType="String" autoCreated="false" mandatory="false" onParentVersion="COPY" protected="false" multiple="false">
+      <propertyDefinition name="exo:commentContent" requiredType="String" autoCreated="false" mandatory="false"
+                          onParentVersion="COPY" protected="false" multiple="false">
         <valueConstraints/>
       </propertyDefinition>
     </propertyDefinitions>
@@ -199,22 +205,27 @@
 
   <nodeType name="exo:sortable" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
     <propertyDefinitions>
-      <propertyDefinition name="exo:index" requiredType="Long" autoCreated="true" mandatory="false" onParentVersion="COPY" protected="false" multiple="false">
+      <propertyDefinition name="exo:index" requiredType="Long" autoCreated="true" mandatory="false"
+                          onParentVersion="COPY" protected="false" multiple="false">
         <valueConstraints/>
         <defaultValues>
           <defaultValue>1000</defaultValue>
         </defaultValues>
       </propertyDefinition>
-      <propertyDefinition name="exo:title" requiredType="String" autoCreated="true" mandatory="false" onParentVersion="COPY" protected="false" multiple="false">
+      <propertyDefinition name="exo:title" requiredType="String" autoCreated="true" mandatory="false"
+                          onParentVersion="COPY" protected="false" multiple="false">
         <valueConstraints/>
       </propertyDefinition>
-      <propertyDefinition name="exo:titlePublished" requiredType="String" autoCreated="true" mandatory="false" onParentVersion="COPY" protected="false" multiple="false">
+      <propertyDefinition name="exo:titlePublished" requiredType="String" autoCreated="true" mandatory="false"
+                          onParentVersion="COPY" protected="false" multiple="false">
         <valueConstraints/>
       </propertyDefinition>
-      <propertyDefinition name="exo:name" requiredType="String" autoCreated="true" mandatory="false" onParentVersion="COPY" protected="false" multiple="false">
+      <propertyDefinition name="exo:name" requiredType="String" autoCreated="true" mandatory="false"
+                          onParentVersion="COPY" protected="false" multiple="false">
         <valueConstraints/>
       </propertyDefinition>
-      <propertyDefinition name="publication:liveDate" requiredType="Date" autoCreated="true" mandatory="false" onParentVersion="COPY" protected="false" multiple="false">
+      <propertyDefinition name="publication:liveDate" requiredType="Date" autoCreated="true" mandatory="false"
+                          onParentVersion="COPY" protected="false" multiple="false">
         <valueConstraints/>
       </propertyDefinition>
     </propertyDefinitions>

@@ -1,111 +1,109 @@
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"
                xmlns="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd">
-    <component>
-        <key>org.exoplatform.commons.api.persistence.DataInitializer</key>
-        <type>org.exoplatform.wiki.jpa.mock.MockDataInitializer</type>
-    </component>
+  <component>
+    <key>org.exoplatform.commons.api.persistence.DataInitializer</key>
+    <type>org.exoplatform.wiki.jpa.mock.MockDataInitializer</type>
+  </component>
 
-    <component>
-        <key>org.exoplatform.wiki.service.DataStorage</key>
-        <type>org.exoplatform.wiki.jpa.JPADataStorage</type>
-    </component>
-    <component>
-        <type>org.exoplatform.wiki.jpa.dao.WikiDAO</type>
-    </component>
-    <component>
-        <type>org.exoplatform.wiki.jpa.dao.PageDAO</type>
-    </component>
-    <component>
-        <type>org.exoplatform.wiki.jpa.dao.AttachmentDAO</type>
-    </component>
-    <component>
-        <type>org.exoplatform.wiki.jpa.dao.PageVersionDAO</type>
-    </component>
-    <component>
-        <type>org.exoplatform.wiki.jpa.dao.PageMoveDAO</type>
-    </component>
-    <component>
-        <type>org.exoplatform.wiki.jpa.dao.TemplateDAO</type>
-    </component>
-    <component>
-        <type>org.exoplatform.wiki.jpa.dao.EmotionIconDAO</type>
-    </component>
+  <component>
+    <key>org.exoplatform.wiki.service.DataStorage</key>
+    <type>org.exoplatform.wiki.jpa.JPADataStorage</type>
+  </component>
+  <component>
+    <type>org.exoplatform.wiki.jpa.dao.WikiDAO</type>
+  </component>
+  <component>
+    <type>org.exoplatform.wiki.jpa.dao.PageDAO</type>
+  </component>
+  <component>
+    <type>org.exoplatform.wiki.jpa.dao.AttachmentDAO</type>
+  </component>
+  <component>
+    <type>org.exoplatform.wiki.jpa.dao.PageVersionDAO</type>
+  </component>
+  <component>
+    <type>org.exoplatform.wiki.jpa.dao.PageMoveDAO</type>
+  </component>
+  <component>
+    <type>org.exoplatform.wiki.jpa.dao.TemplateDAO</type>
+  </component>
+  <component>
+    <type>org.exoplatform.wiki.jpa.dao.EmotionIconDAO</type>
+  </component>
 
-    <component>
-        <key>org.exoplatform.commons.api.search.SearchService</key>
-        <type>org.exoplatform.commons.search.driver.jcr.JcrSearchDriver</type>
-        <init-params>
-            <value-param>
-                <name>exo.search.excluded-characters</name>
-                <value>.</value>
-            </value-param>
-        </init-params>
-    </component>
-    <component>
-        <!-- Required for SearchService -->
-        <type>org.exoplatform.commons.search.service.UnifiedSearchService</type>
-    </component>
-    <component>
-        <!-- Required for SearchService -->
-        <key>org.exoplatform.commons.api.settings.SettingService</key>
-        <type>org.exoplatform.wiki.jpa.mock.MockSettingService</type>
-    </component>
-    <component>
-        <!-- Required for SearchService -->
-        <key>org.exoplatform.commons.api.event.EventManager</key>
-        <type>org.exoplatform.commons.event.impl.EventManagerImpl</type>
-    </component>
-
-
-
-    <component>
-        <key>org.exoplatform.addons.es.index.IndexingService</key>
-        <type>org.exoplatform.addons.es.index.impl.QueueIndexingService</type>
-    </component>
-    <component>
-        <key>org.exoplatform.addons.es.index.IndexingOperationProcessor</key>
-        <type>org.exoplatform.addons.es.index.impl.ElasticIndexingOperationProcessor</type>
-    </component>
-    <component>
-        <key>org.exoplatform.addons.es.dao.IndexingOperationDAO</key>
-        <type>org.exoplatform.addons.es.dao.impl.IndexingOperationDAOImpl</type>
-    </component>
-    <component>
-        <type>org.exoplatform.addons.es.client.ElasticIndexingClient</type>
-    </component>
-    <component>
-        <type>org.exoplatform.addons.es.client.ElasticSearchingClient</type>
-    </component>
-    <component>
-        <type>org.exoplatform.addons.es.client.ElasticIndexingAuditTrail</type>
-    </component>
-    <component>
-        <type>org.exoplatform.addons.es.client.ElasticContentRequestBuilder</type>
-    </component>
+  <component>
+    <key>org.exoplatform.commons.api.search.SearchService</key>
+    <type>org.exoplatform.commons.search.driver.jcr.JcrSearchDriver</type>
+    <init-params>
+      <value-param>
+        <name>exo.search.excluded-characters</name>
+        <value>.</value>
+      </value-param>
+    </init-params>
+  </component>
+  <component>
+    <!-- Required for SearchService -->
+    <type>org.exoplatform.commons.search.service.UnifiedSearchService</type>
+  </component>
+  <component>
+    <!-- Required for SearchService -->
+    <key>org.exoplatform.commons.api.settings.SettingService</key>
+    <type>org.exoplatform.wiki.jpa.mock.MockSettingService</type>
+  </component>
+  <component>
+    <!-- Required for SearchService -->
+    <key>org.exoplatform.commons.api.event.EventManager</key>
+    <type>org.exoplatform.commons.event.impl.EventManagerImpl</type>
+  </component>
 
 
+  <component>
+    <key>org.exoplatform.addons.es.index.IndexingService</key>
+    <type>org.exoplatform.addons.es.index.impl.QueueIndexingService</type>
+  </component>
+  <component>
+    <key>org.exoplatform.addons.es.index.IndexingOperationProcessor</key>
+    <type>org.exoplatform.addons.es.index.impl.ElasticIndexingOperationProcessor</type>
+  </component>
+  <component>
+    <key>org.exoplatform.addons.es.dao.IndexingOperationDAO</key>
+    <type>org.exoplatform.addons.es.dao.impl.IndexingOperationDAOImpl</type>
+  </component>
+  <component>
+    <type>org.exoplatform.addons.es.client.ElasticIndexingClient</type>
+  </component>
+  <component>
+    <type>org.exoplatform.addons.es.client.ElasticSearchingClient</type>
+  </component>
+  <component>
+    <type>org.exoplatform.addons.es.client.ElasticIndexingAuditTrail</type>
+  </component>
+  <component>
+    <type>org.exoplatform.addons.es.client.ElasticContentRequestBuilder</type>
+  </component>
 
-    <component>
-        <type>org.exoplatform.commons.persistence.impl.EntityManagerService</type>
-    </component>
-    <component>
-        <key>org.exoplatform.services.idgenerator.IDGeneratorService</key>
-        <type>org.exoplatform.services.idgenerator.impl.IDGeneratorServiceImpl</type>
-    </component>
 
-    <component>
-        <type>org.exoplatform.services.security.IdentityRegistry</type>
-    </component>
-    <component>
-        <key>org.exoplatform.services.document.DocumentReaderService</key>
-        <type>org.exoplatform.services.document.impl.DocumentReaderServiceImpl</type>
-    </component>
+  <component>
+    <type>org.exoplatform.commons.persistence.impl.EntityManagerService</type>
+  </component>
+  <component>
+    <key>org.exoplatform.services.idgenerator.IDGeneratorService</key>
+    <type>org.exoplatform.services.idgenerator.impl.IDGeneratorServiceImpl</type>
+  </component>
 
-    <component>
-        <key>org.exoplatform.services.jdbc.DataSourceProvider</key>
-        <type>org.exoplatform.services.jdbc.impl.DataSourceProviderImpl</type>
-    </component>
+  <component>
+    <type>org.exoplatform.services.security.IdentityRegistry</type>
+  </component>
+  <component>
+    <key>org.exoplatform.services.document.DocumentReaderService</key>
+    <type>org.exoplatform.services.document.impl.DocumentReaderServiceImpl</type>
+  </component>
 
-    <import>jar:/conf/portal/configuration.xml</import>
+  <component>
+    <key>org.exoplatform.services.jdbc.DataSourceProvider</key>
+    <type>org.exoplatform.services.jdbc.impl.DataSourceProviderImpl</type>
+  </component>
+
+  <import>jar:/conf/portal/configuration.xml</import>
 </configuration>
