@@ -39,7 +39,7 @@
 
   <properties>
     <!-- Platform Project Dependencies -->
-    <exoplatform.version>4.3.x-plf-wiki-rdbms-SNAPSHOT</exoplatform.version>
+    <exoplatform.version>4.3.x-SNAPSHOT</exoplatform.version>
     <exo.es.search.version>1.0.x-SNAPSHOT</exo.es.search.version>
     <hibernate.version>4.1.12.Final</hibernate.version>
     <jackson.version>2.1.3</jackson.version>
