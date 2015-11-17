@@ -7,6 +7,15 @@
   <includeBaseDirectory>false</includeBaseDirectory>
   <dependencySets>
     <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <outputDirectory>/</outputDirectory>
+      <includes>
+        <include>${project.groupId}:wiki-rdbms-addons-extension:war</include>
+      </includes>
+      <scope>provided</scope>
+      <outputFileNameMapping>wiki-rdbms-addons.war</outputFileNameMapping>
+    </dependencySet>
+    <dependencySet>
       <outputDirectory>/</outputDirectory>
       <includes>
         <include>org.exoplatform.addons.wiki:wiki-dao-jpa:jar</include>

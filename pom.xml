@@ -33,8 +33,9 @@
   <name>Wiki RDBMS Addon</name>
   <description>Wiki RDBMS Addon</description>
   <modules>
-    <module>packaging</module>
     <module>wiki-dao-jpa</module>
+    <module>extension</module>
+    <module>packaging</module>
   </modules>
 
   <properties>
