@@ -16,15 +16,14 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
-import org.junit.Test;
-
 import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
 import org.exoplatform.wiki.jpa.entity.DraftPageEntity;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
+import org.junit.Test;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
@@ -41,6 +40,7 @@ public class DraftPageDAOTest extends BaseWikiJPAIntegrationTest {
     page.setName("name");
     page.setCreatedDate(new Date());
     page.setUpdatedDate(new Date());
+    pageDAO.create(page);
     dp.setTargetPage(page);
     dp.setCreatedDate(new Date());
     dp.setUpdatedDate(new Date());
@@ -66,6 +66,7 @@ public class DraftPageDAOTest extends BaseWikiJPAIntegrationTest {
     page.setName("name");
     page.setCreatedDate(new Date());
     page.setUpdatedDate(new Date());
+    pageDAO.create(page);
     dp.setTargetPage(page);
     dp.setAuthor("user1");
     dp.setCreatedDate(new Date());
@@ -96,6 +97,7 @@ public class DraftPageDAOTest extends BaseWikiJPAIntegrationTest {
     page.setName("page1");
     page.setUpdatedDate(oneYearAgo);
     page.setCreatedDate(oneYearAgo);
+    pageDAO.create(page);
     DraftPageEntity dp1 = new DraftPageEntity();
     dp1.setTargetPage(page);
     dp1.setAuthor("user1");
@@ -131,6 +133,7 @@ public class DraftPageDAOTest extends BaseWikiJPAIntegrationTest {
     page.setCreatedDate(new Date());
     page.setUpdatedDate(new Date());
     page.setName("page1");
+    pageDAO.create(page);
     dp.setTargetPage(page);
     PageEntity createdPage = pageDAO.create(page);
     dp.setAuthor("user1");
@@ -168,10 +171,12 @@ public class DraftPageDAOTest extends BaseWikiJPAIntegrationTest {
     page1.setName("page1");
     page1.setUpdatedDate(oneYearAgo);
     page1.setCreatedDate(oneYearAgo);
+    pageDAO.create(page1);
     PageEntity page2 = new PageEntity();
     page2.setName("page2");
     page2.setUpdatedDate(now);
     page2.setCreatedDate(now);
+    pageDAO.create(page2);
 
     DraftPageEntity dp1 = new DraftPageEntity();
     dp1.setTargetPage(page1);
@@ -215,10 +220,12 @@ public class DraftPageDAOTest extends BaseWikiJPAIntegrationTest {
     page1.setName("page1");
     page1.setUpdatedDate(oneYearAgo);
     page1.setCreatedDate(oneYearAgo);
+    pageDAO.create(page1);
     PageEntity page2 = new PageEntity();
     page2.setName("page2");
     page2.setUpdatedDate(now);
     page2.setCreatedDate(now);
+    pageDAO.create(page2);
 
     DraftPageEntity dp1 = new DraftPageEntity();
     dp1.setTargetPage(page1);

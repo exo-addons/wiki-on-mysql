@@ -318,7 +318,7 @@
     <addForeignKeyConstraint baseColumnNames="TARGET_PAGE_ID" baseTableName="WIKI_DRAFT_PAGES"
                              constraintName="FK_WIKI_DRAFT_PAGES_WIKI_PAGES_01" deferrable="false"
                              initiallyDeferred="false"
-                             onDelete="NO ACTION" onUpdate="NO ACTION"
+                             onDelete="CASCADE" onUpdate="NO ACTION"
                              referencedColumnNames="PAGE_ID" referencedTableName="WIKI_PAGES"/>
   </changeSet>
 

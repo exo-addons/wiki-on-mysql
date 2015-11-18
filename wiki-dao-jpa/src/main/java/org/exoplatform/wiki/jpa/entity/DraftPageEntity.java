@@ -19,7 +19,6 @@ package org.exoplatform.wiki.jpa.entity;
 import org.exoplatform.commons.api.persistence.ExoEntity;
 
 import javax.persistence.*;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -34,9 +33,7 @@ import java.util.List;
 @NamedQueries({
         @NamedQuery(name = "wikiDraftPage.findDraftPagesByUser", query = "SELECT d FROM DraftPageEntity d WHERE d.author = :username ORDER BY d.updatedDate DESC"),
         @NamedQuery(name = "wikiDraftPage.findDraftPageByUserAndName", query = "SELECT d FROM DraftPageEntity d WHERE d.author = :username AND d.name = :draftPageName ORDER BY d.updatedDate DESC"),
-        @NamedQuery(name = "wikiDraftPage.findDraftPageByUserAndTargetPage", query = "SELECT d FROM DraftPageEntity d WHERE d.author = :username AND d.targetPage.id = :targetPageId"),
-        @NamedQuery(name = "wikiDraftPage.deleteDraftPagesByUserAndTargetPage", query = "DELETE FROM DraftPageEntity d WHERE d.author = :username AND d.targetPage.id = :targetPageId"),
-        @NamedQuery(name = "wikiDraftPage.deleteDraftPagesByUserAndName", query = "DELETE FROM DraftPageEntity d WHERE d.author = :username AND d.name = :draftPageName")
+        @NamedQuery(name = "wikiDraftPage.findDraftPageByUserAndTargetPage", query = "SELECT d FROM DraftPageEntity d WHERE d.author = :username AND d.targetPage.id = :targetPageId")
 })
 public class DraftPageEntity extends BasePageEntity {
 
@@ -45,7 +42,7 @@ public class DraftPageEntity extends BasePageEntity {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private long id;
 
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne
   @JoinColumn(name = "TARGET_PAGE_ID")
   private PageEntity targetPage;
 

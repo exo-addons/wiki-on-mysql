@@ -16,6 +16,7 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
+import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 import org.exoplatform.wiki.jpa.entity.DraftPageEntity;
 
@@ -65,39 +66,21 @@ public class DraftPageDAO extends GenericDAOJPAImpl<DraftPageEntity, Long> {
     return query.getResultList();
   }
 
+  @ExoTransactional
   public void deleteDraftPagesByUserAndTargetPage(String username, long targetPageId) {
-    EntityTransaction trans = getEntityManager().getTransaction();
-    boolean active = false;
-    if (!trans.isActive()) {
-      trans.begin();
-      active = true;
+
+    List<DraftPageEntity> draftPages = findDraftPagesByUserAndTargetPage(username, targetPageId);
+    for (DraftPageEntity draftPage: draftPages) {
+      delete(draftPage);
     }
 
-    Query query = getEntityManager().createNamedQuery("wikiDraftPage.deleteDraftPagesByUserAndTargetPage")
-            .setParameter("username", username)
-            .setParameter("targetPageId", targetPageId);
-    query.executeUpdate();
-
-    if (active) {
-      trans.commit();
-    }
   }
 
+  @ExoTransactional
   public void deleteDraftPagesByUserAndName(String draftName, String username) {
-    EntityTransaction trans = getEntityManager().getTransaction();
-    boolean active = false;
-    if (!trans.isActive()) {
-      trans.begin();
-      active = true;
-    }
 
-    Query query = getEntityManager().createNamedQuery("wikiDraftPage.deleteDraftPagesByUserAndName")
-            .setParameter("username", username)
-            .setParameter("draftPageName", draftName);
-    query.executeUpdate();
+    DraftPageEntity draftPage = findLatestDraftPageByUserAndName(username, draftName);
+    delete(draftPage);
 
-    if (active) {
-      trans.commit();
-    }
   }
 }

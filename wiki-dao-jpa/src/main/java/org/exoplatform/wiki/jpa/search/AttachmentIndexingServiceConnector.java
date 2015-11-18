@@ -107,7 +107,6 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
     List<String> result;
 
     List<Long> ids = this.dao.findAllIds(offset, limit);
-    System.out.println("\n\n\n Number of Attachments find: "+ids.size());
     if (ids==null) {
       result = new ArrayList<>(0);
     } else {
