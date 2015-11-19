@@ -1242,7 +1242,7 @@ public class JPADataStorage implements DataStorage {
    * @param page The page domain object
    * @return The page entity
    */
-  private PageEntity fetchPageEntity(Page page) {
+  public PageEntity fetchPageEntity(Page page) {
     PageEntity pageEntity;
     if (page.getId() != null && !page.getId().isEmpty()) {
       pageEntity = pageDAO.find(Long.parseLong(page.getId()));

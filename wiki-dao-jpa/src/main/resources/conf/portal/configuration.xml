@@ -151,4 +151,13 @@
     </component-plugin>
   </external-component-plugins>
 
+  <external-component-plugins>
+    <target-component>org.exoplatform.wiki.service.WikiService</target-component>
+    <component-plugin>
+      <name>AttachmentIndexingListener</name>
+      <set-method>addComponentPlugin</set-method>
+      <type>org.exoplatform.wiki.jpa.search.AttachmentIndexingListener</type>
+    </component-plugin>
+  </external-component-plugins>
+
 </configuration>
