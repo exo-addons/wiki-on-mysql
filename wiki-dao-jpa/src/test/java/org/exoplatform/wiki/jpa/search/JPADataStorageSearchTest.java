@@ -33,16 +33,6 @@ import java.net.URL;
 public class JPADataStorageSearchTest extends BaseWikiIntegrationTest {
 
     @Test
-    public void testSearchWikiByName() throws Exception {
-        // Given
-        // When
-        indexWiki("My Wiki", "BCH", null);
-        // Then
-        assertEquals(1, storage.search(new WikiSearchData(null, "My Wiki", null, null)).getPageSize());
-        assertEquals(1, storage.search(new WikiSearchData("My Wiki", null, null, null)).getPageSize());
-    }
-
-    @Test
     public void testSearchPageByName() throws Exception {
         // Given
         // When

@@ -19,70 +19,18 @@
 
 package org.exoplatform.wiki.jpa.search;
 
-import org.exoplatform.addons.es.index.impl.ElasticIndexingOperationProcessor;
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
 import org.exoplatform.wiki.jpa.entity.PageAttachmentEntity;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
-import org.exoplatform.wiki.jpa.entity.WikiEntity;
 import org.exoplatform.wiki.service.search.WikiSearchData;
 
 import java.io.IOException;
-
-import static org.junit.Assert.assertNotEquals;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
  * 9/14/15
  */
 public class IndexingTest extends BaseWikiIntegrationTest {
-
-  public void testReindexingWikiAndSearch() throws NoSuchFieldException, IllegalAccessException, IOException {
-    // Given
-    WikiEntity wiki1 = indexWiki("RDBMS Guidelines", "BCH", null);
-    wiki1.setName("Liquibase Guidelines");
-    wikiDAO.update(wiki1);
-    WikiEntity wiki2 = indexWiki("RDBMS Stats", "BCH", null);
-    wiki2.setName("Liquibase Stats");
-    wikiDAO.update(wiki2);
-    assertEquals(2, wikiDAO.findAll().size());
-    // When
-    indexingService.reindexAll(WikiIndexingServiceConnector.TYPE);
-    indexingOperationProcessor.process();
-    // Second time because operations were reinjected in the queue
-    indexingOperationProcessor.process();
-    node.client().admin().indices().prepareRefresh().execute().actionGet();
-    // Then
-    assertEquals(2, storage.search(new WikiSearchData("Liquibase", null, null, null)).getPageSize());
-  }
-
-  public void testReindexing_isProcessedAsBatch() throws NoSuchFieldException, IllegalAccessException, IOException {
-    // Given
-    WikiEntity wiki = new WikiEntity();
-    wiki.setName("RDBMS Guidelines");
-    wiki.setOwner("BCH");
-    wiki = wikiDAO.create(wiki);
-    assertNotEquals(wiki.getId(), 0);
-    WikiEntity wiki2 = new WikiEntity();
-    wiki2.setName("Liquibase Guidelines");
-    wiki2.setOwner("BCH");
-    wiki2 = wikiDAO.create(wiki2);
-    assertNotEquals(wiki2.getId(), 0);
-    WikiEntity wiki3 = new WikiEntity();
-    wiki3.setName("Logs Guidelines");
-    wiki3.setOwner("BCH");
-    wiki3 = wikiDAO.create(wiki3);
-    assertNotEquals(wiki3.getId(), 0);
-    assertEquals(3, wikiDAO.findAll().size());
-    ((ElasticIndexingOperationProcessor) indexingOperationProcessor).setReindexBatchSize(2);
-    // When
-    indexingService.reindexAll(WikiIndexingServiceConnector.TYPE);
-    indexingOperationProcessor.process();
-    // Second time because operations were reinjected in the queue
-    indexingOperationProcessor.process();
-    node.client().admin().indices().prepareRefresh().execute().actionGet();
-    // Then
-    assertEquals(3, storage.search(new WikiSearchData("Guidelines", null, null, null)).getPageSize());
-  }
 
   public void testReindexingWikiPagesAndSearch() throws NoSuchFieldException, IllegalAccessException, IOException {
     // Given
@@ -108,21 +56,6 @@ public class IndexingTest extends BaseWikiIntegrationTest {
     node.client().admin().indices().prepareRefresh().execute().actionGet();
     // Then
     assertEquals(2, storage.search(new WikiSearchData("Liquibase", null, null, null)).getPageSize());
-  }
-
-  public void testUpdatingWiki() throws NoSuchFieldException, IllegalAccessException {
-    // Given
-    WikiEntity wiki = indexWiki("RDBMS Guidelines", "BCH", null);
-    assertEquals(0, storage.search(new WikiSearchData("Liquibase", null, null, null)).getPageSize());
-    // When
-    wiki.setName("Liquibase Guidelines");
-    wikiDAO.update(wiki);
-    assertEquals(1, wikiDAO.findAll().size());
-    indexingService.reindex(WikiIndexingServiceConnector.TYPE, Long.toString(wiki.getId()));
-    indexingOperationProcessor.process();
-    node.client().admin().indices().prepareRefresh().execute().actionGet();
-    // Then
-    assertEquals(1, storage.search(new WikiSearchData("Liquibase", null, null, null)).getPageSize());
   }
 
   public void testReindexingAttachmentAndSearch() throws NoSuchFieldException, IllegalAccessException, IOException {

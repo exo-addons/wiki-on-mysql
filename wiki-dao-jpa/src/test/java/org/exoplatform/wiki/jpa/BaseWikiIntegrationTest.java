@@ -35,9 +35,10 @@ import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.wiki.jpa.entity.*;
+import org.exoplatform.wiki.jpa.entity.PageAttachmentEntity;
+import org.exoplatform.wiki.jpa.entity.PageEntity;
+import org.exoplatform.wiki.jpa.entity.PermissionEntity;
 import org.exoplatform.wiki.jpa.search.AttachmentIndexingServiceConnector;
-import org.exoplatform.wiki.jpa.search.WikiIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.WikiPageIndexingServiceConnector;
 
 import java.io.IOException;
@@ -104,7 +105,6 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
   }
 
   private void deleteAllDocumentsInES() {
-    indexingService.unindexAll(WikiIndexingServiceConnector.TYPE);
     indexingService.unindexAll(WikiPageIndexingServiceConnector.TYPE);
     indexingService.unindexAll(AttachmentIndexingServiceConnector.TYPE);
     indexingOperationProcessor.process();
@@ -116,20 +116,6 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
     cleanDB();
     // Close ES Node
     node.close();
-  }
-
-  protected WikiEntity indexWiki(String name, String owner, List<PermissionEntity> permissions) throws NoSuchFieldException,
-                                                                                               IllegalAccessException {
-    WikiEntity wiki = new WikiEntity();
-    wiki.setName(name);
-    wiki.setOwner(owner);
-    wiki.setPermissions(permissions);
-    wiki = wikiDAO.create(wiki);
-    assertNotEquals(wiki.getId(), 0);
-    indexingService.index(WikiIndexingServiceConnector.TYPE, Long.toString(wiki.getId()));
-    indexingOperationProcessor.process();
-    node.client().admin().indices().prepareRefresh().execute().actionGet();
-    return wiki;
   }
 
   protected PageEntity indexPage(String name, String title, String content, String comment, String owner,

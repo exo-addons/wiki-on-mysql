@@ -99,22 +99,6 @@
   <external-component-plugins>
     <target-component>org.exoplatform.addons.es.index.IndexingOperationProcessor</target-component>
     <component-plugin>
-      <name>WikiIndexingConnector</name>
-      <set-method>addConnector</set-method>
-      <type>org.exoplatform.wiki.jpa.search.WikiIndexingServiceConnector</type>
-      <description>Wiki ElasticSearch Indexing Connector</description>
-      <init-params>
-        <properties-param>
-          <name>constructor.params</name>
-          <property name="index" value="wiki"/>
-          <property name="type" value="wiki"/>
-        </properties-param>
-      </init-params>
-    </component-plugin>
-  </external-component-plugins>
-  <external-component-plugins>
-    <target-component>org.exoplatform.addons.es.index.IndexingOperationProcessor</target-component>
-    <component-plugin>
       <name>WikiPageIndexingConnector</name>
       <set-method>addConnector</set-method>
       <type>org.exoplatform.wiki.jpa.search.WikiPageIndexingServiceConnector</type>
