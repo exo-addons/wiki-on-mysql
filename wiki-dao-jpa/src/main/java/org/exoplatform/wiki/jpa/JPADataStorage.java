@@ -797,13 +797,13 @@ public class JPADataStorage implements DataStorage {
       }
 
       // attachment must be saved here because of Hibernate bug HHH-6776
-      //attachmentDAO.create(attachmentEntity);
+      draftPageAttachmentDAO.create(attachmentEntity);
 
       List<DraftPageAttachmentEntity> attachmentsEntities = draftPageEntity.getAttachments();
       if (attachmentsEntities == null) {
         attachmentsEntities = new ArrayList<>();
       }
-      DraftPageAttachmentEntity draftPageAttachmentEntity = (DraftPageAttachmentEntity) attachmentEntity;
+      DraftPageAttachmentEntity draftPageAttachmentEntity = attachmentEntity;
       draftPageAttachmentEntity.setDraftPage(draftPageEntity);
       attachmentsEntities.add(draftPageAttachmentEntity);
       draftPageEntity.setAttachments(attachmentsEntities);
@@ -827,14 +827,14 @@ public class JPADataStorage implements DataStorage {
       }
 
       // attachment must be saved here because of Hibernate bug HHH-6776
-      //attachmentDAO.create(attachmentEntity);
+      pageAttachmentDAO.create(attachmentEntity);
 
       List<PageAttachmentEntity> attachmentsEntities = pageEntity.getAttachments();
       if (attachmentsEntities == null) {
         attachmentsEntities = new ArrayList<>();
       }
 
-      PageAttachmentEntity pageAttachmentEntity = (PageAttachmentEntity) attachmentEntity;
+      PageAttachmentEntity pageAttachmentEntity = attachmentEntity;
       pageAttachmentEntity.setPage(pageEntity);
       attachmentsEntities.add(pageAttachmentEntity);
       pageEntity.setAttachments(attachmentsEntities);
