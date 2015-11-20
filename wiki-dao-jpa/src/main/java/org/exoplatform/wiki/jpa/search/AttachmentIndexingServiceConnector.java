@@ -26,7 +26,9 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.wiki.jpa.dao.PageAttachmentDAO;
-import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
+import org.exoplatform.wiki.jpa.entity.PageAttachmentEntity;
+import org.exoplatform.wiki.jpa.entity.PermissionEntity;
+import org.exoplatform.wiki.mow.api.PermissionType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,68 +42,81 @@ import java.util.Map;
  * 10/2/15
  */
 public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceConnector {
-    private static final Log LOGGER = ExoLogger.getExoLogger(AttachmentIndexingServiceConnector.class);
-    public static final String TYPE = "wiki-attachment";
-    private final PageAttachmentDAO dao;
+  private static final Log LOGGER = ExoLogger.getExoLogger(AttachmentIndexingServiceConnector.class);
+  public static final String TYPE = "wiki-attachment";
+  private final PageAttachmentDAO attachmentDAO;
 
-    public AttachmentIndexingServiceConnector(InitParams initParams, PageAttachmentDAO dao) {
-        super(initParams);
-        this.dao = dao;
+  public AttachmentIndexingServiceConnector(InitParams initParams, PageAttachmentDAO attachmentDAO) {
+    super(initParams);
+    this.attachmentDAO = attachmentDAO;
+  }
+
+  @Override
+  public Document create(String id) {
+    if (StringUtils.isBlank(id)) {
+      throw new IllegalArgumentException("Id is null");
     }
+    //Get the wiki object from BD
+    PageAttachmentEntity attachment = attachmentDAO.find(Long.parseLong(id));
+    if (attachment==null) {
+      LOGGER.info("The attachment entity with id {} doesn't exist.", id);
+      return null;
+    }
+    Map<String,String> fields = new HashMap<>();
+    Document doc = new Document(TYPE, id, getUrl(attachment), attachment.getUpdatedDate(),
+        computePermissions(attachment), fields);
+    doc.addField("title", attachment.getTitle());
+    doc.addField("file", attachment.getContent());
+    return doc;
+  }
 
-    @Override
-    public Document create(String id) {
-        if (StringUtils.isBlank(id)) {
-            throw new IllegalArgumentException("Id is null");
+  @Override
+  public Document update(String id) {
+    return create(id);
+  }
+
+  private String[] computePermissions(PageAttachmentEntity attachment) {
+    List<String> permissions = new ArrayList<>();
+    permissions.add(attachment.getCreator());
+    //Add permissions from the wiki page
+    List<PermissionEntity> pagePermission = attachment.getPage().getPermissions();
+    if (pagePermission != null) {
+      for(PermissionEntity permission : pagePermission) {
+        if (permission.getPermissionType().equals(PermissionType.VIEWPAGE)
+            || permission.getPermissionType().equals(PermissionType.VIEW_ATTACHMENT)) {
+          permissions.add(permission.getIdentity());
         }
-        //Get the wiki object from BD
-        AttachmentEntity attachment = dao.find(Long.parseLong(id));
-        if (attachment==null) {
-            LOGGER.info("The attachment entity with id {} doesn't exist.", id);
-            return null;
-        }
-        Map<String,String> fields = new HashMap<>();
-        Document doc = new Document(TYPE, id, getUrl(attachment
-        ), attachment.getUpdatedDate(), computePermissions(attachment), fields);
-        doc.addField("title", attachment.getTitle());
-        doc.addField("file", attachment.getContent());
-        return doc;
+      }
     }
+    String[] result = new String[permissions.size()];
+    return permissions.toArray(result);
+  }
 
-    @Override
-    public Document update(String id) {
-        return create(id);
-    }
+  private String getUrl(PageAttachmentEntity attachment) {
+    return attachment.getPage().getUrl();
+  }
 
-    private String[] computePermissions(AttachmentEntity attachment) {
-        List<String> permissions = new ArrayList<>();
-        permissions.add(attachment.getCreator());
-        //TODO get premission from Page
-        String[] result = new String[permissions.size()];
-        return permissions.toArray(result);
-    }
-
-    @Override
-    public String getMapping() {
-        return "{\"properties\" : {\n" +
-                "      \"file\" : {\n" +
-                "        \"type\" : \"attachment\",\n" +
-                "        \"fields\" : {\n" +
-                "          \"file\" : { \"term_vector\":\"with_positions_offsets\", \"store\":true }\n" +
-                "        }\n" +
-                "      },\n" +
-                "      \"permissions\" : {\"type\" : \"string\", \"index\" : \"not_analyzed\" },\n" +
-                "      \"url\" : {\"type\" : \"string\", \"index\" : \"not_analyzed\" }\n" +
-                "    }" +
-                "}";
-    }
+  @Override
+  public String getMapping() {
+    return "{\"properties\" : {\n" +
+        "      \"file\" : {\n" +
+        "        \"type\" : \"attachment\",\n" +
+        "        \"fields\" : {\n" +
+        "          \"file\" : { \"term_vector\":\"with_positions_offsets\", \"store\":true }\n" +
+        "        }\n" +
+        "      },\n" +
+        "      \"permissions\" : {\"type\" : \"string\", \"index\" : \"not_analyzed\" },\n" +
+        "      \"url\" : {\"type\" : \"string\", \"index\" : \"not_analyzed\" }\n" +
+        "    }" +
+        "}";
+  }
 
   @Override
   public List<String> getAllIds(int offset, int limit) {
 
     List<String> result;
 
-    List<Long> ids = this.dao.findAllIds(offset, limit);
+    List<Long> ids = this.attachmentDAO.findAllIds(offset, limit);
     if (ids==null) {
       result = new ArrayList<>(0);
     } else {
@@ -113,8 +128,4 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
     return result;
   }
 
-    private String getUrl(AttachmentEntity attachment) {
-        //TODO
-        return null;
-    }
 }

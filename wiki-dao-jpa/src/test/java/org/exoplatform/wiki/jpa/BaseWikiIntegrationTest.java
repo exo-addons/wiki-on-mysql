@@ -154,12 +154,17 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
   protected PageAttachmentEntity indexAttachment(String title, String filePath, String downloadedUrl, String owner) throws NoSuchFieldException,
                                                                                      IllegalAccessException,
                                                                                      IOException {
+    PageEntity page = new PageEntity();
+    page.setCreatedDate(new Date());
+    page.setUpdatedDate(new Date());
+    pageDAO.create(page);
     PageAttachmentEntity attachment = new PageAttachmentEntity();
     attachment.setTitle(title);
     attachment.setContent(Files.readAllBytes(Paths.get(filePath)));
     attachment.setCreatedDate(new Date());
     attachment.setUpdatedDate(new Date());
     attachment.setCreator(owner);
+    attachment.setPage(page);
     attachment = pageAttachmentDAO.create(attachment);
     assertNotEquals(attachment.getId(), 0);
     indexingService.index(AttachmentIndexingServiceConnector.TYPE, Long.toString(attachment.getId()));
