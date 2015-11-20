@@ -16,6 +16,12 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
+import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
+import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
+import org.exoplatform.wiki.jpa.entity.PageAttachmentEntity;
+import org.exoplatform.wiki.jpa.entity.PermissionEntity;
+import org.exoplatform.wiki.mow.api.PermissionType;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -26,47 +32,42 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
-import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
-import org.exoplatform.wiki.jpa.entity.PermissionEntity;
-import org.exoplatform.wiki.mow.api.PermissionType;
-
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  *          exo@exoplatform.com
  * Jun 25, 2015  
  */
-public class AttachmentDAOTest extends BaseWikiJPAIntegrationTest {
+public class PageAttachmentDAOTest extends BaseWikiJPAIntegrationTest {
 
   public void testInsertDelete() throws IOException, URISyntaxException {
     //Given
     URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
-    AttachmentEntity att = new AttachmentEntity();
+    PageAttachmentEntity att = new PageAttachmentEntity();
     att.setContent(Files.readAllBytes(Paths.get(fileResource.toURI())));
     att.setCreatedDate(new Date());
     att.setUpdatedDate(new Date());
     //When
-    attachmentDAO.create(att);
+    pageAttachmentDAO.create(att);
     Long id = att.getId();
     //Then
-    AttachmentEntity got = attachmentDAO.find(id);
+    AttachmentEntity got = pageAttachmentDAO.find(id);
     assertNotNull(got.getContent());
     assertEquals(new File(fileResource.toURI()).length(), got.getWeightInBytes());
     //Delete
-    attachmentDAO.delete(att);
-    assertNull(attachmentDAO.find(id));
+    pageAttachmentDAO.delete(att);
+    assertNull(pageAttachmentDAO.find(id));
   }
 
   public void testUpdate() throws IOException, URISyntaxException {
     //Given
     URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
-    AttachmentEntity att = new AttachmentEntity();
+    PageAttachmentEntity att = new PageAttachmentEntity();
     att.setContent(Files.readAllBytes(Paths.get(fileResource.toURI())));
     att.setCreatedDate(new Date());
     att.setUpdatedDate(new Date());
     //When
-    attachmentDAO.create(att);
+    pageAttachmentDAO.create(att);
     Long id = att.getId();
     PermissionEntity per = new PermissionEntity();
     per.setIdentity("user");
@@ -74,18 +75,15 @@ public class AttachmentDAOTest extends BaseWikiJPAIntegrationTest {
     per.setPermissionType(PermissionType.ADMINPAGE);
     List<PermissionEntity> permissions = new ArrayList<>();
     permissions.add(per);
-    att.setPermissions(permissions);
     att.setCreator("creator");
     att.setTitle("title");
     Date date = new Date();
     att.setUpdatedDate(date);
     //Then
-    attachmentDAO.update(att);
-    AttachmentEntity got = attachmentDAO.find(id);
+    pageAttachmentDAO.update(att);
+    AttachmentEntity got = pageAttachmentDAO.find(id);
     assertEquals("title", got.getTitle());
     assertEquals("creator", got.getCreator());
     assertEquals(date, got.getUpdatedDate());
-    PermissionEntity got_per = got.getPermissions().get(0);
-    assertEquals("user", got_per.getIdentity());
   }
 }

@@ -20,10 +20,12 @@
 package org.exoplatform.wiki.jpa.entity;
 
 import org.exoplatform.commons.api.persistence.ExoEntity;
-import org.exoplatform.wiki.mow.api.PageVersion;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by The eXo Platform SAS
@@ -57,12 +59,8 @@ public class PageEntity extends BasePageEntity {
   @OneToMany(mappedBy = "page", cascade = CascadeType.ALL)
   private List<PageVersionEntity> versions;
 
-  @OneToMany(cascade = CascadeType.ALL)
-  @JoinTable(name = "WIKI_PAGES_ATTACHMENTS",
-          joinColumns = {@JoinColumn(name = "PAGE_ID")},
-          inverseJoinColumns = {@JoinColumn(name = "ATTACHMENT_ID")}
-  )
-  private List<AttachmentEntity> attachments;
+  @OneToMany(cascade = CascadeType.ALL, mappedBy = "page")
+  private List<PageAttachmentEntity> attachments;
 
   @ManyToMany(cascade = CascadeType.PERSIST)
   @JoinTable(name = "WIKI_PAGES_RELATED_PAGES",
@@ -183,11 +181,11 @@ public class PageEntity extends BasePageEntity {
     this.versions = versions;
   }
 
-  public List<AttachmentEntity> getAttachments() {
+  public List<PageAttachmentEntity> getAttachments() {
     return attachments;
   }
 
-  public void setAttachments(List<AttachmentEntity> attachments) {
+  public void setAttachments(List<PageAttachmentEntity> attachments) {
     this.attachments = attachments;
   }
 

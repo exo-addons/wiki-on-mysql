@@ -35,10 +35,7 @@ import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
-import org.exoplatform.wiki.jpa.entity.PageEntity;
-import org.exoplatform.wiki.jpa.entity.PermissionEntity;
-import org.exoplatform.wiki.jpa.entity.WikiEntity;
+import org.exoplatform.wiki.jpa.entity.*;
 import org.exoplatform.wiki.jpa.search.AttachmentIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.WikiIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.WikiPageIndexingServiceConnector;
@@ -154,18 +151,16 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
     return page;
   }
 
-  protected AttachmentEntity indexAttachment(String title, String filePath, String downloadedUrl, String owner,
-                                 List<PermissionEntity> permissions) throws NoSuchFieldException,
+  protected PageAttachmentEntity indexAttachment(String title, String filePath, String downloadedUrl, String owner) throws NoSuchFieldException,
                                                                                      IllegalAccessException,
                                                                                      IOException {
-    AttachmentEntity attachment = new AttachmentEntity();
+    PageAttachmentEntity attachment = new PageAttachmentEntity();
     attachment.setTitle(title);
     attachment.setContent(Files.readAllBytes(Paths.get(filePath)));
     attachment.setCreatedDate(new Date());
     attachment.setUpdatedDate(new Date());
     attachment.setCreator(owner);
-    attachment.setPermissions(permissions);
-    attachment = attachmentDAO.create(attachment);
+    attachment = pageAttachmentDAO.create(attachment);
     assertNotEquals(attachment.getId(), 0);
     indexingService.index(AttachmentIndexingServiceConnector.TYPE, Long.toString(attachment.getId()));
     indexingOperationProcessor.process();

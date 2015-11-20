@@ -34,7 +34,10 @@
     <type>org.exoplatform.wiki.jpa.dao.PageDAO</type>
   </component>
   <component>
-    <type>org.exoplatform.wiki.jpa.dao.AttachmentDAO</type>
+    <type>org.exoplatform.wiki.jpa.dao.PageAttachmentDAO</type>
+  </component>
+  <component>
+    <type>org.exoplatform.wiki.jpa.dao.DraftPageAttachmentDAO</type>
   </component>
   <component>
     <type>org.exoplatform.wiki.jpa.dao.DraftPageDAO</type>

@@ -52,12 +52,8 @@ public class DraftPageEntity extends BasePageEntity {
   @Column(name = "NEW_PAGE")
   private boolean newPage;
 
-  @OneToMany(cascade = CascadeType.ALL)
-  @JoinTable(name = "WIKI_DRAFT_PAGES_ATTACHMENTS",
-          joinColumns = {@JoinColumn(name = "DRAFT_PAGE_ID")},
-          inverseJoinColumns = {@JoinColumn(name = "ATTACHMENT_ID")}
-  )
-  private List<AttachmentEntity> attachments;
+  @OneToMany(cascade = CascadeType.ALL, mappedBy = "draftPage")
+  private List<DraftPageAttachmentEntity> attachments;
 
   public PageEntity getTargetPage() {
     return targetPage;
@@ -87,11 +83,11 @@ public class DraftPageEntity extends BasePageEntity {
     return id;
   }
 
-  public List<AttachmentEntity> getAttachments() {
+  public List<DraftPageAttachmentEntity> getAttachments() {
     return attachments;
   }
 
-  public void setAttachments(List<AttachmentEntity> attachments) {
+  public void setAttachments(List<DraftPageAttachmentEntity> attachments) {
     this.attachments = attachments;
   }
 }

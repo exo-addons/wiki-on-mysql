@@ -16,39 +16,22 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
-import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
+import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
+import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
 import org.exoplatform.wiki.jpa.entity.PageAttachmentEntity;
 
-import java.util.Date;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  *          exo@exoplatform.com
- * Jun 26, 2015  
+ * Jun 24, 2015  
  */
-public class WikiBaseDAOTest extends BaseWikiJPAIntegrationTest {
+public class PageAttachmentDAO extends GenericDAOJPAImpl<PageAttachmentEntity,Long> {
 
-  public void testRollBackTransaction(){
-    //Given
-    //When
-    PageAttachmentEntity attachment = new PageAttachmentEntity();
-    attachment.setCreatedDate(new Date());
-    attachment.setUpdatedDate(new Date());
-    PageAttachmentEntity att = pageAttachmentDAO.create(attachment);
-    //Then
-    assertNotNull(pageAttachmentDAO.find(att.getId()));
+  public List<Long> findAllIds(int offset, int limit) {
+    return getEntityManager().createNamedQuery("pageAttachment.getAllIds").setFirstResult(offset).setMaxResults(limit).getResultList();
   }
 
-  public void testCommit(){
-    //Given
-    long count = pageAttachmentDAO.count();
-    //When
-    PageAttachmentEntity attachment = new PageAttachmentEntity();
-    attachment.setCreatedDate(new Date());
-    attachment.setUpdatedDate(new Date());
-    PageAttachmentEntity att = pageAttachmentDAO.create(attachment);
-    //Then
-    assertEquals(new Long(count + 1), pageAttachmentDAO.count());
-  }
 }

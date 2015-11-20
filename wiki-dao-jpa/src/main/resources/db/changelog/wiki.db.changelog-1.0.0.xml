@@ -65,9 +65,12 @@
   </changeSet>
 
   <changeSet author="wiki" id="1.0.0-3">
-    <createTable tableName="WIKI_ATTACHMENTS">
+    <createTable tableName="WIKI_PAGE_ATTACHMENTS">
       <column name="ATTACHMENT_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
         <constraints nullable="false" primaryKey="true" primaryKeyName="PK_WIKI_ATTACHMENTS_ATTACHMENT_ID"/>
+      </column>
+      <column name="WIKI_PAGE_ID" type="BIGINT">
+        <constraints foreignKeyName="FK_WIKI_ATTACHMENTS_WIKI_PAGES_01" references="WIKI_PAGES(PAGE_ID)" />
       </column>
       <column name="NAME" type="VARCHAR(100)"/>
       <column name="CREATOR" type="VARCHAR(36)">
@@ -83,16 +86,6 @@
       <column name="FULL_TITLE" type="VARCHAR(250)"/>
       <column name="CONTENT" type="LONGBLOB"/>
       <column name="MIMETYPE" type="VARCHAR(50)"/>
-    </createTable>
-    <modifySql dbms="mysql">
-      <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
-    </modifySql>
-  </changeSet>
-
-  <changeSet author="wiki" id="1.0.0-4">
-    <createTable tableName="WIKI_PAGES_ATTACHMENTS">
-      <column name="PAGE_ID" type="BIGINT"/>
-      <column name="ATTACHMENT_ID" type="BIGINT"/>
     </createTable>
     <modifySql dbms="mysql">
       <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
@@ -214,21 +207,27 @@
   </changeSet>
 
   <changeSet author="wiki" id="1.0.0-11">
-    <createTable tableName="WIKI_DRAFT_PAGES_ATTACHMENTS">
-      <column name="DRAFT_PAGE_ID" type="BIGINT"/>
-      <column name="ATTACHMENT_ID" type="BIGINT"/>
-    </createTable>
-    <modifySql dbms="mysql">
-      <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
-    </modifySql>
-  </changeSet>
-
-  <changeSet author="wiki" id="1.0.0-12">
-    <createTable tableName="WIKI_ATTACHMENT_PERMISSIONS">
-      <column name="ATTACHMENT_ID" type="BIGINT"/>
-      <column name="IDENTITY" type="VARCHAR(36)"/>
-      <column name="IDENTITY_TYPE" type="VARCHAR(50)"/>
-      <column name="PERMISSION" type="VARCHAR(15)"/>
+    <createTable tableName="WIKI_DRAFT_ATTACHMENTS">
+      <column name="ATTACHMENT_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="PK_WIKI_DRAFT_ATTACHMENTS_ATTACHMENT_ID"/>
+      </column>
+      <column name="DRAFT_PAGE_ID" type="BIGINT">
+        <constraints foreignKeyName="FK_WIKI_DRAFT_ATTACHMENTS_WIKI_PAGES_01" references="WIKI_DRAFT_PAGES(DRAFT_PAGE_ID)" />
+      </column>
+      <column name="NAME" type="VARCHAR(100)"/>
+      <column name="CREATOR" type="VARCHAR(36)">
+        <constraints nullable="true"/>
+      </column>
+      <column name="CREATED_DATE" type="TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+      <column name="UPDATED_DATE" type="TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+      <column name="TITLE" type="VARCHAR(250)"/>
+      <column name="FULL_TITLE" type="VARCHAR(250)"/>
+      <column name="CONTENT" type="LONGBLOB"/>
+      <column name="MIMETYPE" type="VARCHAR(50)"/>
     </createTable>
     <modifySql dbms="mysql">
       <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
@@ -330,14 +329,6 @@
                              referencedColumnNames="PAGE_ID" referencedTableName="WIKI_PAGES"/>
   </changeSet>
 
-  <changeSet author="wiki" id="1.0.0-24">
-    <addForeignKeyConstraint baseColumnNames="ATTACHMENT_ID" baseTableName="WIKI_ATTACHMENT_PERMISSIONS"
-                             constraintName="FK_WIKI_ATTACHMENTS_PERMISSIONS_WIKI_ATTACHMENTS_01" deferrable="false"
-                             initiallyDeferred="false"
-                             onDelete="NO ACTION" onUpdate="NO ACTION"
-                             referencedColumnNames="ATTACHMENT_ID" referencedTableName="WIKI_ATTACHMENTS"/>
-  </changeSet>
-
   <changeSet author="wiki" id="1.0.0-25">
     <addForeignKeyConstraint baseColumnNames="WIKI_ID" baseTableName="WIKI_WIKI_PERMISSIONS"
                              constraintName="FK_WIKI_WIKIS_PERMISSIONS_WIKI_WIKIS_01" deferrable="false"
@@ -378,44 +369,6 @@
   <changeSet author="wiki" id="1.0.0-30">
     <addPrimaryKey columnNames="PAGE_ID, RELATED_PAGE_ID" tableName="WIKI_PAGES_RELATED_PAGES"
                    constraintName="PK_WIKI_PAGES_RELATED_PAGES"/>
-  </changeSet>
-
-  <changeSet author="wiki" id="1.0.0-31">
-    <addPrimaryKey columnNames="ATTACHMENT_ID, IDENTITY, IDENTITY_TYPE, PERMISSION"
-                   tableName="WIKI_ATTACHMENT_PERMISSIONS"
-                   constraintName="UK_WIKI_ATTACHMENT_PERMISSIONS_01"/>
-  </changeSet>
-
-  <changeSet author="wiki" id="1.0.0-32">
-    <addForeignKeyConstraint baseColumnNames="PAGE_ID" baseTableName="WIKI_PAGES_ATTACHMENTS"
-                             constraintName="FK_WIKI_PAGES_ATTACHMENTS_WIKI_PAGES_01" deferrable="false"
-                             initiallyDeferred="false"
-                             onDelete="NO ACTION" onUpdate="NO ACTION"
-                             referencedColumnNames="PAGE_ID" referencedTableName="WIKI_PAGES"/>
-  </changeSet>
-
-  <changeSet author="wiki" id="1.0.0-33">
-    <addForeignKeyConstraint baseColumnNames="ATTACHMENT_ID" baseTableName="WIKI_PAGES_ATTACHMENTS"
-                             constraintName="FK_WIKI_PAGES_ATTACHMENTS_WIKI_ATTACHMENTS_01" deferrable="false"
-                             initiallyDeferred="false"
-                             onDelete="NO ACTION" onUpdate="NO ACTION"
-                             referencedColumnNames="ATTACHMENT_ID" referencedTableName="WIKI_ATTACHMENTS"/>
-  </changeSet>
-
-  <changeSet author="wiki" id="1.0.0-34">
-    <addForeignKeyConstraint baseColumnNames="DRAFT_PAGE_ID" baseTableName="WIKI_DRAFT_PAGES_ATTACHMENTS"
-                             constraintName="FK_WIKI_DRAFT_PAGES_ATTACHMENTS_WIKI_PAGES_01" deferrable="false"
-                             initiallyDeferred="false"
-                             onDelete="NO ACTION" onUpdate="NO ACTION"
-                             referencedColumnNames="DRAFT_PAGE_ID" referencedTableName="WIKI_DRAFT_PAGES"/>
-  </changeSet>
-
-  <changeSet author="wiki" id="1.0.0-35">
-    <addForeignKeyConstraint baseColumnNames="ATTACHMENT_ID" baseTableName="WIKI_DRAFT_PAGES_ATTACHMENTS"
-                             constraintName="FK_WIKI_DRAFT_PAGES_ATTACHMENTS_WIKI_ATTACHMENTS_01" deferrable="false"
-                             initiallyDeferred="false"
-                             onDelete="NO ACTION" onUpdate="NO ACTION"
-                             referencedColumnNames="ATTACHMENT_ID" referencedTableName="WIKI_ATTACHMENTS"/>
   </changeSet>
 
 </databaseChangeLog>

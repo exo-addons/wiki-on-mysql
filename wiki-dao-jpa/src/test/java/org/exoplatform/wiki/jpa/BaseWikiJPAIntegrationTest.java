@@ -19,17 +19,6 @@
 
 package org.exoplatform.wiki.jpa;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-
-import liquibase.Liquibase;
-import liquibase.database.Database;
-import liquibase.database.DatabaseFactory;
-import liquibase.database.jvm.JdbcConnection;
-import liquibase.exception.LiquibaseException;
-import liquibase.resource.ClassLoaderResourceAccessor;
-
 import org.exoplatform.commons.api.persistence.DataInitializer;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.wiki.jpa.dao.*;
@@ -41,7 +30,8 @@ import org.exoplatform.wiki.jpa.dao.*;
 public abstract class BaseWikiJPAIntegrationTest extends BaseTest {
   protected WikiDAO        wikiDAO;
   protected PageDAO        pageDAO;
-  protected AttachmentDAO  attachmentDAO;
+  protected PageAttachmentDAO  pageAttachmentDAO;
+  protected DraftPageAttachmentDAO  draftPageAttachmentDAO;
   protected DraftPageDAO   draftPageDAO;
   protected PageVersionDAO pageVersionDAO;
   protected PageMoveDAO    pageMoveDAO;
@@ -58,7 +48,8 @@ public abstract class BaseWikiJPAIntegrationTest extends BaseTest {
     // Init DAO
     wikiDAO = PortalContainer.getInstance().getComponentInstanceOfType(WikiDAO.class);
     pageDAO = PortalContainer.getInstance().getComponentInstanceOfType(PageDAO.class);
-    attachmentDAO = PortalContainer.getInstance().getComponentInstanceOfType(AttachmentDAO.class);
+    pageAttachmentDAO = PortalContainer.getInstance().getComponentInstanceOfType(PageAttachmentDAO.class);
+    draftPageAttachmentDAO = PortalContainer.getInstance().getComponentInstanceOfType(DraftPageAttachmentDAO.class);
     draftPageDAO = PortalContainer.getInstance().getComponentInstanceOfType(DraftPageDAO.class);
     pageVersionDAO = PortalContainer.getInstance().getComponentInstanceOfType(PageVersionDAO.class);
     pageMoveDAO = PortalContainer.getInstance().getComponentInstanceOfType(PageMoveDAO.class);
@@ -80,7 +71,8 @@ public abstract class BaseWikiJPAIntegrationTest extends BaseTest {
     pageMoveDAO.deleteAll();
     pageVersionDAO.deleteAll();
     draftPageDAO.deleteAll();
-    attachmentDAO.deleteAll();
+    pageAttachmentDAO.deleteAll();
+    draftPageAttachmentDAO.deleteAll();
     pageDAO.deleteAll();
     wikiDAO.deleteAll();
   }

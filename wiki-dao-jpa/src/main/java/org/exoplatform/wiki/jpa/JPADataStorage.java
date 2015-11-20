@@ -61,7 +61,8 @@ public class JPADataStorage implements DataStorage {
 
   private WikiDAO        wikiDAO;
   private PageDAO        pageDAO;
-  private AttachmentDAO  attachmentDAO;
+  private PageAttachmentDAO  pageAttachmentDAO;
+  private DraftPageAttachmentDAO draftPageAttachmentDAO;
   private DraftPageDAO   draftPageDAO;
   private PageVersionDAO pageVersionDAO;
   private PageMoveDAO    pageMoveDAO;
@@ -73,7 +74,8 @@ public class JPADataStorage implements DataStorage {
    */
   public JPADataStorage(WikiDAO wikiDAO,
                         PageDAO pageDAO,
-                        AttachmentDAO attachmentDAO,
+                        PageAttachmentDAO pageAttachmentDAO,
+                        DraftPageAttachmentDAO draftPageAttachmentDAO,
                         DraftPageDAO draftPageDAO,
                         PageVersionDAO pageVersionDAO,
                         PageMoveDAO pageMoveDAO,
@@ -82,7 +84,8 @@ public class JPADataStorage implements DataStorage {
                         DataInitializer dataInitializer) {
     this.wikiDAO = wikiDAO;
     this.pageDAO = pageDAO;
-    this.attachmentDAO = attachmentDAO;
+    this.pageAttachmentDAO = pageAttachmentDAO;
+    this.draftPageAttachmentDAO = draftPageAttachmentDAO;
     this.draftPageDAO = draftPageDAO;
     this.pageVersionDAO = pageVersionDAO;
     this.pageMoveDAO = pageMoveDAO;
@@ -722,7 +725,9 @@ public class JPADataStorage implements DataStorage {
         throw new WikiException("Cannot get attachments of draft page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
             + page.getName() + " because draft page does not exist.");
       }
-      attachmentsEntities = draftPageEntity.getAttachments();
+      attachmentsEntities = new ArrayList<>();
+      List<DraftPageAttachmentEntity> draftPageAttachmentEntities = draftPageEntity.getAttachments();
+      if (draftPageAttachmentEntities != null) attachmentsEntities.addAll(draftPageAttachmentEntities);
       if(draftPageEntity.isNewPage()) {
         wikiType = WIKI_TYPE_DRAFT;
         wikiOwner = draftPageEntity.getAuthor();
@@ -740,7 +745,9 @@ public class JPADataStorage implements DataStorage {
         throw new WikiException("Cannot get attachments of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
             + page.getName() + " because page does not exist.");
       }
-      attachmentsEntities = pageEntity.getAttachments();
+      attachmentsEntities = new ArrayList<>();
+      List<PageAttachmentEntity> pageAttachmentEntities = pageEntity.getAttachments();
+      if (pageAttachmentEntities != null) attachmentsEntities.addAll(pageAttachmentEntities);
       WikiEntity wikiEntity = pageEntity.getWiki();
       wikiType = wikiEntity.getType();
       wikiOwner = wikiEntity.getOwner();
@@ -770,16 +777,18 @@ public class JPADataStorage implements DataStorage {
   @Override
   @ExoTransactional
   public void addAttachmentToPage(Attachment attachment, Page page) throws WikiException {
-    AttachmentEntity attachmentEntity = convertAttachmentToAttachmentEntity(attachment);
-    Date now = GregorianCalendar.getInstance().getTime();
-    if (attachmentEntity.getCreatedDate() == null) {
-      attachmentEntity.setCreatedDate(now);
-    }
-    if (attachmentEntity.getUpdatedDate() == null) {
-      attachmentEntity.setUpdatedDate(now);
-    }
 
     if(page instanceof DraftPage) {
+
+      DraftPageAttachmentEntity attachmentEntity = convertAttachmentToDraftPageAttachmentEntity(attachment);
+      Date now = GregorianCalendar.getInstance().getTime();
+      if (attachmentEntity.getCreatedDate() == null) {
+        attachmentEntity.setCreatedDate(now);
+      }
+      if (attachmentEntity.getUpdatedDate() == null) {
+        attachmentEntity.setUpdatedDate(now);
+      }
+
       DraftPageEntity draftPageEntity = draftPageDAO.findLatestDraftPageByUserAndName(Utils.getCurrentUser(), page.getName());
 
       if (draftPageEntity == null) {
@@ -788,17 +797,28 @@ public class JPADataStorage implements DataStorage {
       }
 
       // attachment must be saved here because of Hibernate bug HHH-6776
-      attachmentDAO.create(attachmentEntity);
+      //attachmentDAO.create(attachmentEntity);
 
-      List<AttachmentEntity> attachmentsEntities = draftPageEntity.getAttachments();
+      List<DraftPageAttachmentEntity> attachmentsEntities = draftPageEntity.getAttachments();
       if (attachmentsEntities == null) {
         attachmentsEntities = new ArrayList<>();
       }
-
-      attachmentsEntities.add(attachmentEntity);
+      DraftPageAttachmentEntity draftPageAttachmentEntity = (DraftPageAttachmentEntity) attachmentEntity;
+      draftPageAttachmentEntity.setDraftPage(draftPageEntity);
+      attachmentsEntities.add(draftPageAttachmentEntity);
       draftPageEntity.setAttachments(attachmentsEntities);
       draftPageDAO.update(draftPageEntity);
     } else {
+
+      PageAttachmentEntity attachmentEntity = convertAttachmentToPageAttachmentEntity(attachment);
+      Date now = GregorianCalendar.getInstance().getTime();
+      if (attachmentEntity.getCreatedDate() == null) {
+        attachmentEntity.setCreatedDate(now);
+      }
+      if (attachmentEntity.getUpdatedDate() == null) {
+        attachmentEntity.setUpdatedDate(now);
+      }
+
       PageEntity pageEntity = fetchPageEntity(page);
 
       if (pageEntity == null) {
@@ -807,14 +827,16 @@ public class JPADataStorage implements DataStorage {
       }
 
       // attachment must be saved here because of Hibernate bug HHH-6776
-      attachmentDAO.create(attachmentEntity);
+      //attachmentDAO.create(attachmentEntity);
 
-      List<AttachmentEntity> attachmentsEntities = pageEntity.getAttachments();
+      List<PageAttachmentEntity> attachmentsEntities = pageEntity.getAttachments();
       if (attachmentsEntities == null) {
         attachmentsEntities = new ArrayList<>();
       }
 
-      attachmentsEntities.add(attachmentEntity);
+      PageAttachmentEntity pageAttachmentEntity = (PageAttachmentEntity) attachmentEntity;
+      pageAttachmentEntity.setPage(pageEntity);
+      attachmentsEntities.add(pageAttachmentEntity);
       pageEntity.setAttachments(attachmentsEntities);
       pageDAO.update(pageEntity);
     }
@@ -831,14 +853,19 @@ public class JPADataStorage implements DataStorage {
     }
 
     boolean attachmentFound = false;
-    List<AttachmentEntity> attachmentsEntities = pageEntity.getAttachments();
+    List<PageAttachmentEntity> attachmentsEntities = pageEntity.getAttachments();
     if (attachmentsEntities != null) {
       for (int i = 0; i < attachmentsEntities.size(); i++) {
         AttachmentEntity attachmentEntity = attachmentsEntities.get(i);
         if (attachmentEntity.getName() != null && attachmentEntity.getName().equals(attachmentName)) {
           attachmentFound = true;
           attachmentsEntities.remove(i);
-          attachmentDAO.delete(attachmentEntity);
+          if (page instanceof DraftPage) {
+            draftPageAttachmentDAO.delete((DraftPageAttachmentEntity) attachmentEntity);
+          }
+          else {
+            pageAttachmentDAO.delete((PageAttachmentEntity) attachmentEntity);
+          }
           pageEntity.setAttachments(attachmentsEntities);
           pageDAO.update(pageEntity);
           break;

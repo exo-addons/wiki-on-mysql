@@ -23,8 +23,10 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.jpa.JPADataStorage;
 import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
+import org.exoplatform.wiki.jpa.entity.PageAttachmentEntity;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.mow.api.Attachment;
+import org.exoplatform.wiki.mow.api.DraftPage;
 import org.exoplatform.wiki.mow.api.Page;
 import org.exoplatform.wiki.service.listener.AttachmentWikiListener;
 
@@ -52,7 +54,7 @@ public class AttachmentIndexingListener extends AttachmentWikiListener {
     if (attachmentId != null) {
       IndexingService indexingService = CommonsUtils.getService(IndexingService.class);
       indexingService.index(AttachmentIndexingServiceConnector.TYPE, attachmentId);
-      LOG.debug("Index attachment {} with name {} to ES",attachmentId,attachment.getName());
+      LOG.debug("Index attachment {} with name {} to ES", attachmentId, attachment.getName());
     }
   }
 
@@ -62,17 +64,19 @@ public class AttachmentIndexingListener extends AttachmentWikiListener {
     if (attachmentId != null) {
       IndexingService indexingService = CommonsUtils.getService(IndexingService.class);
       indexingService.unindex(AttachmentIndexingServiceConnector.TYPE, attachmentId);
-      LOG.debug("Unindex attachment {} with name {} from ES",attachmentId,attachmentName);
+      LOG.debug("Unindex attachment {} with name {} from ES", attachmentId, attachmentName);
     }
   }
 
   private String getAttachmentId(String attachmentName, Page page) throws WikiException {
 
+    if (page instanceof DraftPage) return null;
+
     PageEntity pageEntity = jpaDataStorage.fetchPageEntity(page);
 
     if (pageEntity != null) {
 
-      List<AttachmentEntity> attachmentsEntities = pageEntity.getAttachments();
+      List<PageAttachmentEntity> attachmentsEntities = pageEntity.getAttachments();
       if (attachmentsEntities != null) {
         for (int i = 0; i < attachmentsEntities.size(); i++) {
           AttachmentEntity attachmentEntity = attachmentsEntities.get(i);

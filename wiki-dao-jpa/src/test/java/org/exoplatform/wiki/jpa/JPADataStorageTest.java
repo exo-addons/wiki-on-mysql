@@ -478,7 +478,7 @@ public class JPADataStorageTest extends BaseWikiIntegrationTest {
     List<Attachment> attachmentsOfPage2 = storage.getAttachmentsOfPage(page2);
 
     // Then
-    assertEquals(2, attachmentDAO.findAll().size());
+    assertEquals(2, pageAttachmentDAO.findAll().size());
     assertNotNull(attachmentsOfPage1);
     assertEquals(2, attachmentsOfPage1.size());
     assertNotNull(attachmentsOfPage2);

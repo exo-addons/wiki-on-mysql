@@ -14,23 +14,35 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.wiki.jpa.dao;
+package org.exoplatform.wiki.jpa.entity;
 
-import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
-import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
+import org.exoplatform.commons.api.persistence.ExoEntity;
 
-import java.util.List;
+import javax.persistence.*;
 
 /**
  * Created by The eXo Platform SAS
  * Author : eXoPlatform
  *          exo@exoplatform.com
- * Jun 24, 2015  
+ * Jun 23, 2015
  */
-public class AttachmentDAO extends GenericDAOJPAImpl<AttachmentEntity,Long> {
+@Entity
+@ExoEntity
+@Table(name = "WIKI_DRAFT_ATTACHMENTS")
+@NamedQueries({
+    @NamedQuery(name = "draftAttachment.getAllIds", query = "SELECT a.id FROM DraftPageAttachmentEntity a ORDER BY a.id")
+})
+public class DraftPageAttachmentEntity extends AttachmentEntity {
 
-  public List<Long> findAllIds(int offset, int limit) {
-    return getEntityManager().createNamedQuery("attachment.getAllIds").setFirstResult(offset).setMaxResults(limit).getResultList();
+  @ManyToOne(fetch=FetchType.LAZY)
+  @JoinColumn(name="DRAFT_PAGE_ID")
+  private DraftPageEntity draftPage;
+
+  public DraftPageEntity getDraftPage() {
+    return draftPage;
   }
 
+  public void setDraftPage(DraftPageEntity draftPage) {
+    this.draftPage = draftPage;
+  }
 }

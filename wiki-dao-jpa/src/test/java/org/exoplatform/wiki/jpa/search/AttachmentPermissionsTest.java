@@ -21,12 +21,9 @@ package org.exoplatform.wiki.jpa.search;
 
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
 import org.exoplatform.wiki.jpa.SecurityUtils;
-import org.exoplatform.wiki.jpa.entity.PermissionEntity;
-import org.exoplatform.wiki.mow.api.PermissionType;
 import org.exoplatform.wiki.service.search.WikiSearchData;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
@@ -38,7 +35,7 @@ public class AttachmentPermissionsTest extends BaseWikiIntegrationTest {
     // Given
     SecurityUtils.setCurrentUser("BCH", "*:/admin");
     // When
-    indexAttachment("Scrum @eXo - Collector", fileResource.getPath(), "www.exo.com", "BCH", null);
+    indexAttachment("Scrum @eXo - Collector", fileResource.getPath(), "www.exo.com", "BCH");
     // Then
     assertEquals(1, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
   }
@@ -47,85 +44,9 @@ public class AttachmentPermissionsTest extends BaseWikiIntegrationTest {
     // Given
     SecurityUtils.setCurrentUser("BCH", "*:/admin");
     // When
-    indexAttachment("Scrum @eXo - Collector", fileResource.getPath(), "www.exo.com", "JOHN", null);
+    indexAttachment("Scrum @eXo - Collector", fileResource.getPath(), "www.exo.com", "JOHN");
     // Then
     assertEquals(0, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
   }
 
-  public void testSearchAttachment_byUserPermission_notFound() throws NoSuchFieldException, IllegalAccessException, IOException {
-    // Given
-    SecurityUtils.setCurrentUser("BCH", "*:/admin");
-    PermissionEntity permission1 = new PermissionEntity("JOHN", "User", PermissionType.VIEWPAGE);
-    PermissionEntity permission2 = new PermissionEntity("MARY", "User", PermissionType.VIEWPAGE);
-    // When
-    indexAttachment("Scrum @eXo - Collector",
-                    fileResource.getPath(),
-                    "www.exo.com",
-                    "JOHN",
-                    Arrays.asList(permission1, permission2));
-    // Then
-    assertEquals(0, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
-  }
-
-  public void testSearchAttachment_byUserPermission_found() throws NoSuchFieldException, IllegalAccessException, IOException {
-    // Given
-    SecurityUtils.setCurrentUser("BCH", "*:/admin");
-    PermissionEntity permission1 = new PermissionEntity("JOHN", "User", PermissionType.VIEWPAGE);
-    PermissionEntity permission2 = new PermissionEntity("BCH", "User", PermissionType.VIEWPAGE);
-    // When
-    indexAttachment("Scrum @eXo - Collector",
-                    fileResource.getPath(),
-                    "www.exo.com",
-                    "JOHN",
-                    Arrays.asList(permission1, permission2));
-    // Then
-    assertEquals(1, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
-  }
-
-  public void testSearchAttachment_byGroupPermission_found() throws NoSuchFieldException, IllegalAccessException, IOException {
-    // Given
-    SecurityUtils.setCurrentUser("BCH", "administrator:/admin");
-    PermissionEntity permission1 = new PermissionEntity("JOHN", "User", PermissionType.VIEWPAGE);
-    PermissionEntity permission2 = new PermissionEntity("administrator:/admin", "Group", PermissionType.VIEWPAGE);
-    // When
-    indexAttachment("Scrum @eXo - Collector",
-                    fileResource.getPath(),
-                    "www.exo.com",
-                    "JOHN",
-                    Arrays.asList(permission1, permission2));
-    // Then
-    assertEquals(1, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
-  }
-
-  public void testSearchAttachment_byWildcardGroupPermission_found() throws NoSuchFieldException,
-                                                                    IllegalAccessException,
-                                                                    IOException {
-    // Given
-    SecurityUtils.setCurrentUser("BCH", "administrator:/admin");
-    PermissionEntity permission1 = new PermissionEntity("JOHN", "User", PermissionType.VIEWPAGE);
-    PermissionEntity permission2 = new PermissionEntity("*:/admin", "Group", PermissionType.VIEWPAGE);
-    // When
-    indexAttachment("Scrum @eXo - Collector",
-                    fileResource.getPath(),
-                    "www.exo.com",
-                    "JOHN",
-                    Arrays.asList(permission1, permission2));
-    // Then
-    assertEquals(1, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
-  }
-
-  public void testSearchAttachment_byGroupPermission_notFound() throws NoSuchFieldException, IllegalAccessException, IOException {
-    // Given
-    SecurityUtils.setCurrentUser("BCH", "administrator:/admin");
-    PermissionEntity permission1 = new PermissionEntity("JOHN", "User", PermissionType.VIEWPAGE);
-    PermissionEntity permission2 = new PermissionEntity("indexer:/admin", "Group", PermissionType.VIEWPAGE);
-    // When
-    indexAttachment("Scrum @eXo - Collector",
-                    fileResource.getPath(),
-                    "www.exo.com",
-                    "JOHN",
-                    Arrays.asList(permission1, permission2));
-    // Then
-    assertEquals(0, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
-  }
 }

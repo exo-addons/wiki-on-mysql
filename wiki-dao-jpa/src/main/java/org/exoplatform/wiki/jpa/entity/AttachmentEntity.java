@@ -20,7 +20,6 @@ import org.exoplatform.commons.api.persistence.ExoEntity;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
@@ -28,13 +27,11 @@ import java.util.List;
  *          exo@exoplatform.com
  * Jun 23, 2015
  */
-@Entity
+@MappedSuperclass
 @ExoEntity
-@Table(name = "WIKI_ATTACHMENTS")
-@NamedQueries({
-    @NamedQuery(name = "attachment.getAllIds", query = "SELECT a.id FROM AttachmentEntity a ORDER BY a.id")
-})
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class AttachmentEntity {
+
   @Id
   @Column(name = "ATTACHMENT_ID")
   @GeneratedValue(strategy = GenerationType.AUTO)
@@ -66,13 +63,6 @@ public class AttachmentEntity {
 
   @Column(name = "MIMETYPE")
   private String mimeType;
-
-  @ElementCollection
-  @CollectionTable(
-    name = "WIKI_ATTACHMENT_PERMISSIONS",
-    joinColumns=@JoinColumn(name = "ATTACHMENT_ID")
-  )
-  private List<PermissionEntity> permissions;
 
   public long getId(){return this.id;}
 
@@ -148,10 +138,4 @@ public class AttachmentEntity {
     this.mimeType = mimeType;
   }
 
-  public List<PermissionEntity> getPermissions(){
-    return permissions;
-  }
-  public void setPermissions(List<PermissionEntity> permission){
-    this.permissions = permission;
-  }
 }

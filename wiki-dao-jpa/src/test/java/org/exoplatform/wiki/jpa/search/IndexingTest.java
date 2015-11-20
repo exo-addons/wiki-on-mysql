@@ -21,7 +21,7 @@ package org.exoplatform.wiki.jpa.search;
 
 import org.exoplatform.addons.es.index.impl.ElasticIndexingOperationProcessor;
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
-import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
+import org.exoplatform.wiki.jpa.entity.PageAttachmentEntity;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.jpa.entity.WikiEntity;
 import org.exoplatform.wiki.service.search.WikiSearchData;
@@ -127,19 +127,17 @@ public class IndexingTest extends BaseWikiIntegrationTest {
 
   public void testReindexingAttachmentAndSearch() throws NoSuchFieldException, IllegalAccessException, IOException {
     // Given
-    AttachmentEntity attachment1 = indexAttachment("Scrum @eXo - Collector",
+    PageAttachmentEntity attachment1 = indexAttachment("Scrum @eXo - Collector",
         fileResource.getPath(),
         "www.exo.com",
-        "BCH",
-        null);
-    attachmentDAO.create(attachment1);
-    AttachmentEntity attachment2 = indexAttachment("Scrum @eXo - Collector",
+        "BCH");
+    pageAttachmentDAO.create(attachment1);
+    PageAttachmentEntity attachment2 = indexAttachment("Scrum @eXo - Collector",
         fileResource.getPath(),
         "www.exo.com",
-        "BCH",
-        null);
-    attachmentDAO.create(attachment2);
-    assertEquals(2, attachmentDAO.findAll().size());
+        "BCH");
+    pageAttachmentDAO.create(attachment2);
+    assertEquals(2, pageAttachmentDAO.findAll().size());
     // When
     indexingService.reindexAll(AttachmentIndexingServiceConnector.TYPE);
     indexingOperationProcessor.process();

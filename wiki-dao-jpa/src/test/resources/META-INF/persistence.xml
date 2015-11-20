@@ -5,10 +5,12 @@
 
   <persistence-unit name="exo-pu" transaction-type="RESOURCE_LOCAL">
 
-    <class>org.exoplatform.wiki.jpa.entity.AttachmentEntity</class>
     <class>org.exoplatform.wiki.jpa.entity.BasePageEntity</class>
     <class>org.exoplatform.wiki.jpa.entity.DraftPageEntity</class>
     <class>org.exoplatform.wiki.jpa.entity.PageEntity</class>
+    <class>org.exoplatform.wiki.jpa.entity.AttachmentEntity</class>
+    <class>org.exoplatform.wiki.jpa.entity.PageAttachmentEntity</class>
+    <class>org.exoplatform.wiki.jpa.entity.DraftPageAttachmentEntity</class>
     <class>org.exoplatform.wiki.jpa.entity.PageVersionEntity</class>
     <class>org.exoplatform.wiki.jpa.entity.TemplateEntity</class>
     <class>org.exoplatform.wiki.jpa.entity.PermissionEntity</class>

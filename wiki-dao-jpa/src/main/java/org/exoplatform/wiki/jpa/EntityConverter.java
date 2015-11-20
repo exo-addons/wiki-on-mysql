@@ -210,10 +210,31 @@ public class EntityConverter {
     return attachment;
   }
 
-  public static AttachmentEntity convertAttachmentToAttachmentEntity(Attachment attachment) {
-    AttachmentEntity attachmentEntity = null;
+  public static PageAttachmentEntity convertAttachmentToPageAttachmentEntity(Attachment attachment) {
+    PageAttachmentEntity attachmentEntity = null;
     if (attachment != null) {
-      attachmentEntity = new AttachmentEntity();
+      attachmentEntity = new PageAttachmentEntity();
+      attachmentEntity.setName(attachment.getName());
+      attachmentEntity.setTitle(attachment.getTitle());
+      attachmentEntity.setFullTitle(attachment.getFullTitle());
+      attachmentEntity.setCreator(attachment.getCreator());
+      if (attachment.getCreatedDate() != null) {
+        attachmentEntity.setCreatedDate(attachment.getCreatedDate().getTime());
+      }
+      if (attachment.getUpdatedDate() != null) {
+        attachmentEntity.setUpdatedDate(attachment.getUpdatedDate().getTime());
+      }
+      attachmentEntity.setContent(attachment.getContent());
+      attachmentEntity.setMimeType(attachment.getMimeType());
+      // page.setPermissions(pageEntity.getPermissions());
+    }
+    return attachmentEntity;
+  }
+
+  public static DraftPageAttachmentEntity convertAttachmentToDraftPageAttachmentEntity(Attachment attachment) {
+    DraftPageAttachmentEntity attachmentEntity = null;
+    if (attachment != null) {
+      attachmentEntity = new DraftPageAttachmentEntity();
       attachmentEntity.setName(attachment.getName());
       attachmentEntity.setTitle(attachment.getTitle());
       attachmentEntity.setFullTitle(attachment.getFullTitle());

@@ -19,13 +19,12 @@
 
 package org.exoplatform.wiki.jpa.search;
 
-import java.io.IOException;
-import java.net.URL;
-
-import org.junit.Test;
-
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
 import org.exoplatform.wiki.service.search.WikiSearchData;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.net.URL;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
@@ -88,7 +87,7 @@ public class JPADataStorageSearchTest extends BaseWikiIntegrationTest {
         // Given
         URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
         // When
-        indexAttachment("Scrum @eXo - Collector", fileResource.getPath(), "www.exo.com", "BCH", null);
+        indexAttachment("Scrum @eXo - Collector", fileResource.getPath(), "www.exo.com", "BCH");
         // Then
         assertEquals(1, storage.search(new WikiSearchData("Collector", null, null, null)).getPageSize());
         assertEquals(1, storage.search(new WikiSearchData(null, "Collector", null, null)).getPageSize());
@@ -99,7 +98,7 @@ public class JPADataStorageSearchTest extends BaseWikiIntegrationTest {
         // Given
         URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
         // When
-        indexAttachment("Scrum @eXo - Collector", fileResource.getPath(), "www.exo.com", "BCH", null);
+        indexAttachment("Scrum @eXo - Collector", fileResource.getPath(), "www.exo.com", "BCH");
         // Then
         assertEquals(1, storage.search(new WikiSearchData("Agile", null, null, null)).getPageSize());
         assertEquals(1, storage.search(new WikiSearchData(null, "Agile", null, null)).getPageSize());

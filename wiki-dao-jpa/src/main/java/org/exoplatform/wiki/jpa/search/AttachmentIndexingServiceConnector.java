@@ -25,9 +25,8 @@ import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.wiki.jpa.dao.AttachmentDAO;
+import org.exoplatform.wiki.jpa.dao.PageAttachmentDAO;
 import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
-import org.exoplatform.wiki.jpa.entity.PermissionEntity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,9 +42,9 @@ import java.util.Map;
 public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceConnector {
     private static final Log LOGGER = ExoLogger.getExoLogger(AttachmentIndexingServiceConnector.class);
     public static final String TYPE = "wiki-attachment";
-    private final AttachmentDAO dao;
+    private final PageAttachmentDAO dao;
 
-    public AttachmentIndexingServiceConnector(InitParams initParams, AttachmentDAO dao) {
+    public AttachmentIndexingServiceConnector(InitParams initParams, PageAttachmentDAO dao) {
         super(initParams);
         this.dao = dao;
     }
@@ -77,12 +76,7 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
     private String[] computePermissions(AttachmentEntity attachment) {
         List<String> permissions = new ArrayList<>();
         permissions.add(attachment.getCreator());
-        //Add permissions
-        if (attachment.getPermissions()!=null) {
-            for (PermissionEntity permission : attachment.getPermissions()) {
-                permissions.add(permission.getIdentity());
-            }
-        }
+        //TODO get premission from Page
         String[] result = new String[permissions.size()];
         return permissions.toArray(result);
     }
@@ -96,7 +90,8 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
                 "          \"file\" : { \"term_vector\":\"with_positions_offsets\", \"store\":true }\n" +
                 "        }\n" +
                 "      },\n" +
-                "      \"permissions\" : {\"type\" : \"string\", \"index\" : \"not_analyzed\" }\n" +
+                "      \"permissions\" : {\"type\" : \"string\", \"index\" : \"not_analyzed\" },\n" +
+                "      \"url\" : {\"type\" : \"string\", \"index\" : \"not_analyzed\" }\n" +
                 "    }" +
                 "}";
     }
