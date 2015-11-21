@@ -42,6 +42,8 @@ import org.exoplatform.wiki.jpa.search.AttachmentIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.WikiPageIndexingServiceConnector;
 
 import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.ServerSocket;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -64,18 +66,63 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
   protected JPADataStorage             storage;
   protected IndexingOperationDAO       indexingOperationDAO;
 
+  /**
+   * Port used for embedded Elasticsearch.
+   * The port is needed to set the system properties exo.es.index.server.url and exo.es.search.server.url that
+   * are used by the services ElasticIndexingClient and ElasticSearchingClient. These services read these
+   * system properties at init (constructor) and cannot be changed later (no setter). Since the eXo Container is
+   * created only once for all the tests, the same instance of these services are used for all the tests, so
+   * the port must be the same for all the tests. That's why it must be static.
+   */
+  private static Integer esPort = null;
+
+  @Override
+  protected void beforeRunBare() {
+    // start ES before creating the eXo Container since the ES port is necessary to initialize
+    // the ElasticIndexingClient and ElasticSearchingClient services
+    startEmbeddedES();
+
+    super.beforeRunBare();
+  }
+
   public void setUp() {
     super.setUp();
+
+    // Init services
+    indexingOperationDAO = PortalContainer.getInstance().getComponentInstanceOfType(IndexingOperationDAO.class);
+    indexingService = PortalContainer.getInstance().getComponentInstanceOfType(IndexingService.class);
+    indexingOperationProcessor = PortalContainer.getInstance().getComponentInstanceOfType(IndexingOperationProcessor.class);
+    storage = PortalContainer.getInstance().getComponentInstanceOfType(JPADataStorage.class);
+
+    // Init data
+    deleteAllDocumentsInES();
+    cleanDB();
+    SecurityUtils.setCurrentUser("BCH", "*:/admin");
+  }
+
+  /**
+   * Start an Elasticsearch instance
+   */
+  private void startEmbeddedES() {
+    if(esPort == null) {
+      try {
+        esPort = getAvailablePort();
+      } catch (IOException e) {
+        fail("Cannot get available port : " + e.getMessage());
+      }
+    }
+
     // Init ES
-    LOGGER.info("Embedded ES instance - Starting");
+    LOGGER.info("Embedded ES instance - Starting on port " + esPort);
     ImmutableSettings.Builder elasticsearchSettings = ImmutableSettings.settingsBuilder()
-                                                                       .put(RestController.HTTP_JSON_ENABLE, true)
-                                                                       .put(InternalNode.HTTP_ENABLED, true)
-                                                                       .put("network.host", "127.0.0.1")
-                                                                       .put("path.data", "target/data")
-                                                                       .put("plugins."
-                                                                                       + PluginsService.LOAD_PLUGIN_FROM_CLASSPATH,
-                                                                               true);
+            .put(RestController.HTTP_JSON_ENABLE, true)
+            .put(InternalNode.HTTP_ENABLED, true)
+            .put("network.host", "127.0.0.1")
+            .put("http.port", esPort)
+            .put("path.data", "target/data")
+            .put("plugins."
+                            + PluginsService.LOAD_PLUGIN_FROM_CLASSPATH,
+                    true);
     node = nodeBuilder().local(true).settings(elasticsearchSettings.build()).node();
     node.client().admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
     assertNotNull(node);
@@ -89,15 +136,49 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
     String url = "http://" + address.address().getHostName() + ":" + address.address().getPort();
     PropertyManager.setProperty("exo.es.index.server.url", url);
     PropertyManager.setProperty("exo.es.search.server.url", url);
-    // Init services
-    indexingOperationDAO = PortalContainer.getInstance().getComponentInstanceOfType(IndexingOperationDAO.class);
-    indexingService = PortalContainer.getInstance().getComponentInstanceOfType(IndexingService.class);
-    indexingOperationProcessor = PortalContainer.getInstance().getComponentInstanceOfType(IndexingOperationProcessor.class);
-    storage = PortalContainer.getInstance().getComponentInstanceOfType(JPADataStorage.class);
-    // Init data
-    deleteAllDocumentsInES();
+  }
+
+
+  public void tearDown() {
+
+    super.tearDown();
+
+    LOGGER.info("Clean Indexing database");
     cleanDB();
-    SecurityUtils.setCurrentUser("BCH", "*:/admin");
+
+    // Close ES Node
+    LOGGER.info("Embedded ES instance - Stopping");
+    node.close();
+    LOGGER.info("Embedded ES instance - Stopped");
+  }
+
+  /**
+   * Get a random available port
+   * @return
+   * @throws IOException
+   */
+  private int getAvailablePort() throws IOException {
+    ServerSocket ss = null;
+    DatagramSocket ds = null;
+    try {
+      ss = new ServerSocket(0);
+      ss.setReuseAddress(true);
+      ds = new DatagramSocket(0);
+      ds.setReuseAddress(true);
+      return ss.getLocalPort();
+    } finally {
+      if (ds != null) {
+        ds.close();
+      }
+
+      if (ss != null) {
+        try {
+          ss.close();
+        } catch (IOException e) {
+                /* should not be thrown */
+        }
+      }
+    }
   }
 
   private void cleanDB() {
@@ -109,13 +190,6 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
     indexingService.unindexAll(AttachmentIndexingServiceConnector.TYPE);
     indexingOperationProcessor.process();
     node.client().admin().indices().prepareRefresh().execute().actionGet();
-  }
-
-  public void tearDown() {
-    super.tearDown();
-    cleanDB();
-    // Close ES Node
-    node.close();
   }
 
   protected PageEntity indexPage(String name, String title, String content, String comment, String owner,
