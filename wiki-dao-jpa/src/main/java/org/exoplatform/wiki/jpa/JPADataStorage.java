@@ -1271,7 +1271,15 @@ public class JPADataStorage implements DataStorage {
    */
   public PageEntity fetchPageEntity(Page page) {
     PageEntity pageEntity;
+    Long pageId = null;
     if (page.getId() != null && !page.getId().isEmpty()) {
+      try {
+        pageId = Long.parseLong(page.getId());
+      } catch(NumberFormatException e) {
+        pageId = null;
+      }
+    }
+    if(pageId != null) {
       pageEntity = pageDAO.find(Long.parseLong(page.getId()));
     } else {
       pageEntity = pageDAO.getPageOfWikiByName(page.getWikiType(), page.getWikiOwner(), page.getName());
