@@ -26,11 +26,11 @@ import javax.persistence.*;
  *          exo@exoplatform.com
  * Jun 23, 2015
  */
-@Entity
+@Entity(name = "WikiDraftPageAttachmentEntity")
 @ExoEntity
 @Table(name = "WIKI_DRAFT_ATTACHMENTS")
 @NamedQueries({
-    @NamedQuery(name = "draftAttachment.getAllIds", query = "SELECT a.id FROM DraftPageAttachmentEntity a ORDER BY a.id")
+    @NamedQuery(name = "draftAttachment.getAllIds", query = "SELECT a.id FROM WikiDraftPageAttachmentEntity a ORDER BY a.id")
 })
 public class DraftPageAttachmentEntity extends AttachmentEntity {
 

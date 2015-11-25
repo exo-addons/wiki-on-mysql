@@ -29,13 +29,13 @@ import javax.persistence.*;
  * exo@exoplatform.com
  * 7/16/15
  */
-@Entity
+@Entity(name = "WikiTemplateEntity")
 @ExoEntity
 @Table(name = "WIKI_TEMPLATES")
 @NamedQueries({
-        @NamedQuery(name = "template.getTemplatesOfWiki", query = "SELECT t FROM TemplateEntity t JOIN t.wiki w WHERE w.type = :type AND w.owner = :owner"),
-        @NamedQuery(name = "template.getTemplateOfWikiByName", query = "SELECT t FROM TemplateEntity t JOIN t.wiki w WHERE t.name = :name AND w.type = :type AND w.owner = :owner"),
-        @NamedQuery(name = "template.searchTemplatesByTitle", query = "SELECT t FROM TemplateEntity t JOIN t.wiki w WHERE w.type = :type AND w.owner = :owner AND t.title like :searchText")
+        @NamedQuery(name = "template.getTemplatesOfWiki", query = "SELECT t FROM WikiTemplateEntity t JOIN t.wiki w WHERE w.type = :type AND w.owner = :owner"),
+        @NamedQuery(name = "template.getTemplateOfWikiByName", query = "SELECT t FROM WikiTemplateEntity t JOIN t.wiki w WHERE t.name = :name AND w.type = :type AND w.owner = :owner"),
+        @NamedQuery(name = "template.searchTemplatesByTitle", query = "SELECT t FROM WikiTemplateEntity t JOIN t.wiki w WHERE w.type = :type AND w.owner = :owner AND t.title like :searchText")
 })
 public class TemplateEntity extends BasePageEntity {
 

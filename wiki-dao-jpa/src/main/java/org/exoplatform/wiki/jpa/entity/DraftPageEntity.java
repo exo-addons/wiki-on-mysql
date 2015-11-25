@@ -27,13 +27,13 @@ import java.util.List;
  * exo@exoplatform.com
  * Jun 23, 2015
  */
-@Entity
+@Entity(name = "WikiDraftPageEntity")
 @ExoEntity
 @Table(name = "WIKI_DRAFT_PAGES")
 @NamedQueries({
-        @NamedQuery(name = "wikiDraftPage.findDraftPagesByUser", query = "SELECT d FROM DraftPageEntity d WHERE d.author = :username ORDER BY d.updatedDate DESC"),
-        @NamedQuery(name = "wikiDraftPage.findDraftPageByUserAndName", query = "SELECT d FROM DraftPageEntity d WHERE d.author = :username AND d.name = :draftPageName ORDER BY d.updatedDate DESC"),
-        @NamedQuery(name = "wikiDraftPage.findDraftPageByUserAndTargetPage", query = "SELECT d FROM DraftPageEntity d WHERE d.author = :username AND d.targetPage.id = :targetPageId")
+        @NamedQuery(name = "wikiDraftPage.findDraftPagesByUser", query = "SELECT d FROM WikiDraftPageEntity d WHERE d.author = :username ORDER BY d.updatedDate DESC"),
+        @NamedQuery(name = "wikiDraftPage.findDraftPageByUserAndName", query = "SELECT d FROM WikiDraftPageEntity d WHERE d.author = :username AND d.name = :draftPageName ORDER BY d.updatedDate DESC"),
+        @NamedQuery(name = "wikiDraftPage.findDraftPageByUserAndTargetPage", query = "SELECT d FROM WikiDraftPageEntity d WHERE d.author = :username AND d.targetPage.id = :targetPageId")
 })
 public class DraftPageEntity extends BasePageEntity {
 

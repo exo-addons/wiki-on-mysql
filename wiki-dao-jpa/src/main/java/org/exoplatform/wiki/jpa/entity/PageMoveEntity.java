@@ -28,11 +28,11 @@ import java.util.List;
  *          exo@exoplatform.com
  * Jun 23, 2015
  */
-@Entity
+@Entity(name = "WikiPageMoveEntity")
 @ExoEntity
 @Table(name = "WIKI_PAGE_MOVES")
 @NamedQueries({
-        @NamedQuery(name = "wikiPageMove.getPreviousPage", query = "SELECT p FROM PageMoveEntity p WHERE p.wikiType = :wikiType AND p.wikiOwner = :wikiOwner AND p.pageName = :pageName")
+        @NamedQuery(name = "wikiPageMove.getPreviousPage", query = "SELECT p FROM WikiPageMoveEntity p WHERE p.wikiType = :wikiType AND p.wikiOwner = :wikiOwner AND p.pageName = :pageName")
 })
 public class PageMoveEntity {
 

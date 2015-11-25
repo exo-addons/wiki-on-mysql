@@ -4,11 +4,11 @@ import org.exoplatform.commons.api.persistence.ExoEntity;
 
 import javax.persistence.*;
 
-@Entity
+@Entity(name = "WikiEmotionIconEntity")
 @ExoEntity
 @Table(name = "WIKI_EMOTION_ICONS")
 @NamedQueries({
-        @NamedQuery(name = "emotionIcon.getEmotionIconByName", query = "SELECT e FROM EmotionIconEntity e WHERE e.name = :name")
+        @NamedQuery(name = "emotionIcon.getEmotionIconByName", query = "SELECT e FROM WikiEmotionIconEntity e WHERE e.name = :name")
 })
 public class EmotionIconEntity {
   @Id

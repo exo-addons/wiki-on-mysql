@@ -27,13 +27,13 @@ import java.util.List;
  *          exo@exoplatform.com
  * Jun 23, 2015
  */
-@Entity
+@Entity(name = "WikiWikiEntity")
 @ExoEntity
 @Table(name = "WIKI_WIKIS")
 @NamedQueries({
-        @NamedQuery(name = "wiki.getAllIds", query = "SELECT w.id FROM WikiEntity w ORDER BY w.id"),
-        @NamedQuery(name = "wiki.getWikisByType", query = "SELECT w FROM WikiEntity w WHERE w.type = :type"),
-        @NamedQuery(name = "wiki.getWikiByTypeAndOwner", query = "SELECT w FROM WikiEntity w WHERE w.type = :type AND w.owner = :owner")
+        @NamedQuery(name = "wiki.getAllIds", query = "SELECT w.id FROM WikiWikiEntity w ORDER BY w.id"),
+        @NamedQuery(name = "wiki.getWikisByType", query = "SELECT w FROM WikiWikiEntity w WHERE w.type = :type"),
+        @NamedQuery(name = "wiki.getWikiByTypeAndOwner", query = "SELECT w FROM WikiWikiEntity w WHERE w.type = :type AND w.owner = :owner")
 })
 public class WikiEntity {
   @Id
