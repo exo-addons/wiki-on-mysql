@@ -86,7 +86,8 @@ public class MigrationService implements Startable {
           Page wikiHome = jcrWiki.getWikiHome();
           jpaDataStorage.updatePage(wikiHome);
           // create pages recursively
-          createChildrenPagesOf(createdWiki, wikiHome);
+          LOG.info("    Creation of all wiki pages ...");
+          createChildrenPagesOf(createdWiki, wikiHome, 1);
 
           LOG.info("  Wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner() + " migrated successfully");
         }
@@ -101,14 +102,14 @@ public class MigrationService implements Startable {
 
   }
 
-  private void createChildrenPagesOf(Wiki wiki, Page page) throws WikiException {
+  private void createChildrenPagesOf(Wiki wiki, Page page, int level) throws WikiException {
     List<Page> childrenPages = jcrDataStorage.getChildrenPageOf(page);
     if(childrenPages != null) {
       for(Page childrenPage : childrenPages) {
-        LOG.info("    Creation of wiki page " + childrenPage.getName());
+        LOG.info(String.format("    %1$" + ((level) * 2) + "s Page %2$s", " ", childrenPage.getName()));
         createPage(wiki, page, childrenPage);
 
-        createChildrenPagesOf(wiki, childrenPage);
+        createChildrenPagesOf(wiki, childrenPage, level+1);
       }
     }
   }
