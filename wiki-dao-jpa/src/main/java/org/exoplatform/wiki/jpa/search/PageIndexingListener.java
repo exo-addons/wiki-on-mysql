@@ -11,6 +11,7 @@ import org.exoplatform.wiki.service.listener.PageWikiListener;
  * Listener on pages creation/update/deletion to index them
  */
 public class PageIndexingListener extends PageWikiListener {
+
   @Override
   public void postAddPage(String wikiType, String wikiOwner, String pageId, Page page) throws WikiException {
     IndexingService indexingService  = CommonsUtils.getService(IndexingService.class);

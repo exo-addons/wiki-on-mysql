@@ -55,6 +55,18 @@
     <type>org.exoplatform.wiki.jpa.dao.EmotionIconDAO</type>
   </component>
 
+  <component>
+    <type>org.exoplatform.wiki.jpa.search.WikiElasticSearchServiceConnector</type>
+    <init-params>
+      <properties-param>
+        <name>constructor.params</name>
+        <property name="index" value="wiki"/>
+        <property name="type" value="wiki,wiki-page,wiki-attachment"/>
+        <property name="searchFields" value="name,title,content,comment,file"/>
+      </properties-param>
+    </init-params>
+  </component>
+
   <!-- Data Initialization -->
   <external-component-plugins>
     <target-component>org.exoplatform.commons.api.persistence.DataInitializer</target-component>

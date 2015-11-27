@@ -27,8 +27,10 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.wiki.jpa.dao.PageAttachmentDAO;
 import org.exoplatform.wiki.jpa.entity.PageAttachmentEntity;
+import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.jpa.entity.PermissionEntity;
 import org.exoplatform.wiki.mow.api.PermissionType;
+import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,11 +64,20 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
       LOGGER.info("The attachment entity with id {} doesn't exist.", id);
       return null;
     }
+
     Map<String,String> fields = new HashMap<>();
     Document doc = new Document(TYPE, id, getUrl(attachment), attachment.getUpdatedDate(),
         computePermissions(attachment), fields);
     doc.addField("title", attachment.getTitle());
     doc.addField("file", attachment.getContent());
+    doc.addField("name", attachment.getName());
+    doc.addField("createdDate", String.valueOf(attachment.getCreatedDate().getTime()));
+    doc.addField("updatedDate", String.valueOf(attachment.getUpdatedDate().getTime()));
+    PageEntity page = attachment.getPage();
+    doc.addField("pageName", page.getName());
+    fields.put("wikiType", page.getWiki().getType());
+    fields.put("wikiOwner", page.getWiki().getOwner());
+
     return doc;
   }
 
@@ -98,17 +109,38 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
 
   @Override
   public String getMapping() {
-    return "{\"properties\" : {\n" +
-        "      \"file\" : {\n" +
-        "        \"type\" : \"attachment\",\n" +
-        "        \"fields\" : {\n" +
-        "          \"file\" : { \"term_vector\":\"with_positions_offsets\", \"store\":true }\n" +
-        "        }\n" +
-        "      },\n" +
-        "      \"permissions\" : {\"type\" : \"string\", \"index\" : \"not_analyzed\" },\n" +
-        "      \"url\" : {\"type\" : \"string\", \"index\" : \"not_analyzed\" }\n" +
-        "    }" +
-        "}";
+
+    JSONObject notAnalyzedField = new JSONObject();
+    notAnalyzedField.put("type", "string");
+    notAnalyzedField.put("index", "not_analyzed");
+
+    JSONObject file = new JSONObject();
+    file.put("term_vector", "with_positions_offsets");
+    file.put("store", true);
+
+    JSONObject fields = new JSONObject();
+    fields.put("file", file);
+
+    JSONObject attachment = new JSONObject();
+    attachment.put("type", "attachment");
+    attachment.put("fields", fields);
+
+    JSONObject properties = new JSONObject();
+    properties.put("file", attachment);
+    properties.put("permissions", notAnalyzedField);
+    properties.put("url", notAnalyzedField);
+    properties.put("sites", notAnalyzedField);
+    //Add Wiki type and owner filter
+    properties.put("wikiType", notAnalyzedField);
+    properties.put("wikiOwner", notAnalyzedField);
+
+    JSONObject mappingProperties = new JSONObject();
+    mappingProperties.put("properties",properties);
+
+    JSONObject mappingJSON = new JSONObject();
+    mappingJSON.put(getType(), mappingProperties);
+
+    return mappingJSON.toJSONString();
   }
 
   @Override

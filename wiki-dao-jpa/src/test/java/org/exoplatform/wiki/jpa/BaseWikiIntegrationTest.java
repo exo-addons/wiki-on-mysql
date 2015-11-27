@@ -38,6 +38,7 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.wiki.jpa.entity.PageAttachmentEntity;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.jpa.entity.PermissionEntity;
+import org.exoplatform.wiki.jpa.entity.WikiEntity;
 import org.exoplatform.wiki.jpa.search.AttachmentIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.WikiPageIndexingServiceConnector;
 
@@ -194,6 +195,10 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
 
   protected PageEntity indexPage(String name, String title, String content, String comment, String owner,
                                  List<PermissionEntity> permissions) throws NoSuchFieldException, IllegalAccessException {
+    WikiEntity wiki = new WikiEntity();
+    wiki.setOwner("BCH");
+    wiki.setType("test");
+    wikiDAO.create(wiki);
     PageEntity page = new PageEntity();
     page.setName(name);
     page.setTitle(title);
@@ -203,6 +208,8 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
     page.setPermissions(permissions);
     page.setCreatedDate(new Date());
     page.setUpdatedDate(new Date());
+    page.setUrl("/url/to/my/wikiPage");
+    page.setWiki(wiki);
     page = pageDAO.create(page);
     assertNotEquals(page.getId(), 0);
     indexingService.index(WikiPageIndexingServiceConnector.TYPE, Long.toString(page.getId()));
@@ -214,9 +221,15 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
   protected PageAttachmentEntity indexAttachment(String title, String filePath, String downloadedUrl, String owner) throws NoSuchFieldException,
                                                                                      IllegalAccessException,
                                                                                      IOException {
+    WikiEntity wiki = new WikiEntity();
+    wiki.setOwner("BCH");
+    wiki.setType("test");
+    wikiDAO.create(wiki);
     PageEntity page = new PageEntity();
     page.setCreatedDate(new Date());
     page.setUpdatedDate(new Date());
+    page.setUrl("/url/to/my/wikiPage");
+    page.setWiki(wiki);
     pageDAO.create(page);
     PageAttachmentEntity attachment = new PageAttachmentEntity();
     attachment.setTitle(title);

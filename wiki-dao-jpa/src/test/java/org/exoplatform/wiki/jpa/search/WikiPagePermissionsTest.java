@@ -19,13 +19,13 @@
 
 package org.exoplatform.wiki.jpa.search;
 
-import java.util.Arrays;
-
 import org.exoplatform.wiki.jpa.BaseWikiIntegrationTest;
 import org.exoplatform.wiki.jpa.SecurityUtils;
 import org.exoplatform.wiki.jpa.entity.PermissionEntity;
 import org.exoplatform.wiki.mow.api.PermissionType;
 import org.exoplatform.wiki.service.search.WikiSearchData;
+
+import java.util.Arrays;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
@@ -38,7 +38,7 @@ public class WikiPagePermissionsTest extends BaseWikiIntegrationTest {
     // When
     indexPage("RDBMS Guidelines", "RDBMS Guidelines", "RDBMS Guidelines", "RDBMS Guidelines", "BCH", null);
     // Then
-    assertEquals(1, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
+    assertEquals(1, storage.search(new WikiSearchData("RDBMS", null, "test", "BCH")).getPageSize());
   }
 
   public void testSearchPage_byOwner_notFound() throws NoSuchFieldException, IllegalAccessException {
@@ -47,7 +47,7 @@ public class WikiPagePermissionsTest extends BaseWikiIntegrationTest {
     // When
     indexPage("RDBMS Guidelines", "RDBMS Guidelines", "RDBMS Guidelines", "RDBMS Guidelines", "JOHN", null);
     // Then
-    assertEquals(0, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
+    assertEquals(0, storage.search(new WikiSearchData("RDBMS", null, "test", "BCH")).getPageSize());
   }
 
   public void testSearchPage_byUserPermission_notFound() throws NoSuchFieldException, IllegalAccessException {
@@ -58,7 +58,7 @@ public class WikiPagePermissionsTest extends BaseWikiIntegrationTest {
     // When
     indexPage("RDBMS Guidelines", "RDBMS Guidelines", "RDBMS Guidelines", "RDBMS Guidelines", "JOHN", Arrays.asList(permission1, permission2));
     // Then
-    assertEquals(0, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
+    assertEquals(0, storage.search(new WikiSearchData("RDBMS", null, "test", "BCH")).getPageSize());
   }
 
   public void testSearchPage_byUserPermission_found() throws NoSuchFieldException, IllegalAccessException {
@@ -69,7 +69,7 @@ public class WikiPagePermissionsTest extends BaseWikiIntegrationTest {
     // When
     indexPage("RDBMS Guidelines", "RDBMS Guidelines", "RDBMS Guidelines", "RDBMS Guidelines", "JOHN", Arrays.asList(permission1, permission2));
     // Then
-    assertEquals(1, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
+    assertEquals(1, storage.search(new WikiSearchData("RDBMS", null, "test", "BCH")).getPageSize());
   }
 
   public void testSearchPage_byGroupPermission_found() throws NoSuchFieldException, IllegalAccessException {
@@ -80,7 +80,7 @@ public class WikiPagePermissionsTest extends BaseWikiIntegrationTest {
     // When
     indexPage("RDBMS Guidelines", "RDBMS Guidelines", "RDBMS Guidelines", "RDBMS Guidelines", "JOHN", Arrays.asList(permission1, permission2));
     // Then
-    assertEquals(1, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
+    assertEquals(1, storage.search(new WikiSearchData("RDBMS", null, "test", "BCH")).getPageSize());
   }
 
   public void testSearchPage_byWildcardGroupPermission_found() throws NoSuchFieldException, IllegalAccessException {
@@ -91,7 +91,7 @@ public class WikiPagePermissionsTest extends BaseWikiIntegrationTest {
     // When
     indexPage("RDBMS Guidelines", "RDBMS Guidelines", "RDBMS Guidelines", "RDBMS Guidelines", "JOHN", Arrays.asList(permission1, permission2));
     // Then
-    assertEquals(1, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
+    assertEquals(1, storage.search(new WikiSearchData("RDBMS", null, "test", "BCH")).getPageSize());
   }
 
   public void testSearchPage_byGroupPermission_notFound() throws NoSuchFieldException, IllegalAccessException {
@@ -102,6 +102,6 @@ public class WikiPagePermissionsTest extends BaseWikiIntegrationTest {
     // When
     indexPage("RDBMS Guidelines", "RDBMS Guidelines", "RDBMS Guidelines", "RDBMS Guidelines", "JOHN", Arrays.asList(permission1, permission2));
     // Then
-    assertEquals(0, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
+    assertEquals(0, storage.search(new WikiSearchData("RDBMS", null, "test", "BCH")).getPageSize());
   }
 }

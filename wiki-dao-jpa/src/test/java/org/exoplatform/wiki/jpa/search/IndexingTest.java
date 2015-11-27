@@ -55,7 +55,7 @@ public class IndexingTest extends BaseWikiIntegrationTest {
     indexingOperationProcessor.process();
     node.client().admin().indices().prepareRefresh().execute().actionGet();
     // Then
-    assertEquals(2, storage.search(new WikiSearchData("Liquibase", null, null, null)).getPageSize());
+    assertEquals(2, storage.search(new WikiSearchData("Liquibase", null, "test", "BCH")).getPageSize());
   }
 
   public void testReindexingAttachmentAndSearch() throws NoSuchFieldException, IllegalAccessException, IOException {
@@ -78,7 +78,7 @@ public class IndexingTest extends BaseWikiIntegrationTest {
     indexingOperationProcessor.process();
     node.client().admin().indices().prepareRefresh().execute().actionGet();
     // Then
-    assertEquals(2, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
+    assertEquals(2, storage.search(new WikiSearchData("Agile", null, "test", "BCH")).getPageSize());
   }
 
 }

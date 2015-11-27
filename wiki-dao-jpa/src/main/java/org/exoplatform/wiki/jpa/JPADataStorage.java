@@ -22,7 +22,6 @@ package org.exoplatform.wiki.jpa;
 import org.apache.commons.lang.StringUtils;
 import org.exoplatform.commons.api.persistence.DataInitializer;
 import org.exoplatform.commons.api.persistence.ExoTransactional;
-import org.exoplatform.commons.api.search.SearchService;
 import org.exoplatform.commons.utils.ObjectPageList;
 import org.exoplatform.commons.utils.PageList;
 import org.exoplatform.container.PortalContainer;
@@ -35,6 +34,7 @@ import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.jpa.dao.*;
 import org.exoplatform.wiki.jpa.entity.*;
+import org.exoplatform.wiki.jpa.search.WikiElasticSearchServiceConnector;
 import org.exoplatform.wiki.mow.api.*;
 import org.exoplatform.wiki.service.DataStorage;
 import org.exoplatform.wiki.service.WikiPageParams;
@@ -95,23 +95,16 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public PageList<SearchResult> search(WikiSearchData wikiSearchData) {
-    List<SearchResult> searchResults = new ArrayList<>();
-    Map<String, Collection<org.exoplatform.commons.api.search.data.SearchResult>> results;
-    SearchService searchService = PortalContainer.getInstance().getComponentInstanceOfType(SearchService.class);
+    WikiElasticSearchServiceConnector searchService = PortalContainer.getInstance().getComponentInstanceOfType(WikiElasticSearchServiceConnector.class);
 
-    results = searchService.search(null,
-                                   getSearchedText(wikiSearchData),
-                                   null,
-                                   Collections.singleton("all"),
-                                   (int) wikiSearchData.getOffset(),
-                                   wikiSearchData.getLimit(),
-                                   wikiSearchData.getSort(),
-                                   wikiSearchData.getOrder());
-    for (String type : results.keySet()) {
-      for (org.exoplatform.commons.api.search.data.SearchResult result : results.get(type)) {
-        searchResults.add(toSearchResult(result));
-      }
-    }
+    List<SearchResult> searchResults = searchService.searchWiki(getSearchedText(wikiSearchData),
+        wikiSearchData.getWikiType(),
+        wikiSearchData.getWikiOwner(),
+        (int) wikiSearchData.getOffset(),
+        wikiSearchData.getLimit(),
+        wikiSearchData.getSort(),
+        wikiSearchData.getOrder());
+
     return new ObjectPageList<>(searchResults, searchResults.size());
   }
 
@@ -130,6 +123,12 @@ public class JPADataStorage implements DataStorage {
   private SearchResult toSearchResult(org.exoplatform.commons.api.search.data.SearchResult input) {
     SearchResult output = new SearchResult();
     output.setTitle(input.getTitle());
+    Calendar cal = Calendar.getInstance();
+    cal.setTimeInMillis(input.getDate());
+    output.setCreatedDate(cal);
+    output.setExcerpt(input.getExcerpt());
+    output.setPageName(input.getTitle());
+    output.setUrl(input.getUrl());
     return output;
   }
 
@@ -296,7 +295,7 @@ public class JPADataStorage implements DataStorage {
 
   /**
    * Recursively deletes a page and all its children pages
-   * 
+   *
    * @param pageEntity the root page to delete
    */
   private void deletePageEntity(PageEntity pageEntity) {
@@ -426,16 +425,16 @@ public class JPADataStorage implements DataStorage {
   @ExoTransactional
   public void movePage(WikiPageParams currentLocationParams, WikiPageParams newLocationParams) throws WikiException {
     PageEntity pageEntity = pageDAO.getPageOfWikiByName(currentLocationParams.getType(),
-                                                        currentLocationParams.getOwner(),
-                                                        currentLocationParams.getPageName());
+        currentLocationParams.getOwner(),
+        currentLocationParams.getPageName());
     if (pageEntity == null) {
       throw new WikiException("Cannot move page " + currentLocationParams.getType() + ":" + currentLocationParams.getOwner()
           + ":" + currentLocationParams.getPageName() + " because page does not exist.");
     }
 
     PageEntity destinationPageEntity = pageDAO.getPageOfWikiByName(newLocationParams.getType(),
-                                                                   newLocationParams.getOwner(),
-                                                                   newLocationParams.getPageName());
+        newLocationParams.getOwner(),
+        newLocationParams.getPageName());
     if (destinationPageEntity == null) {
       throw new WikiException("Cannot move page " + currentLocationParams.getType() + ":" + currentLocationParams.getOwner()
           + ":" + currentLocationParams.getPageName() + " to page " + newLocationParams.getType() + ":"
@@ -448,7 +447,7 @@ public class JPADataStorage implements DataStorage {
       pageMoves = new ArrayList<>();
     }
     PageMoveEntity move = new PageMoveEntity(currentLocationParams.getType(), currentLocationParams.getOwner(),
-            currentLocationParams.getPageName(), Calendar.getInstance().getTime());
+        currentLocationParams.getPageName(), Calendar.getInstance().getTime());
     move.setPage(pageEntity);
     // move must be saved here because of Hibernate bug HHH-6776
     pageMoveDAO.create(move);
@@ -471,7 +470,7 @@ public class JPADataStorage implements DataStorage {
     }
 
     return convertPermissionEntitiesToPermissionEntries(wikiEntity.getPermissions(),
-            Arrays.asList(PermissionType.VIEWPAGE, PermissionType.EDITPAGE, PermissionType.ADMINPAGE, PermissionType.ADMINSPACE));
+        Arrays.asList(PermissionType.VIEWPAGE, PermissionType.EDITPAGE, PermissionType.ADMINPAGE, PermissionType.ADMINSPACE));
   }
 
   @Override
@@ -528,8 +527,8 @@ public class JPADataStorage implements DataStorage {
     }
 
     PageEntity relatedPageEntity = pageDAO.getPageOfWikiByName(relatedPage.getWikiType(),
-                                                               relatedPage.getWikiOwner(),
-                                                               relatedPage.getName());
+        relatedPage.getWikiOwner(),
+        relatedPage.getName());
 
     if (relatedPageEntity == null) {
       throw new WikiException("Cannot add related page " + relatedPage.getWikiType() + ":" + relatedPage.getWikiOwner() + ":"
@@ -557,8 +556,8 @@ public class JPADataStorage implements DataStorage {
     }
 
     PageEntity relatedPageEntity = pageDAO.getPageOfWikiByName(relatedPage.getWikiType(),
-                                                               relatedPage.getWikiOwner(),
-                                                               relatedPage.getName());
+        relatedPage.getWikiOwner(),
+        relatedPage.getName());
 
     if (relatedPageEntity == null) {
       throw new WikiException("Cannot remove related page " + relatedPage.getWikiType() + ":" + relatedPage.getWikiOwner() + ":"
@@ -618,7 +617,7 @@ public class JPADataStorage implements DataStorage {
 
     if (page != null) {
       List<DraftPageEntity> draftPagesOfUser = draftPageDAO.findDraftPagesByUserAndTargetPage(username,
-                                                                                              Long.valueOf(page.getId()));
+          Long.valueOf(page.getId()));
 
       DraftPageEntity latestDraftEntity = null;
       for (DraftPageEntity draft : draftPagesOfUser) {
@@ -679,8 +678,8 @@ public class JPADataStorage implements DataStorage {
   @Override
   public List<TemplateSearchResult> searchTemplate(TemplateSearchData templateSearchData) throws WikiException {
     List<TemplateEntity> templates = templateDAO.searchTemplatesByTitle(templateSearchData.getWikiType(),
-                                                                        templateSearchData.getWikiOwner(),
-                                                                        templateSearchData.getTitle());
+        templateSearchData.getWikiOwner(),
+        templateSearchData.getTitle());
 
     List<TemplateSearchResult> searchResults = new ArrayList<>();
     if (templates != null) {
@@ -698,14 +697,14 @@ public class JPADataStorage implements DataStorage {
           updatedDateCalendar.setTime(updatedDate);
         }
         TemplateSearchResult templateSearchResult = new TemplateSearchResult(templateEntity.getWiki().getType(),
-                                                                             templateEntity.getWiki().getOwner(),
-                                                                             templateEntity.getName(),
-                                                                             templateEntity.getTitle(),
-                                                                             null,
-                                                                             SearchResultType.TEMPLATE,
-                                                                             updatedDateCalendar,
-                                                                             createdDateCalendar,
-                                                                             null);
+            templateEntity.getWiki().getOwner(),
+            templateEntity.getName(),
+            templateEntity.getTitle(),
+            null,
+            SearchResultType.TEMPLATE,
+            updatedDateCalendar,
+            createdDateCalendar,
+            null);
         searchResults.add(templateSearchResult);
       }
     }
@@ -793,7 +792,7 @@ public class JPADataStorage implements DataStorage {
 
       if (draftPageEntity == null) {
         throw new WikiException("Cannot add an attachment to draft page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
-                + page.getName() + " because draft page does not exist.");
+            + page.getName() + " because draft page does not exist.");
       }
 
       // attachment must be saved here because of Hibernate bug HHH-6776
@@ -823,7 +822,7 @@ public class JPADataStorage implements DataStorage {
 
       if (pageEntity == null) {
         throw new WikiException("Cannot add an attachment to page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
-                + page.getName() + " because page does not exist.");
+            + page.getName() + " because page does not exist.");
       }
 
       // attachment must be saved here because of Hibernate bug HHH-6776
@@ -1016,7 +1015,7 @@ public class JPADataStorage implements DataStorage {
       }
     } else {
       throw new WikiException("Cannot check admin space permission on wiki " + wikiType + ":" + owner + " for user "
-              + identity.getUserId() + " because the wiki cannot be fetched");
+          + identity.getUserId() + " because the wiki cannot be fetched");
     }
   }
 
@@ -1068,7 +1067,7 @@ public class JPADataStorage implements DataStorage {
 
     if (pageEntity == null) {
       throw new WikiException("Cannot get versions of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":" + page.getName()
-              + " because page does not exist.");
+          + " because page does not exist.");
     }
 
     List<PageVersion> pageVersions = new ArrayList<>();
@@ -1092,7 +1091,7 @@ public class JPADataStorage implements DataStorage {
 
       if (pageEntity == null) {
         throw new WikiException("Cannot add version of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":" + page.getName()
-                + " because page does not exist.");
+            + " because page does not exist.");
       }
 
       PageVersionEntity pageVersionEntity = new PageVersionEntity();
@@ -1138,7 +1137,7 @@ public class JPADataStorage implements DataStorage {
 
       if (pageEntity == null) {
         throw new WikiException("Cannot restore version of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":" + page.getName()
-                + " because page does not exist.");
+            + " because page does not exist.");
       }
 
       PageVersionEntity versionToRestore = pageVersionDAO.getPageversionByPageIdAndVersion(Long.parseLong(page.getId()), Long.parseLong(versionName));
@@ -1148,7 +1147,7 @@ public class JPADataStorage implements DataStorage {
         pageDAO.update(pageEntity);
       } else {
         throw new WikiException("Cannot restore version " + versionName + " of a page " + page.getWikiType() + ":"
-                + page.getWikiOwner() + ":" + page.getName() + " because version does not exist.");
+            + page.getWikiOwner() + ":" + page.getName() + " because version does not exist.");
       }
     } else {
       throw new WikiException("Cannot restore version of a page null");
@@ -1163,7 +1162,7 @@ public class JPADataStorage implements DataStorage {
 
       if (draftPageEntity == null) {
         throw new WikiException("Cannot add an attachment to draft page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
-                + page.getName() + " because draft page does not exist.");
+            + page.getName() + " because draft page does not exist.");
       }
 
       draftPageEntity.setTitle(page.getTitle());
@@ -1176,7 +1175,7 @@ public class JPADataStorage implements DataStorage {
 
       if (pageEntity == null) {
         throw new WikiException("Cannot update page " + page.getWikiType() + ":" + page.getWikiOwner() + ":" + page.getName()
-                + " because page does not exist.");
+            + " because page does not exist.");
       }
 
       pageEntity.setName(page.getName());
@@ -1202,7 +1201,7 @@ public class JPADataStorage implements DataStorage {
 
     if (pageEntity == null) {
       throw new WikiException("Cannot get previous names of page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
-              + page.getName() + " because page does not exist.");
+          + page.getName() + " because page does not exist.");
     }
 
     List<String> previousPageName = new ArrayList<>();
@@ -1265,7 +1264,7 @@ public class JPADataStorage implements DataStorage {
 
   /**
    * Fecth Page Entity from a Page domain object
-   * 
+   *
    * @param page The page domain object
    * @return The page entity
    */
@@ -1288,16 +1287,16 @@ public class JPADataStorage implements DataStorage {
     StringBuilder sb = new StringBuilder();
 
     sb.append(Utils.getDefaultRestBaseURI())
-      .append("/wiki/attachments/")
-      .append(wikiType)
-      .append("/")
-      .append(Utils.SPACE)
-      .append("/")
-      .append(Utils.validateWikiOwner(wikiType, wikiOwner))
-      .append("/")
-      .append(Utils.PAGE)
-      .append("/")
-      .append(pageName);
+        .append("/wiki/attachments/")
+        .append(wikiType)
+        .append("/")
+        .append(Utils.SPACE)
+        .append("/")
+        .append(Utils.validateWikiOwner(wikiType, wikiOwner))
+        .append("/")
+        .append(Utils.PAGE)
+        .append("/")
+        .append(pageName);
     try {
       sb.append("/").append(URLEncoder.encode(attachmentEntity.getName(), "UTF-8"));
     } catch (UnsupportedEncodingException e) {

@@ -37,7 +37,7 @@ public class AttachmentPermissionsTest extends BaseWikiIntegrationTest {
     // When
     indexAttachment("Scrum @eXo - Collector", fileResource.getPath(), "www.exo.com", "BCH");
     // Then
-    assertEquals(1, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
+    assertEquals(1, storage.search(new WikiSearchData("Agile", null, "test", "BCH")).getPageSize());
   }
 
   public void testSearchAttachment_byOwner_notFound() throws NoSuchFieldException, IllegalAccessException, IOException {
@@ -46,7 +46,7 @@ public class AttachmentPermissionsTest extends BaseWikiIntegrationTest {
     // When
     indexAttachment("Scrum @eXo - Collector", fileResource.getPath(), "www.exo.com", "JOHN");
     // Then
-    assertEquals(0, storage.search(new WikiSearchData("RDBMS", null, null, null)).getPageSize());
+    assertEquals(0, storage.search(new WikiSearchData("Agile", null, "test", "BCH")).getPageSize());
   }
 
 }

@@ -31,15 +31,15 @@ import java.net.URL;
  * 10/21/15
  */
 public class JPADataStorageSearchTest extends BaseWikiIntegrationTest {
-
+  
     @Test
     public void testSearchPageByName() throws Exception {
         // Given
         // When
         indexPage("My name", "My title", "This is the content of my Page", "This is a comment", "BCH", null);
         // Then
-        assertEquals(1, storage.search(new WikiSearchData(null, "name", null, null)).getPageSize());
-        assertEquals(1, storage.search(new WikiSearchData("name", null, null, null)).getPageSize());
+        assertEquals(1, storage.search(new WikiSearchData(null, "name", "test", "BCH")).getPageSize());
+        assertEquals(1, storage.search(new WikiSearchData("name", null, "test", "BCH")).getPageSize());
     }
 
     @Test
@@ -48,8 +48,8 @@ public class JPADataStorageSearchTest extends BaseWikiIntegrationTest {
         // When
         indexPage("My name", "My title", "This is the content of my Page", "This is a comment", "BCH", null);
         // Then
-        assertEquals(1, storage.search(new WikiSearchData(null, "Title", null, null)).getPageSize());
-        assertEquals(1, storage.search(new WikiSearchData("Title", null, null, null)).getPageSize());
+        assertEquals(1, storage.search(new WikiSearchData(null, "Title", "test", "BCH")).getPageSize());
+        assertEquals(1, storage.search(new WikiSearchData("Title", null, "test", "BCH")).getPageSize());
     }
 
     @Test
@@ -58,8 +58,8 @@ public class JPADataStorageSearchTest extends BaseWikiIntegrationTest {
         // When
         indexPage("My Page", "My Page", "This is the content of my Page", "This is a comment", "BCH", null);
         // Then
-        assertEquals(1, storage.search(new WikiSearchData(null, "content", null, null)).getPageSize());
-        assertEquals(1, storage.search(new WikiSearchData("content", null, null, null)).getPageSize());
+        assertEquals(1, storage.search(new WikiSearchData(null, "content", "test", "BCH")).getPageSize());
+        assertEquals(1, storage.search(new WikiSearchData("content", null, "test", "BCH")).getPageSize());
     }
 
     @Test
@@ -68,8 +68,8 @@ public class JPADataStorageSearchTest extends BaseWikiIntegrationTest {
         // When
         indexPage("My Page", "My Page", "This is the content of my Page", "This is a comment", "BCH", null);
         // Then
-        assertEquals(1, storage.search(new WikiSearchData("comment", null, null, null)).getPageSize());
-        assertEquals(1, storage.search(new WikiSearchData(null, "comment", null, null)).getPageSize());
+        assertEquals(1, storage.search(new WikiSearchData("comment", null, "test", "BCH")).getPageSize());
+        assertEquals(1, storage.search(new WikiSearchData(null, "comment", "test", "BCH")).getPageSize());
     }
 
     @Test
@@ -79,8 +79,8 @@ public class JPADataStorageSearchTest extends BaseWikiIntegrationTest {
         // When
         indexAttachment("Scrum @eXo - Collector", fileResource.getPath(), "www.exo.com", "BCH");
         // Then
-        assertEquals(1, storage.search(new WikiSearchData("Collector", null, null, null)).getPageSize());
-        assertEquals(1, storage.search(new WikiSearchData(null, "Collector", null, null)).getPageSize());
+        assertEquals(1, storage.search(new WikiSearchData("Collector", null, "test", "BCH")).getPageSize());
+        assertEquals(1, storage.search(new WikiSearchData(null, "Collector", "test", "BCH")).getPageSize());
     }
 
     @Test
@@ -90,7 +90,8 @@ public class JPADataStorageSearchTest extends BaseWikiIntegrationTest {
         // When
         indexAttachment("Scrum @eXo - Collector", fileResource.getPath(), "www.exo.com", "BCH");
         // Then
-        assertEquals(1, storage.search(new WikiSearchData("Agile", null, null, null)).getPageSize());
-        assertEquals(1, storage.search(new WikiSearchData(null, "Agile", null, null)).getPageSize());
+        assertEquals(1, storage.search(new WikiSearchData("Agile", null, "test", "BCH")).getPageSize());
+        assertEquals(1, storage.search(new WikiSearchData(null, "Agile", "test", "BCH")).getPageSize());
     }
+    
 }

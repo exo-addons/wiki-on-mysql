@@ -19,13 +19,7 @@
 
 package org.exoplatform.wiki.jpa.search;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang.StringUtils;
-
 import org.exoplatform.addons.es.domain.Document;
 import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
 import org.exoplatform.container.xml.InitParams;
@@ -34,6 +28,12 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.wiki.jpa.dao.PageDAO;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.jpa.entity.PermissionEntity;
+import org.json.simple.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by The eXo Platform SAS
@@ -51,6 +51,30 @@ public class WikiPageIndexingServiceConnector extends ElasticIndexingServiceConn
         this.dao = dao;
     }
 
+  @Override
+  public String getMapping() {
+
+    JSONObject notAnalyzedField = new JSONObject();
+    notAnalyzedField.put("type", "string");
+    notAnalyzedField.put("index", "not_analyzed");
+
+    JSONObject properties = new JSONObject();
+    properties.put("permissions", notAnalyzedField);
+    properties.put("url", notAnalyzedField);
+    properties.put("sites", notAnalyzedField);
+    //Add Wiki type and owner filter
+    properties.put("wikiType", notAnalyzedField);
+    properties.put("wikiOwner", notAnalyzedField);
+
+    JSONObject mappingProperties = new JSONObject();
+    mappingProperties.put("properties",properties);
+
+    JSONObject mappingJSON = new JSONObject();
+    mappingJSON.put(getType(), mappingProperties);
+
+    return mappingJSON.toJSONString();
+  }
+
     @Override
     public Document create(String id) {
         if (StringUtils.isBlank(id)) {
@@ -62,11 +86,17 @@ public class WikiPageIndexingServiceConnector extends ElasticIndexingServiceConn
             LOGGER.info("The page entity with id {} doesn't exist.", id);
             return null;
         }
+
         Map<String,String> fields = new HashMap<>();
+        fields.put("owner", page.getOwner());
         fields.put("name", page.getName());
         fields.put("content", page.getContent());
         fields.put("title", page.getTitle());
+        fields.put("createdDate", String.valueOf(page.getCreatedDate().getTime()));
+        fields.put("updatedDate", String.valueOf(page.getUpdatedDate().getTime()));
         fields.put("comment", page.getComment());
+        fields.put("wikiType", page.getWiki().getType());
+        fields.put("wikiOwner", page.getWiki().getOwner());
         return new Document(TYPE, id, page.getUrl(), page.getUpdatedDate(), computePermissions(page), fields);
     }
 
