@@ -28,6 +28,8 @@ public class MigrationServiceTest extends MigrationITSetup {
     User userMary = userHandler.createUserInstance("mary");
     userHandler.createUser(userMary, false);
 
+    startSessionAs("john");
+
     // Wiki
     Wiki wiki = new Wiki(PortalConfig.PORTAL_TYPE, "intranet");
     wiki = jcrDataStorage.createWiki(wiki);
@@ -36,7 +38,6 @@ public class MigrationServiceTest extends MigrationITSetup {
     jcrDataStorage.updatePage(wikiHome);
 
     // Pages
-    startSessionAs("john");
     Page page1 = new Page("Page1", "Page 1");
     page1.setAuthor("john");
     page1.setContent("Page 1 Content");
