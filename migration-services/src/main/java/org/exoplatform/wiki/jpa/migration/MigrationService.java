@@ -30,10 +30,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by The eXo Platform SAS
- * Author : eXoPlatform
- *          exo@exoplatform.com
- * Jun 23, 2015  
+ * Startable service to migrate Wiki data from JCR to RDBMS
+ * Note :
+ *   Emotion icons are not handled by the migration service since :
+ *     - the getEmotionIcons and getEmotionIconByName do not return the image, so can not retrieve it (bug)
+ *     - the Emotion Icons are created at startup if they do not exist
  */
 public class MigrationService implements Startable {
 
