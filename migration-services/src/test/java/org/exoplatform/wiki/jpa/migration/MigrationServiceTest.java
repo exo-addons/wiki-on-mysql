@@ -5,10 +5,8 @@ import org.exoplatform.component.test.ConfiguredBy;
 import org.exoplatform.component.test.ContainerScope;
 import org.exoplatform.portal.config.model.PortalConfig;
 import org.exoplatform.wiki.WikiException;
-import org.exoplatform.wiki.mow.api.Attachment;
-import org.exoplatform.wiki.mow.api.Page;
-import org.exoplatform.wiki.mow.api.PermissionEntry;
-import org.exoplatform.wiki.mow.api.Wiki;
+import org.exoplatform.wiki.mow.api.*;
+import org.exoplatform.wiki.service.WikiPageParams;
 
 import java.util.*;
 
@@ -24,6 +22,7 @@ public class MigrationServiceTest extends MigrationITSetup {
     wikiHome.setContent("Wiki Home Page updated");
     jcrDataStorage.updatePage(wikiHome);
 
+    // Pages
     startSessionAs("john");
     Page page1 = new Page("Page1", "Page 1");
     page1.setAuthor("john");
@@ -56,6 +55,18 @@ public class MigrationServiceTest extends MigrationITSetup {
     attachment.setMimeType("text/plain");
     jcrDataStorage.addAttachmentToPage(attachment, page2);
 
+    // Templates
+    Template template1 = new Template();
+    template1.setName("Template1");
+    template1.setTitle("Template 1 Title");
+    template1.setDescription("Template 1 Description");
+    template1.setContent("Template 1 Content");
+    template1.setAuthor("john");
+    Date createdDateTemplate1 = Calendar.getInstance().getTime();
+    template1.setCreatedDate(createdDateTemplate1);
+    template1.setUpdatedDate(createdDateTemplate1);
+    jcrDataStorage.createTemplatePage(wiki, template1);
+
     migrationService.start();
 
     // check wiki
@@ -87,5 +98,15 @@ public class MigrationServiceTest extends MigrationITSetup {
     assertNotNull(attachmentsOfPage2);
     assertEquals(1, attachmentsOfPage2.size());
     assertTrue(Arrays.equals("attachment-content-2".getBytes(), attachmentsOfPage2.get(0).getContent()));
+    // check template1
+    Map<String, Template> fetchedTemplates = jpaDataStorage.getTemplates(new WikiPageParams(wikiIntranet.getType(), wikiIntranet.getOwner(), wikiIntranet.getId()));
+    assertNotNull(fetchedTemplates);
+    assertEquals(1, fetchedTemplates.size());
+    Template fetchedTemplate1 = jpaDataStorage.getTemplatePage(new WikiPageParams(wikiIntranet.getType(), wikiIntranet.getOwner(), wikiIntranet.getId()), "Template1");
+    assertNotNull(fetchedTemplate1);
+    assertEquals("Template1", fetchedTemplate1.getName());
+    assertEquals("Template 1 Title", fetchedTemplate1.getTitle());
+    assertEquals("Template 1 Description", fetchedTemplate1.getDescription());
+    assertEquals("Template 1 Content", fetchedTemplate1.getContent());
   }
 }

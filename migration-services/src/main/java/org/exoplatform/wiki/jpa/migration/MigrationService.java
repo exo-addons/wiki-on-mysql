@@ -21,14 +21,13 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.jpa.JPADataStorage;
-import org.exoplatform.wiki.mow.api.Attachment;
-import org.exoplatform.wiki.mow.api.Page;
-import org.exoplatform.wiki.mow.api.PageVersion;
-import org.exoplatform.wiki.mow.api.Wiki;
+import org.exoplatform.wiki.mow.api.*;
+import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.impl.JCRDataStorage;
 import org.picocontainer.Startable;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by The eXo Platform SAS
@@ -77,10 +76,11 @@ public class MigrationService implements Startable {
         if(existingPortalWiki != null) {
           LOG.error("  Cannot migrate wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner() + " because it already exists.");
         } else {
-          LOG.info("    Creation of wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner());
+          LOG.info("    Migration of wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner());
           // create the wiki
           Wiki createdWiki = jpaDataStorage.createWiki(jcrWiki);
 
+          // PAGES
           LOG.info("    Update wiki home page");
           // get wiki home
           Page wikiHome = jcrWiki.getWikiHome();
@@ -88,6 +88,12 @@ public class MigrationService implements Startable {
           // create pages recursively
           LOG.info("    Creation of all wiki pages ...");
           createChildrenPagesOf(createdWiki, wikiHome, 1);
+          LOG.info("    Pages migrated");
+
+          // TEMPLATES
+          LOG.info("    Start migration of templates ...");
+          createTemplates(jcrWiki);
+          LOG.info("    Templates migrated");
 
           LOG.info("  Wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner() + " migrated successfully");
         }
@@ -160,6 +166,16 @@ public class MigrationService implements Startable {
 
     for(Attachment attachment : attachments) {
       jpaDataStorage.addAttachmentToPage(attachment, page);
+    }
+  }
+
+  private void createTemplates(Wiki jcrWiki) throws WikiException {
+    Map<String, Template> jcrWikiTemplates = jcrDataStorage.getTemplates(new WikiPageParams(jcrWiki.getType(), jcrWiki.getOwner(), jcrWiki.getId()));
+    if(jcrWikiTemplates != null) {
+      for (Template jcrTemplate : jcrWikiTemplates.values()) {
+        LOG.info("      Template " + jcrTemplate.getName());
+        jpaDataStorage.createTemplatePage(jcrWiki, jcrTemplate);
+      }
     }
   }
 }

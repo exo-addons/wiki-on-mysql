@@ -37,7 +37,7 @@ public class MigrationServicePT extends MigrationITSetup {
     WikiDataInjector wikiDataInjector = PortalContainer.getInstance().getComponentInstanceOfType(WikiDataInjector.class);
     HashMap<String, String> injectorParams = new HashMap<>();
     injectorParams.put("type", "data");
-    injectorParams.put("q", "10,10,10");
+    injectorParams.put("q", "1,10,10");
     injectorParams.put("pre", "Public%20Wiki%20A,Public%20Wiki%20AB,Public%20Wiki%20ABC");
     injectorParams.put("wo", "intranet");
     injectorParams.put("wt", "portal");

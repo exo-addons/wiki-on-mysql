@@ -343,12 +343,20 @@ public class EntityConverter {
     if (template != null) {
       templateEntity = new TemplateEntity();
       templateEntity.setName(template.getName());
-      if (template.getWikiId() != null) {
-        WikiEntity wiki = wikiDAO.find(Long.parseLong(template.getWikiId()));
-        if (wiki != null) {
-          templateEntity.setWiki(wiki);
+
+      WikiEntity wiki = null;
+      if(template.getWikiId() != null) {
+        try {
+          Long wikiId = Long.parseLong(template.getWikiId());
+          wiki = wikiDAO.find(wikiId);
+        } catch (NumberFormatException e) {
+          wiki = wikiDAO.getWikiByTypeAndOwner(template.getWikiType(), template.getWikiOwner());
         }
       }
+      if (wiki != null) {
+        templateEntity.setWiki(wiki);
+      }
+
       templateEntity.setTitle(template.getTitle());
       templateEntity.setDescription(template.getDescription());
       templateEntity.setContent(template.getContent());
