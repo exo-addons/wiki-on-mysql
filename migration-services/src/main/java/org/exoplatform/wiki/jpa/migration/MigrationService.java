@@ -115,12 +115,14 @@ public class MigrationService implements Startable {
 
   private void migrateDraftPages() {
     try {
+      LOG.info("  Start migration of draft pages");
       ListAccess<User> allUsersListAccess = organizationService.getUserHandler().findAllUsers();
       User[] allUsers = allUsersListAccess.load(0, allUsersListAccess.getSize());
       for(User user : allUsers) {
         try {
           List<DraftPage> draftPages = jcrDataStorage.getDraftPagesOfUser(user.getUserName());
           for (DraftPage jcrDraftPage : draftPages) {
+            LOG.info("    Draft page " + jcrDraftPage.getName() + " of user " + user.getUserName());
             try {
               // old target id (JCR uuid - String) must be converted to new target id (PK - long)
               Page jcrPageOfDraft = jcrDataStorage.getPageById(jcrDraftPage.getTargetPageId());
@@ -141,6 +143,7 @@ public class MigrationService implements Startable {
           LOG.error("Cannot migrate draft pages of user " + user.getUserName() + " - Cause : " + e.getMessage(), e);
         }
       }
+      LOG.info("  Migration of draft pages done");
     } catch (Exception e) {
       LOG.error("Cannot migrate draft pages - Cause : " + e.getMessage(), e);
     }

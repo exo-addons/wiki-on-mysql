@@ -61,11 +61,11 @@ public class MigrationServicePT extends MigrationITSetup {
         User user = userHandler.createUserInstance("user" + i);
         userHandler.createUser(user, false);
 
+        startSessionAs(user.getUserName());
         DraftPage draftPage = new DraftPage();
-        wikiService.createDraftForNewPage(draftPage, intranetWikiHome, Calendar.getInstance().getTime().getTime());
+        wikiService.createDraftForExistPage(draftPage, intranetWikiHome, "", Calendar.getInstance().getTime().getTime());
       }
     } catch (Exception e) {
-      e.printStackTrace();
       fail("Cannot create draft pages - Cause : " + e.getMessage());
     }
   }
