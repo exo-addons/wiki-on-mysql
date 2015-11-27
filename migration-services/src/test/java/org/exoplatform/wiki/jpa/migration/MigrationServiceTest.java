@@ -45,7 +45,7 @@ public class MigrationServiceTest extends MigrationITSetup {
     page1.setCreatedDate(createdDatePage1);
     page1.setUpdatedDate(createdDatePage1);
     page1.setPermissions(Collections.<PermissionEntry>emptyList());
-    jcrDataStorage.createPage(wiki, wikiHome, page1);
+    page1 = jcrDataStorage.createPage(wiki, wikiHome, page1);
     page1.setContent("Page 1 Content - Version 2");
     jcrDataStorage.updatePage(page1);
     jcrDataStorage.addPageVersion(page1);
@@ -60,7 +60,7 @@ public class MigrationServiceTest extends MigrationITSetup {
     page2.setCreatedDate(createdDatePage2);
     page2.setUpdatedDate(createdDatePage2);
     page2.setPermissions(Collections.<PermissionEntry>emptyList());
-    jcrDataStorage.createPage(wiki, wikiHome, page2);
+    page2 = jcrDataStorage.createPage(wiki, wikiHome, page2);
     Attachment attachment = new Attachment();
     attachment.setName("attachment2");
     attachment.setTitle("Attachment 2");
@@ -76,6 +76,7 @@ public class MigrationServiceTest extends MigrationITSetup {
     draftPage1.setName("draftPage1");
     draftPage1.setNewPage(false);
     draftPage1.setContent("Draft Page 1 Content");
+    draftPage1.setTargetPageId(page1.getId());
     Date createdDateDraftPage1 = Calendar.getInstance().getTime();
     draftPage1.setCreatedDate(createdDateDraftPage1);
     draftPage1.setUpdatedDate(createdDateDraftPage1);

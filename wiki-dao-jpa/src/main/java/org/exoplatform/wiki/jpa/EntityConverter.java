@@ -144,15 +144,7 @@ public class EntityConverter {
       pageEntity = new PageEntity();
       pageEntity.setName(page.getName());
       if (page.getWikiId() != null) {
-        WikiEntity wiki = null;
-        if(page.getWikiId() != null) {
-          try {
-            Long wikiId = Long.parseLong(page.getWikiId());
-            wiki = wikiDAO.find(wikiId);
-          } catch (NumberFormatException e) {
-            wiki = wikiDAO.getWikiByTypeAndOwner(page.getWikiType(), page.getWikiOwner());
-          }
-        }
+        WikiEntity wiki = wikiDAO.find(Long.parseLong(page.getWikiId()));
         if (wiki != null) {
           pageEntity.setWiki(wiki);
         }
