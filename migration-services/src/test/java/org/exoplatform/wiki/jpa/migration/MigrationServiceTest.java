@@ -35,6 +35,8 @@ public class MigrationServiceTest extends MigrationITSetup {
     page1.setContent("Page 1 Content - Version 2");
     jcrDataStorage.updatePage(page1);
     jcrDataStorage.addPageVersion(page1);
+    jcrDataStorage.addWatcherToPage("john", page1);
+    jcrDataStorage.addWatcherToPage("mary", page1);
 
     startSessionAs("mary");
     Page page2 = new Page("Page2", "Page 2");
@@ -89,6 +91,11 @@ public class MigrationServiceTest extends MigrationITSetup {
     assertNotNull(fetchedPage1);
     assertEquals("Page 1 Content - Version 2", fetchedPage1.getContent());
     assertEquals(2, jpaDataStorage.getVersionsOfPage(fetchedPage1).size());
+    List<String> fetchedPage1Watchers = jpaDataStorage.getWatchersOfPage(fetchedPage1);
+    assertNotNull(fetchedPage1Watchers);
+    assertEquals(2, fetchedPage1Watchers.size());
+    assertTrue(fetchedPage1Watchers.contains("john"));
+    assertTrue(fetchedPage1Watchers.contains("mary"));
     // check page2 and attachments
     Page fetchedPage2 = jpaDataStorage.getPageOfWikiByName(wikiIntranet.getType(), wikiIntranet.getOwner(), "Page2");
     assertNotNull(fetchedPage2);
@@ -98,6 +105,9 @@ public class MigrationServiceTest extends MigrationITSetup {
     assertNotNull(attachmentsOfPage2);
     assertEquals(1, attachmentsOfPage2.size());
     assertTrue(Arrays.equals("attachment-content-2".getBytes(), attachmentsOfPage2.get(0).getContent()));
+    List<String> fetchedPage2Watchers = jpaDataStorage.getWatchersOfPage(fetchedPage2);
+    assertNotNull(fetchedPage2Watchers);
+    assertEquals(0, fetchedPage2Watchers.size());
     // check template1
     Map<String, Template> fetchedTemplates = jpaDataStorage.getTemplates(new WikiPageParams(wikiIntranet.getType(), wikiIntranet.getOwner(), wikiIntranet.getId()));
     assertNotNull(fetchedTemplates);

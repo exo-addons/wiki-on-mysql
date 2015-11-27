@@ -161,9 +161,14 @@ public class MigrationService implements Startable {
 
     }
 
+    // watchers
+    List<String> watchers = jcrDataStorage.getWatchersOfPage(page);
+    for(String watcher : watchers) {
+      jpaDataStorage.addWatcherToPage(watcher, page);
+    }
+
     // attachments
     List<Attachment> attachments = jcrDataStorage.getAttachmentsOfPage(page);
-
     for(Attachment attachment : attachments) {
       jpaDataStorage.addAttachmentToPage(attachment, page);
     }
