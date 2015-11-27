@@ -16,9 +16,12 @@
  */
 package org.exoplatform.wiki.jpa.migration;
 
+import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.portal.config.model.PortalConfig;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.organization.OrganizationService;
+import org.exoplatform.services.organization.User;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.jpa.JPADataStorage;
 import org.exoplatform.wiki.mow.api.*;
@@ -42,10 +45,12 @@ public class MigrationService implements Startable {
 
   private JCRDataStorage jcrDataStorage;
   private JPADataStorage jpaDataStorage;
+  private OrganizationService organizationService;
 
-  public MigrationService(JCRDataStorage jcrDataStorage, JPADataStorage jpaDataStorage) {
+  public MigrationService(JCRDataStorage jcrDataStorage, JPADataStorage jpaDataStorage, OrganizationService organizationService) {
     this.jcrDataStorage = jcrDataStorage;
     this.jpaDataStorage = jpaDataStorage;
+    this.organizationService = organizationService;
   }
 
   @Override
@@ -57,6 +62,8 @@ public class MigrationService implements Startable {
     migrateWikiOfType(PortalConfig.PORTAL_TYPE);
     migrateWikiOfType(PortalConfig.GROUP_TYPE);
     migrateWikiOfType(PortalConfig.USER_TYPE);
+
+    migrateDraftPages();
 
     long endTime = System.currentTimeMillis();
 
@@ -99,8 +106,31 @@ public class MigrationService implements Startable {
           LOG.info("  Wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner() + " migrated successfully");
         }
       }
-    } catch (WikiException e) {
+    } catch (Exception e) {
       e.printStackTrace();
+    }
+  }
+
+  private void migrateDraftPages() {
+    try {
+      ListAccess<User> allUsersListAccess = organizationService.getUserHandler().findAllUsers();
+      User[] allUsers = allUsersListAccess.load(0, allUsersListAccess.getSize());
+      for(User user : allUsers) {
+        try {
+          List<DraftPage> draftPages = jcrDataStorage.getDraftPagesOfUser(user.getUserName());
+          for (DraftPage jcrDraftPage : draftPages) {
+            try {
+              jpaDataStorage.createDraftPageForUser(jcrDraftPage, user.getUserName());
+            } catch (WikiException e) {
+              LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName() + " - Cause : " + e.getMessage(), e);
+            }
+          }
+        } catch (WikiException e) {
+          LOG.error("Cannot migrate draft pages of user " + user.getUserName() + " - Cause : " + e.getMessage(), e);
+        }
+      }
+    } catch (Exception e) {
+      LOG.error("Cannot migrate draft pages - Cause : " + e.getMessage(), e);
     }
   }
 

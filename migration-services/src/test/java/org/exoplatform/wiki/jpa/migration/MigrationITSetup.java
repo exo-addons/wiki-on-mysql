@@ -9,6 +9,7 @@ import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.portal.config.model.PortalConfig;
+import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.wiki.WikiException;
@@ -36,6 +37,7 @@ public class MigrationITSetup extends BaseExoTestCase {
 
   protected JCRDataStorage jcrDataStorage;
   protected JPADataStorage jpaDataStorage;
+  protected OrganizationService organizationService;
   protected MigrationService migrationService;
 
   protected WikiDAO        wikiDAO;
@@ -80,7 +82,9 @@ public class MigrationITSetup extends BaseExoTestCase {
     jcrDataStorage = ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(JCRDataStorage.class);
     jpaDataStorage = ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(JPADataStorage.class);
 
-    migrationService = new MigrationService(jcrDataStorage, jpaDataStorage);
+    organizationService = ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(OrganizationService.class);
+
+    migrationService = new MigrationService(jcrDataStorage, jpaDataStorage, organizationService);
 
     // Init DAO
     wikiDAO = PortalContainer.getInstance().getComponentInstanceOfType(WikiDAO.class);

@@ -47,6 +47,10 @@
     <type>org.exoplatform.wiki.jpa.JPADataStorage</type>
   </component>
 
+  <component>
+    <key>org.exoplatform.services.organization.OrganizationService</key>
+    <type>org.exoplatform.wiki.jpa.migration.mock.MockOrganizationService</type>
+  </component>
 
   <!-- Bind datasource -->
   <external-component-plugins>

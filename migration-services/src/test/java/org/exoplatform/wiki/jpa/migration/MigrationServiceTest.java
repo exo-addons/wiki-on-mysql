@@ -3,7 +3,12 @@ package org.exoplatform.wiki.jpa.migration;
 import org.exoplatform.component.test.ConfigurationUnit;
 import org.exoplatform.component.test.ConfiguredBy;
 import org.exoplatform.component.test.ContainerScope;
+import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.container.PortalContainer;
 import org.exoplatform.portal.config.model.PortalConfig;
+import org.exoplatform.services.organization.OrganizationService;
+import org.exoplatform.services.organization.User;
+import org.exoplatform.services.organization.UserHandler;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.mow.api.*;
 import org.exoplatform.wiki.service.WikiPageParams;
@@ -15,7 +20,15 @@ import java.util.*;
  */
 public class MigrationServiceTest extends MigrationITSetup {
 
-  public void testWikiMigration() throws WikiException {
+  public void testWikiMigration() throws Exception {
+    // Users
+    UserHandler userHandler = organizationService.getUserHandler();
+    User userJohn = userHandler.createUserInstance("john");
+    userHandler.createUser(userJohn, false);
+    User userMary = userHandler.createUserInstance("mary");
+    userHandler.createUser(userMary, false);
+
+    // Wiki
     Wiki wiki = new Wiki(PortalConfig.PORTAL_TYPE, "intranet");
     wiki = jcrDataStorage.createWiki(wiki);
     Page wikiHome = wiki.getWikiHome();
@@ -56,6 +69,16 @@ public class MigrationServiceTest extends MigrationITSetup {
     attachment.setUpdatedDate(Calendar.getInstance());
     attachment.setMimeType("text/plain");
     jcrDataStorage.addAttachmentToPage(attachment, page2);
+
+    // Draft Pages
+    DraftPage draftPage1 = new DraftPage();
+    draftPage1.setName("draftPage1");
+    draftPage1.setNewPage(false);
+    draftPage1.setContent("Draft Page 1 Content");
+    Date createdDateDraftPage1 = Calendar.getInstance().getTime();
+    draftPage1.setCreatedDate(createdDateDraftPage1);
+    draftPage1.setUpdatedDate(createdDateDraftPage1);
+    jcrDataStorage.createDraftPageForUser(draftPage1, "john");
 
     // Templates
     Template template1 = new Template();
@@ -108,6 +131,13 @@ public class MigrationServiceTest extends MigrationITSetup {
     List<String> fetchedPage2Watchers = jpaDataStorage.getWatchersOfPage(fetchedPage2);
     assertNotNull(fetchedPage2Watchers);
     assertEquals(0, fetchedPage2Watchers.size());
+    // check draft pages
+    List<DraftPage> johnDraftPages = jpaDataStorage.getDraftPagesOfUser("john");
+    assertNotNull(johnDraftPages);
+    assertEquals(1, johnDraftPages.size());
+    List<DraftPage> maryDraftPages = jpaDataStorage.getDraftPagesOfUser("mary");
+    assertNotNull(maryDraftPages);
+    assertEquals(0, maryDraftPages.size());
     // check template1
     Map<String, Template> fetchedTemplates = jpaDataStorage.getTemplates(new WikiPageParams(wikiIntranet.getType(), wikiIntranet.getOwner(), wikiIntranet.getId()));
     assertNotNull(fetchedTemplates);
