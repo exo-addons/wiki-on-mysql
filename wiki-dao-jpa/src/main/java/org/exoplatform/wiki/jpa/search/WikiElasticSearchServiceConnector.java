@@ -19,6 +19,8 @@ package org.exoplatform.wiki.jpa.search;
 import org.apache.commons.lang.StringUtils;
 import org.exoplatform.addons.es.client.ElasticSearchingClient;
 import org.exoplatform.addons.es.search.ElasticSearchException;
+import org.exoplatform.addons.es.search.ElasticSearchFilter;
+import org.exoplatform.addons.es.search.ElasticSearchFilterType;
 import org.exoplatform.addons.es.search.ElasticSearchServiceConnector;
 import org.exoplatform.commons.api.search.data.SearchContext;
 import org.exoplatform.container.xml.InitParams;
@@ -76,14 +78,14 @@ public class WikiElasticSearchServiceConnector extends ElasticSearchServiceConne
   }
 
   public List<SearchResult> searchWiki(String searchedText, String wikiType, String wikiOwner, int offset, int limit, String sort, String order) {
-    Map<String, String> filters = new HashMap<>();
-    filters.put("wikiType", wikiType);
-    filters.put("wikiOwner", wikiOwner);
+    List<ElasticSearchFilter> filters = new ArrayList<>();
+    filters.add(new ElasticSearchFilter(ElasticSearchFilterType.FILTER_BY_TERM, "wikiType", wikiType));
+    filters.add(new ElasticSearchFilter(ElasticSearchFilterType.FILTER_BY_TERM, "wikiOwner", wikiOwner));
     List<SearchResult> searchResults = filteredWikiSearch(null, searchedText, filters, null, offset, limit, sort, order);
     return searchResults;
   }
 
-  protected List<SearchResult> filteredWikiSearch(SearchContext context, String query, Map<String, String> filters, Collection<String> sites,
+  protected List<SearchResult> filteredWikiSearch(SearchContext context, String query, List<ElasticSearchFilter> filters, Collection<String> sites,
                                                   int offset, int limit, String sort, String order) {
     String esQuery = buildFilteredQuery(query, sites, filters, offset, limit, sort, order);
     String jsonResponse = getClient().sendRequest(esQuery, getIndex(), getType());

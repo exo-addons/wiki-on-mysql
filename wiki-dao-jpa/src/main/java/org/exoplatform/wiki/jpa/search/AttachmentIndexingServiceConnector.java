@@ -30,6 +30,7 @@ import org.exoplatform.wiki.jpa.entity.PageAttachmentEntity;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.jpa.entity.PermissionEntity;
 import org.exoplatform.wiki.mow.api.PermissionType;
+import org.exoplatform.wiki.utils.Utils;
 import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
@@ -76,7 +77,7 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
     PageEntity page = attachment.getPage();
     doc.addField("pageName", page.getName());
     fields.put("wikiType", page.getWiki().getType());
-    fields.put("wikiOwner", page.getWiki().getOwner());
+    fields.put("wikiOwner", Utils.validateWikiOwner(page.getWiki().getType(), page.getWiki().getOwner()));
 
     return doc;
   }

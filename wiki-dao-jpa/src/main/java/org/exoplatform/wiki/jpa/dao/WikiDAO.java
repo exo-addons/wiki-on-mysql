@@ -23,6 +23,7 @@ import javax.persistence.TypedQuery;
 
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 import org.exoplatform.wiki.jpa.entity.WikiEntity;
+import org.exoplatform.wiki.mow.api.WikiType;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com Jun
@@ -35,6 +36,10 @@ public class WikiDAO extends GenericDAOJPAImpl<WikiEntity, Long> {
   }
 
   public WikiEntity getWikiByTypeAndOwner(String wikiType, String wikiOwner) {
+
+    //We need to add the first "/" on the wiki owner
+    if (wikiType.equals(WikiType.GROUP)) wikiOwner = validateWikiOwner(wikiOwner);
+
     TypedQuery<WikiEntity> query = getEntityManager().createNamedQuery("wiki.getWikiByTypeAndOwner", WikiEntity.class)
                                                .setParameter("type", wikiType)
                                                .setParameter("owner", wikiOwner);
@@ -52,4 +57,18 @@ public class WikiDAO extends GenericDAOJPAImpl<WikiEntity, Long> {
 
     return query.getResultList();
   }
+
+  protected String validateWikiOwner(String wikiOwner){
+    if(wikiOwner == null || wikiOwner.length() == 0){
+      return null;
+    }
+    if(!wikiOwner.startsWith("/")){
+      wikiOwner = "/" + wikiOwner;
+    }
+    if(wikiOwner.endsWith("/")){
+      wikiOwner = wikiOwner.substring(0,wikiOwner.length()-1);
+    }
+    return wikiOwner;
+  }
+
 }

@@ -97,6 +97,8 @@ public class JPADataStorage implements DataStorage {
   public PageList<SearchResult> search(WikiSearchData wikiSearchData) {
     WikiElasticSearchServiceConnector searchService = PortalContainer.getInstance().getComponentInstanceOfType(WikiElasticSearchServiceConnector.class);
 
+    //Trick to add the "/" at the beginning of the
+
     List<SearchResult> searchResults = searchService.searchWiki(getSearchedText(wikiSearchData),
         wikiSearchData.getWikiType(),
         wikiSearchData.getWikiOwner(),
