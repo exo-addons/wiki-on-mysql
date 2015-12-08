@@ -702,7 +702,6 @@ public class JPADataStorage implements DataStorage {
             templateEntity.getWiki().getOwner(),
             templateEntity.getName(),
             templateEntity.getTitle(),
-            null,
             SearchResultType.TEMPLATE,
             updatedDateCalendar,
             createdDateCalendar,

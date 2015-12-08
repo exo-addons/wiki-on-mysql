@@ -117,7 +117,6 @@ public class WikiElasticSearchServiceConnector extends ElasticSearchServiceConne
 
       String title = (String) hitSource.get("title");
       String url = (String) hitSource.get("url");
-      String path = url;
 
       String wikiType = (String) hitSource.get("wikiType");
       String wikiOwner = (String) hitSource.get("wikiOwner");
@@ -158,7 +157,6 @@ public class WikiElasticSearchServiceConnector extends ElasticSearchServiceConne
       wikiSearchResult.setAttachmentName(attachmentName);
       wikiSearchResult.setExcerpt(excerpt.toString());
       wikiSearchResult.setTitle(title);
-      wikiSearchResult.setPath(path);
       wikiSearchResult.setType(type);
       wikiSearchResult.setCreatedDate(createdDate);
       wikiSearchResult.setUpdatedDate(updatedDate);
