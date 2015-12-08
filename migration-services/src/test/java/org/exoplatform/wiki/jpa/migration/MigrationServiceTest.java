@@ -11,6 +11,7 @@ import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.UserHandler;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.mow.api.*;
+import org.exoplatform.wiki.service.IDType;
 import org.exoplatform.wiki.service.WikiPageParams;
 
 import java.util.*;
@@ -33,6 +34,29 @@ public class MigrationServiceTest extends MigrationITSetup {
     // Wiki
     Wiki wiki = new Wiki(PortalConfig.PORTAL_TYPE, "intranet");
     wiki = jcrDataStorage.createWiki(wiki);
+    List<PermissionEntry> wikiPermissions = new ArrayList<>();
+    PermissionEntry rootPermissionEntry = new PermissionEntry("root", null, IDType.USER, new Permission[]{
+            new Permission(PermissionType.VIEWPAGE, true),
+            new Permission(PermissionType.EDITPAGE, true),
+            new Permission(PermissionType.ADMINPAGE, true),
+            new Permission(PermissionType.ADMINSPACE, true)
+    });
+    PermissionEntry administratorspermissionEntry = new PermissionEntry("*:/platform/administrators", null, IDType.MEMBERSHIP, new Permission[]{
+            new Permission(PermissionType.VIEWPAGE, true),
+            new Permission(PermissionType.EDITPAGE, true),
+            new Permission(PermissionType.ADMINPAGE, true),
+            new Permission(PermissionType.ADMINSPACE, true)
+    });
+    PermissionEntry usersPermissionEntry = new PermissionEntry("/platform/users", null, IDType.GROUP, new Permission[]{
+            new Permission(PermissionType.VIEWPAGE, true),
+            new Permission(PermissionType.EDITPAGE, false),
+            new Permission(PermissionType.ADMINPAGE, false),
+            new Permission(PermissionType.ADMINSPACE, false)
+    });
+    wikiPermissions.add(rootPermissionEntry);
+    wikiPermissions.add(administratorspermissionEntry);
+    wikiPermissions.add(usersPermissionEntry);
+    jcrDataStorage.updateWikiPermission(PortalConfig.PORTAL_TYPE, "intranet", wikiPermissions);
     Page wikiHome = wiki.getWikiHome();
     wikiHome.setContent("Wiki Home Page updated");
     jcrDataStorage.updatePage(wikiHome);
@@ -94,6 +118,7 @@ public class MigrationServiceTest extends MigrationITSetup {
     template1.setUpdatedDate(createdDateTemplate1);
     jcrDataStorage.createTemplatePage(wiki, template1);
 
+    // DO MIGRATION
     migrationService.start();
 
     // check wiki
@@ -103,6 +128,13 @@ public class MigrationServiceTest extends MigrationITSetup {
     Wiki wikiIntranet = portalWikis.get(0);
     assertEquals(PortalConfig.PORTAL_TYPE, wikiIntranet.getType());
     assertEquals("intranet", wikiIntranet.getOwner());
+    // check wiki permissions
+    List<PermissionEntry> fetchedWikiPermissions = wikiIntranet.getPermissions();
+    assertNotNull(fetchedWikiPermissions);
+    assertEquals(3, fetchedWikiPermissions.size());
+    assertTrue(fetchedWikiPermissions.contains(rootPermissionEntry));
+    assertTrue(fetchedWikiPermissions.contains(administratorspermissionEntry));
+    assertTrue(fetchedWikiPermissions.contains(usersPermissionEntry));
     // check wiki home page
     Page fetchedWikiHome = wikiIntranet.getWikiHome();
     assertNotNull(fetchedWikiHome);
