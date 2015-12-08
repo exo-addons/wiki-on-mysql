@@ -35,16 +35,17 @@ public class MigrationServicePT extends MigrationITSetup {
 
     startSessionAs("user1");
 
-    // Portal Wikis
-    WikiDataInjector portalWikiDataInjector = PortalContainer.getInstance().getComponentInstanceOfType(WikiDataInjector.class);
-    HashMap<String, String> portalInjectorParams = new HashMap<>();
-    portalInjectorParams.put("type", "data");
-    portalInjectorParams.put("q", "1,10,10");
-    portalInjectorParams.put("pre", "Public%20Wiki%20A,Public%20Wiki%20AB,Public%20Wiki%20ABC");
-    portalInjectorParams.put("wo", "intranet");
-    portalInjectorParams.put("wt", "portal");
-    portalInjectorParams.put("maxAtt", "50");
     try {
+      // Portal Wikis
+      wikiService.createWiki(PortalConfig.PORTAL_TYPE, "intranet");
+      WikiDataInjector portalWikiDataInjector = PortalContainer.getInstance().getComponentInstanceOfType(WikiDataInjector.class);
+      HashMap<String, String> portalInjectorParams = new HashMap<>();
+      portalInjectorParams.put("type", "data");
+      portalInjectorParams.put("q", "1,10,10");
+      portalInjectorParams.put("pre", "Public%20Wiki%20A,Public%20Wiki%20AB,Public%20Wiki%20ABC");
+      portalInjectorParams.put("wo", "intranet");
+      portalInjectorParams.put("wt", "portal");
+      portalInjectorParams.put("maxAtt", "50");
       portalWikiDataInjector.inject(portalInjectorParams);
     } catch (WikiException e) {
       LOG.error("Cannot inject portal wikis - Cause : " + e.getMessage(), e);
