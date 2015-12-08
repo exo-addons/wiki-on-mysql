@@ -35,32 +35,45 @@ public class MigrationServiceTest extends MigrationITSetup {
     Wiki wiki = new Wiki(PortalConfig.PORTAL_TYPE, "intranet");
     wiki = jcrDataStorage.createWiki(wiki);
     List<PermissionEntry> wikiPermissions = new ArrayList<>();
-    PermissionEntry rootPermissionEntry = new PermissionEntry("root", null, IDType.USER, new Permission[]{
+    PermissionEntry rootWikiPermissionEntry = new PermissionEntry("root", null, IDType.USER, new Permission[]{
             new Permission(PermissionType.VIEWPAGE, true),
             new Permission(PermissionType.EDITPAGE, true),
             new Permission(PermissionType.ADMINPAGE, true),
             new Permission(PermissionType.ADMINSPACE, true)
     });
-    PermissionEntry administratorspermissionEntry = new PermissionEntry("*:/platform/administrators", null, IDType.MEMBERSHIP, new Permission[]{
+    PermissionEntry administratorsWikiPermissionEntry = new PermissionEntry("*:/platform/administrators", null, IDType.MEMBERSHIP, new Permission[]{
             new Permission(PermissionType.VIEWPAGE, true),
             new Permission(PermissionType.EDITPAGE, true),
             new Permission(PermissionType.ADMINPAGE, true),
             new Permission(PermissionType.ADMINSPACE, true)
     });
-    PermissionEntry usersPermissionEntry = new PermissionEntry("/platform/users", null, IDType.GROUP, new Permission[]{
+    PermissionEntry usersWikiPermissionEntry = new PermissionEntry("/platform/users", null, IDType.GROUP, new Permission[]{
             new Permission(PermissionType.VIEWPAGE, true),
             new Permission(PermissionType.EDITPAGE, false),
             new Permission(PermissionType.ADMINPAGE, false),
             new Permission(PermissionType.ADMINSPACE, false)
     });
-    wikiPermissions.add(rootPermissionEntry);
-    wikiPermissions.add(administratorspermissionEntry);
-    wikiPermissions.add(usersPermissionEntry);
+    wikiPermissions.add(rootWikiPermissionEntry);
+    wikiPermissions.add(administratorsWikiPermissionEntry);
+    wikiPermissions.add(usersWikiPermissionEntry);
     jcrDataStorage.updateWikiPermission(PortalConfig.PORTAL_TYPE, "intranet", wikiPermissions);
     Page wikiHome = wiki.getWikiHome();
     wikiHome.setContent("Wiki Home Page updated");
     jcrDataStorage.updatePage(wikiHome);
 
+
+    PermissionEntry rootPagePermissionEntry = new PermissionEntry("root", null, IDType.USER, new Permission[]{
+            new Permission(PermissionType.VIEWPAGE, true),
+            new Permission(PermissionType.EDITPAGE, true)
+    });
+    PermissionEntry administratorsPagePermissionEntry = new PermissionEntry("*:/platform/administrators", null, IDType.MEMBERSHIP, new Permission[]{
+            new Permission(PermissionType.VIEWPAGE, true),
+            new Permission(PermissionType.EDITPAGE, true)
+    });
+    PermissionEntry usersPagePermissionEntry = new PermissionEntry("/platform/users", null, IDType.GROUP, new Permission[]{
+            new Permission(PermissionType.VIEWPAGE, true),
+            new Permission(PermissionType.EDITPAGE, false)
+    });
     // Pages
     Page page1 = new Page("Page1", "Page 1");
     page1.setAuthor("john");
@@ -68,7 +81,7 @@ public class MigrationServiceTest extends MigrationITSetup {
     Date createdDatePage1 = Calendar.getInstance().getTime();
     page1.setCreatedDate(createdDatePage1);
     page1.setUpdatedDate(createdDatePage1);
-    page1.setPermissions(Collections.<PermissionEntry>emptyList());
+    page1.setPermissions(Arrays.asList(rootPagePermissionEntry, administratorsPagePermissionEntry));
     page1 = jcrDataStorage.createPage(wiki, wikiHome, page1);
     page1.setContent("Page 1 Content - Version 2");
     jcrDataStorage.updatePage(page1);
@@ -83,7 +96,7 @@ public class MigrationServiceTest extends MigrationITSetup {
     Date createdDatePage2 = Calendar.getInstance().getTime();
     page2.setCreatedDate(createdDatePage2);
     page2.setUpdatedDate(createdDatePage2);
-    page2.setPermissions(Collections.<PermissionEntry>emptyList());
+    page2.setPermissions(Arrays.asList(rootPagePermissionEntry, usersPagePermissionEntry));
     page2 = jcrDataStorage.createPage(wiki, wikiHome, page2);
     Attachment attachment = new Attachment();
     attachment.setName("attachment2");
@@ -118,6 +131,8 @@ public class MigrationServiceTest extends MigrationITSetup {
     template1.setUpdatedDate(createdDateTemplate1);
     jcrDataStorage.createTemplatePage(wiki, template1);
 
+    startSessionAs("root");
+
     // DO MIGRATION
     migrationService.start();
 
@@ -132,9 +147,9 @@ public class MigrationServiceTest extends MigrationITSetup {
     List<PermissionEntry> fetchedWikiPermissions = wikiIntranet.getPermissions();
     assertNotNull(fetchedWikiPermissions);
     assertEquals(3, fetchedWikiPermissions.size());
-    assertTrue(fetchedWikiPermissions.contains(rootPermissionEntry));
-    assertTrue(fetchedWikiPermissions.contains(administratorspermissionEntry));
-    assertTrue(fetchedWikiPermissions.contains(usersPermissionEntry));
+    assertTrue(fetchedWikiPermissions.contains(rootWikiPermissionEntry));
+    assertTrue(fetchedWikiPermissions.contains(administratorsWikiPermissionEntry));
+    assertTrue(fetchedWikiPermissions.contains(usersWikiPermissionEntry));
     // check wiki home page
     Page fetchedWikiHome = wikiIntranet.getWikiHome();
     assertNotNull(fetchedWikiHome);
@@ -153,6 +168,11 @@ public class MigrationServiceTest extends MigrationITSetup {
     assertEquals(2, fetchedPage1Watchers.size());
     assertTrue(fetchedPage1Watchers.contains("john"));
     assertTrue(fetchedPage1Watchers.contains("mary"));
+    List<PermissionEntry> fetchedPage1Permissions = fetchedPage1.getPermissions();
+    assertNotNull(fetchedPage1Permissions);
+    assertEquals(2, fetchedPage1Permissions.size());
+    assertTrue(fetchedPage1Permissions.contains(rootPagePermissionEntry));
+    assertTrue(fetchedPage1Permissions.contains(administratorsPagePermissionEntry));
     // check page2 and attachments
     Page fetchedPage2 = jpaDataStorage.getPageOfWikiByName(wikiIntranet.getType(), wikiIntranet.getOwner(), "Page2");
     assertNotNull(fetchedPage2);
@@ -165,6 +185,11 @@ public class MigrationServiceTest extends MigrationITSetup {
     List<String> fetchedPage2Watchers = jpaDataStorage.getWatchersOfPage(fetchedPage2);
     assertNotNull(fetchedPage2Watchers);
     assertEquals(0, fetchedPage2Watchers.size());
+    List<PermissionEntry> fetchedPage2Permissions = fetchedPage2.getPermissions();
+    assertNotNull(fetchedPage2Permissions);
+    assertEquals(2, fetchedPage2Permissions.size());
+    assertTrue(fetchedPage2Permissions.contains(rootPagePermissionEntry));
+    assertTrue(fetchedPage2Permissions.contains(usersPagePermissionEntry));
     // check draft pages
     List<DraftPage> johnDraftPages = jpaDataStorage.getDraftPagesOfUser("john");
     assertNotNull(johnDraftPages);
