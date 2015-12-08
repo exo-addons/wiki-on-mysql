@@ -48,6 +48,8 @@ public class MigrationService implements Startable {
   private JPADataStorage jpaDataStorage;
   private OrganizationService organizationService;
 
+  private List<Page> pagesWithRelatedPages = new ArrayList<>();
+
   public MigrationService(JCRDataStorage jcrDataStorage, JPADataStorage jpaDataStorage, OrganizationService organizationService) {
     this.jcrDataStorage = jcrDataStorage;
     this.jpaDataStorage = jpaDataStorage;
@@ -65,6 +67,7 @@ public class MigrationService implements Startable {
     migrateWikiOfType(PortalConfig.USER_TYPE);
 
     migrateDraftPages();
+    migrateRelatedPages();
 
     long endTime = System.currentTimeMillis();
 
@@ -149,6 +152,23 @@ public class MigrationService implements Startable {
     }
   }
 
+  private void migrateRelatedPages() {
+    try {
+      // RELATED PAGES
+      LOG.info("  Start migration of related pages ...");
+      for(Page pageWithRelatedPages : pagesWithRelatedPages) {
+        LOG.info("    Related pages of page " + pageWithRelatedPages.getName());
+        for(Page relatedPage : jcrDataStorage.getRelatedPagesOfPage(pageWithRelatedPages)) {
+          LOG.info("      Add related page " + relatedPage.getName());
+          jpaDataStorage.addRelatedPage(pageWithRelatedPages, relatedPage);
+        }
+      }
+      LOG.info("  Related pages migrated");
+    } catch (WikiException e) {
+      LOG.error("Cannot migrate related pages - Cause : " + e.getMessage(), e);
+    }
+  }
+
   @Override
   public void stop() {
 
@@ -168,6 +188,12 @@ public class MigrationService implements Startable {
       for (Page childrenPage : childrenPages) {
         LOG.info(String.format("    %1$" + ((level) * 2) + "s Page %2$s", " ", childrenPage.getName()));
         createPage(jpaWiki, jcrPage, childrenPage);
+
+        // check if the page has related pages, and keep it if so
+        List<Page> relatedPages = jcrDataStorage.getRelatedPagesOfPage(childrenPage);
+        if(relatedPages != null && !relatedPages.isEmpty()) {
+          pagesWithRelatedPages.add(childrenPage);
+        }
 
         createChildrenPagesOf(jpaWiki, jcrWiki, childrenPage, level + 1);
       }

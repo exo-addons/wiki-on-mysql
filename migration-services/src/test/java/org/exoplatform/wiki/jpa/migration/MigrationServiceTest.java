@@ -119,6 +119,9 @@ public class MigrationServiceTest extends MigrationITSetup {
     draftPage1.setUpdatedDate(createdDateDraftPage1);
     jcrDataStorage.createDraftPageForUser(draftPage1, "john");
 
+    // Related pages
+    jcrDataStorage.addRelatedPage(page1, page2);
+
     // Templates
     Template template1 = new Template();
     template1.setName("Template1");
@@ -131,10 +134,13 @@ public class MigrationServiceTest extends MigrationITSetup {
     template1.setUpdatedDate(createdDateTemplate1);
     jcrDataStorage.createTemplatePage(wiki, template1);
 
+
     startSessionAs("root");
+
 
     // DO MIGRATION
     migrationService.start();
+
 
     // check wiki
     List<Wiki> portalWikis = jpaDataStorage.getWikisByType(PortalConfig.PORTAL_TYPE);
@@ -197,6 +203,11 @@ public class MigrationServiceTest extends MigrationITSetup {
     List<DraftPage> maryDraftPages = jpaDataStorage.getDraftPagesOfUser("mary");
     assertNotNull(maryDraftPages);
     assertEquals(0, maryDraftPages.size());
+    // check related pages
+    List<Page> relatedPagesOfPage1 = jpaDataStorage.getRelatedPagesOfPage(fetchedPage1);
+    assertNotNull(relatedPagesOfPage1);
+    assertEquals(1, relatedPagesOfPage1.size());
+    assertEquals("Page2", relatedPagesOfPage1.get(0).getName());
     // check template1
     Map<String, Template> fetchedTemplates = jpaDataStorage.getTemplates(new WikiPageParams(wikiIntranet.getType(), wikiIntranet.getOwner(), wikiIntranet.getId()));
     assertNotNull(fetchedTemplates);
