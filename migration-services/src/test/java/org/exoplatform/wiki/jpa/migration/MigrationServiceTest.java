@@ -218,5 +218,10 @@ public class MigrationServiceTest extends MigrationITSetup {
     assertEquals("Template 1 Title", fetchedTemplate1.getTitle());
     assertEquals("Template 1 Description", fetchedTemplate1.getDescription());
     assertEquals("Template 1 Content", fetchedTemplate1.getContent());
+
+    // check no more JCR data
+    assertEquals(0, jcrDataStorage.getWikisByType(PortalConfig.PORTAL_TYPE).size());
+    assertEquals(0, jcrDataStorage.getWikisByType(PortalConfig.GROUP_TYPE).size());
+    assertEquals(0, jcrDataStorage.getWikisByType(PortalConfig.USER_TYPE).size());
   }
 }

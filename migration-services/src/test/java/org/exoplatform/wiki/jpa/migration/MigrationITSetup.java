@@ -20,6 +20,7 @@ import org.exoplatform.wiki.mow.api.Attachment;
 import org.exoplatform.wiki.mow.api.Page;
 import org.exoplatform.wiki.mow.api.PermissionEntry;
 import org.exoplatform.wiki.mow.api.Wiki;
+import org.exoplatform.wiki.mow.core.api.MOWService;
 import org.exoplatform.wiki.service.impl.JCRDataStorage;
 
 import java.io.File;
@@ -38,6 +39,7 @@ public class MigrationITSetup extends BaseExoTestCase {
   protected JCRDataStorage jcrDataStorage;
   protected JPADataStorage jpaDataStorage;
   protected OrganizationService organizationService;
+  protected MOWService mowService;
   protected MigrationService migrationService;
 
   protected WikiDAO        wikiDAO;
@@ -84,7 +86,9 @@ public class MigrationITSetup extends BaseExoTestCase {
 
     organizationService = ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(OrganizationService.class);
 
-    migrationService = new MigrationService(jcrDataStorage, jpaDataStorage, organizationService);
+    mowService = ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(MOWService.class);
+
+    migrationService = new MigrationService(jcrDataStorage, jpaDataStorage, organizationService, mowService);
 
     // Init DAO
     wikiDAO = PortalContainer.getInstance().getComponentInstanceOfType(WikiDAO.class);

@@ -25,11 +25,19 @@ import org.exoplatform.services.organization.User;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.jpa.JPADataStorage;
 import org.exoplatform.wiki.mow.api.*;
+import org.exoplatform.wiki.mow.core.api.MOWService;
+import org.exoplatform.wiki.mow.core.api.WikiStoreImpl;
+import org.exoplatform.wiki.mow.core.api.wiki.WikiContainer;
+import org.exoplatform.wiki.mow.core.api.wiki.WikiImpl;
 import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.impl.JCRDataStorage;
 import org.picocontainer.Startable;
 
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -47,13 +55,16 @@ public class MigrationService implements Startable {
   private JCRDataStorage jcrDataStorage;
   private JPADataStorage jpaDataStorage;
   private OrganizationService organizationService;
+  private MOWService mowService;
 
   private List<Page> pagesWithRelatedPages = new ArrayList<>();
 
-  public MigrationService(JCRDataStorage jcrDataStorage, JPADataStorage jpaDataStorage, OrganizationService organizationService) {
+  public MigrationService(JCRDataStorage jcrDataStorage, JPADataStorage jpaDataStorage,
+                          OrganizationService organizationService, MOWService mowService) {
     this.jcrDataStorage = jcrDataStorage;
     this.jpaDataStorage = jpaDataStorage;
     this.organizationService = organizationService;
+    this.mowService = mowService;
   }
 
   @Override
@@ -68,6 +79,10 @@ public class MigrationService implements Startable {
 
     migrateDraftPages();
     migrateRelatedPages();
+
+    deleteWikisOfType(PortalConfig.PORTAL_TYPE);
+    deleteWikisOfType(PortalConfig.GROUP_TYPE);
+    deleteWikisOfType(PortalConfig.USER_TYPE);
 
     long endTime = System.currentTimeMillis();
 
@@ -166,6 +181,37 @@ public class MigrationService implements Startable {
       LOG.info("  Related pages migrated");
     } catch (WikiException e) {
       LOG.error("Cannot migrate related pages - Cause : " + e.getMessage(), e);
+    }
+  }
+
+  private void deleteWikisOfType(String wikiType) {
+    LOG.info("  Start deletion of wikis of type " + wikiType);
+
+    Session session = null;
+    boolean created = mowService.startSynchronization();
+
+    try {
+      session = mowService.getSession().getJCRSession();
+      WikiStoreImpl wStore = (WikiStoreImpl) mowService.getWikiStore();
+      WikiContainer<WikiImpl> wikiContainer = wStore.getWikiContainer(WikiType.valueOf(wikiType.toUpperCase()));
+      Collection<WikiImpl> allWikis = wikiContainer.getAllWikis();
+      for(WikiImpl wiki : allWikis) {
+        LOG.info("    Delete wiki " + wiki.getType() + ":" + wiki.getOwner());
+        String wikiPath = wiki.getPath();
+        if(wikiPath.startsWith("/")) {
+          wikiPath = wikiPath.substring(1);
+        }
+        Node wikiNode = session.getRootNode().getNode(wikiPath);
+        wikiNode.remove();
+        session.save();
+      }
+    } catch (RepositoryException e) {
+      LOG.error("Cannot delete wikis of type " + wikiType + " - Cause : " + e.getMessage(), e);
+    } finally {
+      if(session != null) {
+        session.logout();
+      }
+      mowService.stopSynchronization(created);
     }
   }
 
