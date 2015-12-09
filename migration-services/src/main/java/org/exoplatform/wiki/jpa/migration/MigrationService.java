@@ -27,6 +27,7 @@ import org.exoplatform.wiki.jpa.JPADataStorage;
 import org.exoplatform.wiki.mow.api.*;
 import org.exoplatform.wiki.mow.core.api.MOWService;
 import org.exoplatform.wiki.mow.core.api.WikiStoreImpl;
+import org.exoplatform.wiki.mow.core.api.wiki.PageImpl;
 import org.exoplatform.wiki.mow.core.api.wiki.WikiContainer;
 import org.exoplatform.wiki.mow.core.api.wiki.WikiImpl;
 import org.exoplatform.wiki.service.WikiPageParams;
@@ -83,6 +84,8 @@ public class MigrationService implements Startable {
     deleteWikisOfType(PortalConfig.PORTAL_TYPE);
     deleteWikisOfType(PortalConfig.GROUP_TYPE);
     deleteWikisOfType(PortalConfig.USER_TYPE);
+
+    deleteEmotionIcons();
 
     long endTime = System.currentTimeMillis();
 
@@ -211,6 +214,20 @@ public class MigrationService implements Startable {
       if(session != null) {
         session.logout();
       }
+      mowService.stopSynchronization(created);
+    }
+  }
+
+  private void deleteEmotionIcons() {
+    boolean created = mowService.startSynchronization();
+
+    try {
+      WikiStoreImpl wStore = (WikiStoreImpl)this.mowService.getWikiStore();
+      PageImpl emotionIconsPage = wStore.getEmotionIconsContainer();
+      if(emotionIconsPage != null) {
+        emotionIconsPage.remove();
+      }
+    } finally {
       mowService.stopSynchronization(created);
     }
   }
