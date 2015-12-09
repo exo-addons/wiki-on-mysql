@@ -84,6 +84,7 @@ public class EntityConverter {
       page.setPermissions(convertPermissionEntitiesToPermissionEntries(pageEntity.getPermissions(),
               Arrays.asList(PermissionType.VIEWPAGE, PermissionType.EDITPAGE)));
       page.setActivityId(pageEntity.getActivityId());
+      page.setHasChild(pageEntity.isHasChild());
     }
     return page;
   }
@@ -161,6 +162,7 @@ public class EntityConverter {
       pageEntity.setUrl(page.getUrl());
       pageEntity.setPermissions(convertPermissionEntriesToPermissionEntities(page.getPermissions()));
       pageEntity.setActivityId(page.getActivityId());
+      pageEntity.setHasChild(page.isHasChild());
     }
     return pageEntity;
   }

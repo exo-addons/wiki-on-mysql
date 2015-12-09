@@ -105,6 +105,9 @@ public class PageEntity extends BasePageEntity {
   @Column(name = "DELETED")
   private boolean deleted;
 
+  @Transient
+  private boolean hasChild;
+
   public long getId() {
     return id;
   }
@@ -219,5 +222,13 @@ public class PageEntity extends BasePageEntity {
 
   public void setDeleted(boolean deleted) {
     this.deleted = deleted;
+  }
+
+  public boolean isHasChild() {
+    return hasChild;
+  }
+
+  public void setHasChild(boolean hasChild) {
+    this.hasChild = hasChild;
   }
 }
