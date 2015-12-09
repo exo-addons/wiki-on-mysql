@@ -78,9 +78,9 @@ public class DraftPageDAO extends GenericDAOJPAImpl<DraftPageEntity, Long> {
 
   @ExoTransactional
   public void deleteDraftPagesByUserAndName(String draftName, String username) {
-
     DraftPageEntity draftPage = findLatestDraftPageByUserAndName(username, draftName);
-    delete(draftPage);
-
+    if(draftPage != null) {
+      delete(draftPage);
+    }
   }
 }
