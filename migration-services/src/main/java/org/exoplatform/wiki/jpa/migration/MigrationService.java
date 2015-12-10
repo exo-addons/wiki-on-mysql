@@ -17,6 +17,8 @@
 package org.exoplatform.wiki.jpa.migration;
 
 import org.exoplatform.commons.utils.ListAccess;
+import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.portal.config.model.PortalConfig;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -74,18 +76,25 @@ public class MigrationService implements Startable {
 
     long startTime = System.currentTimeMillis();
 
-    migrateWikiOfType(PortalConfig.PORTAL_TYPE);
-    migrateWikiOfType(PortalConfig.GROUP_TYPE);
-    migrateWikiOfType(PortalConfig.USER_TYPE);
+    try {
+      RequestLifeCycle.begin(ExoContainerContext.getCurrentContainer());
 
-    migrateDraftPages();
-    migrateRelatedPages();
+      migrateWikiOfType(PortalConfig.PORTAL_TYPE);
+      migrateWikiOfType(PortalConfig.GROUP_TYPE);
+      migrateWikiOfType(PortalConfig.USER_TYPE);
 
-    deleteWikisOfType(PortalConfig.PORTAL_TYPE);
-    deleteWikisOfType(PortalConfig.GROUP_TYPE);
-    deleteWikisOfType(PortalConfig.USER_TYPE);
+      migrateDraftPages();
+      migrateRelatedPages();
 
-    deleteEmotionIcons();
+      deleteWikisOfType(PortalConfig.PORTAL_TYPE);
+      deleteWikisOfType(PortalConfig.GROUP_TYPE);
+      deleteWikisOfType(PortalConfig.USER_TYPE);
+
+      deleteEmotionIcons();
+    } finally {
+      RequestLifeCycle.end();
+    }
+
 
     long endTime = System.currentTimeMillis();
 
