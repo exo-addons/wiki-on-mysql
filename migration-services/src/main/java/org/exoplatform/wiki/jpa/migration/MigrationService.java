@@ -79,22 +79,22 @@ public class MigrationService implements Startable {
     try {
       RequestLifeCycle.begin(ExoContainerContext.getCurrentContainer());
 
+      // migrate
       migrateWikiOfType(PortalConfig.PORTAL_TYPE);
       migrateWikiOfType(PortalConfig.GROUP_TYPE);
       migrateWikiOfType(PortalConfig.USER_TYPE);
-
       migrateDraftPages();
       migrateRelatedPages();
 
+      // cleanup
       deleteWikisOfType(PortalConfig.PORTAL_TYPE);
       deleteWikisOfType(PortalConfig.GROUP_TYPE);
       deleteWikisOfType(PortalConfig.USER_TYPE);
-
       deleteEmotionIcons();
+      deleteWikiRootNode();
     } finally {
       RequestLifeCycle.end();
     }
-
 
     long endTime = System.currentTimeMillis();
 
@@ -237,6 +237,29 @@ public class MigrationService implements Startable {
         emotionIconsPage.remove();
       }
     } finally {
+      mowService.stopSynchronization(created);
+    }
+  }
+
+  private void deleteWikiRootNode() {
+    LOG.info("  Start deletion of root wiki data node ...");
+
+    Session session = null;
+    boolean created = mowService.startSynchronization();
+
+    try {
+      session = mowService.getSession().getJCRSession();
+      Node wikiRootNode = session.getRootNode().getNode("exo:applications/eXoWiki");
+      if(wikiRootNode != null) {
+        wikiRootNode.remove();
+        session.save();
+      }
+    } catch (RepositoryException e) {
+      LOG.error("Cannot delete root wiki data node - Cause : " + e.getMessage(), e);
+    } finally {
+      if(session != null) {
+        session.logout();
+      }
       mowService.stopSynchronization(created);
     }
   }

@@ -14,6 +14,7 @@ import org.exoplatform.wiki.mow.api.*;
 import org.exoplatform.wiki.service.IDType;
 import org.exoplatform.wiki.service.WikiPageParams;
 
+import javax.jcr.Session;
 import java.util.*;
 
 /**
@@ -220,8 +221,7 @@ public class MigrationServiceTest extends MigrationITSetup {
     assertEquals("Template 1 Content", fetchedTemplate1.getContent());
 
     // check no more JCR data
-    assertEquals(0, jcrDataStorage.getWikisByType(PortalConfig.PORTAL_TYPE).size());
-    assertEquals(0, jcrDataStorage.getWikisByType(PortalConfig.GROUP_TYPE).size());
-    assertEquals(0, jcrDataStorage.getWikisByType(PortalConfig.USER_TYPE).size());
+    Session jcrSession = mowService.getSession().getJCRSession();
+    assertFalse(jcrSession.getRootNode().hasNode("exo:applications/eXoWiki"));
   }
 }
