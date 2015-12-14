@@ -22,24 +22,24 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>wiki-rdbms-addons</artifactId>
+    <artifactId>wiki-rdbms-addon</artifactId>
     <groupId>org.exoplatform.addons.wiki</groupId>
     <version>1.0.x-SNAPSHOT</version>
   </parent>
   <artifactId>wiki-rdbms-packaging</artifactId>
   <packaging>pom</packaging>
-  <name>Wiki on RDBMS - packaging</name>
-  <description>eXo Wiki on RDBMS Addon - packaging</description>
+  <name>Wiki RDBMS Addon Packaging</name>
+  <description>eXo Wiki on RDBMS Addon - Packaging</description>
   <dependencies>
     <dependency>
       <groupId>org.exoplatform.addons.wiki</groupId>
-      <artifactId>wiki-dao-jpa</artifactId>
+      <artifactId>wiki-rdbms-dao-services</artifactId>
       <version>1.0.x-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.exoplatform.addons.wiki</groupId>
-      <artifactId>wiki-rdbms-addons-extension</artifactId>
+      <artifactId>wiki-rdbms-extension</artifactId>
       <version>1.0.x-SNAPSHOT</version>
       <scope>provided</scope>
       <type>war</type>

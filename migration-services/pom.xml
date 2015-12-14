@@ -14,14 +14,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>wiki-rdbms-addons</artifactId>
+    <artifactId>wiki-rdbms-addon</artifactId>
     <groupId>org.exoplatform.addons.wiki</groupId>
     <version>1.0.x-SNAPSHOT</version>
   </parent>
-  <artifactId>migration-services</artifactId>
+  <artifactId>wiki-rdbms-migration-services</artifactId>
   <packaging>jar</packaging>
-  <name>Wiki DAO RDBMS Migration Services</name>
-  <description>Wiki DAO RDBMS Migration Services</description>
+  <name>Wiki RDBMS Addon Migration Services</name>
+  <description>Wiki RDBMS Addon Migration Services</description>
 
   <dependencies>
     <dependency>
@@ -36,7 +36,7 @@
     </dependency>
     <dependency>
       <groupId>org.exoplatform.addons.wiki</groupId>
-      <artifactId>wiki-dao-jpa</artifactId>
+      <artifactId>wiki-rdbms-dao-services</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>

@@ -28,13 +28,13 @@
     <relativePath/>
   </parent>
   <groupId>org.exoplatform.addons.wiki</groupId>
-  <artifactId>wiki-rdbms-addons</artifactId>
+  <artifactId>wiki-rdbms-addon</artifactId>
   <version>1.0.x-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Wiki RDBMS Addon</name>
   <description>Wiki RDBMS Addon</description>
   <modules>
-    <module>wiki-dao-jpa</module>
+    <module>dao-services</module>
     <module>migration-services</module>
     <module>extension</module>
     <module>packaging</module>
