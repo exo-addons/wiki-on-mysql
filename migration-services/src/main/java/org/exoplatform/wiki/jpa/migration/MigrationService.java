@@ -24,6 +24,9 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.User;
+import org.exoplatform.services.security.ConversationState;
+import org.exoplatform.services.security.Identity;
+import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.jpa.JPADataStorage;
 import org.exoplatform.wiki.mow.api.*;
@@ -79,6 +82,9 @@ public class MigrationService implements Startable {
     try {
       RequestLifeCycle.begin(ExoContainerContext.getCurrentContainer());
 
+      Identity userIdentity = new Identity(IdentityConstants.SYSTEM);
+      ConversationState.setCurrent(new ConversationState(userIdentity));
+
       // migrate
       migrateWikiOfType(PortalConfig.PORTAL_TYPE);
       migrateWikiOfType(PortalConfig.GROUP_TYPE);
@@ -93,6 +99,8 @@ public class MigrationService implements Startable {
       deleteEmotionIcons();
       deleteWikiRootNode();
     } finally {
+      // reset session
+      ConversationState.setCurrent(null);
       RequestLifeCycle.end();
     }
 

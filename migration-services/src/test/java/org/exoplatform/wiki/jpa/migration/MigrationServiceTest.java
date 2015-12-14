@@ -1,19 +1,15 @@
 package org.exoplatform.wiki.jpa.migration;
 
-import org.exoplatform.component.test.ConfigurationUnit;
-import org.exoplatform.component.test.ConfiguredBy;
-import org.exoplatform.component.test.ContainerScope;
-import org.exoplatform.container.ExoContainerContext;
-import org.exoplatform.container.PortalContainer;
 import org.exoplatform.portal.config.model.PortalConfig;
-import org.exoplatform.services.organization.OrganizationService;
+import org.exoplatform.services.organization.Group;
+import org.exoplatform.services.organization.GroupHandler;
 import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.UserHandler;
-import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.mow.api.*;
 import org.exoplatform.wiki.service.IDType;
 import org.exoplatform.wiki.service.WikiPageParams;
 
+import javax.jcr.Node;
 import javax.jcr.Session;
 import java.util.*;
 
@@ -29,12 +25,17 @@ public class MigrationServiceTest extends MigrationITSetup {
     userHandler.createUser(userJohn, false);
     User userMary = userHandler.createUserInstance("mary");
     userHandler.createUser(userMary, false);
+    // Groups
+    GroupHandler groupHandler = organizationService.getGroupHandler();
+    Group groupSpace1 = groupHandler.createGroupInstance();
+    groupSpace1.setGroupName("/spaces/space1");
+    groupHandler.saveGroup(groupSpace1, false);
 
     startSessionAs("john");
 
-    // Wiki
-    Wiki wiki = new Wiki(PortalConfig.PORTAL_TYPE, "intranet");
-    wiki = jcrDataStorage.createWiki(wiki);
+    // Portal Wiki
+    Wiki portalWiki = new Wiki(PortalConfig.PORTAL_TYPE, "intranet");
+    portalWiki = jcrDataStorage.createWiki(portalWiki);
     List<PermissionEntry> wikiPermissions = new ArrayList<>();
     PermissionEntry rootWikiPermissionEntry = new PermissionEntry("root", null, IDType.USER, new Permission[]{
             new Permission(PermissionType.VIEWPAGE, true),
@@ -58,7 +59,7 @@ public class MigrationServiceTest extends MigrationITSetup {
     wikiPermissions.add(administratorsWikiPermissionEntry);
     wikiPermissions.add(usersWikiPermissionEntry);
     jcrDataStorage.updateWikiPermission(PortalConfig.PORTAL_TYPE, "intranet", wikiPermissions);
-    Page wikiHome = wiki.getWikiHome();
+    Page wikiHome = portalWiki.getWikiHome();
     wikiHome.setContent("Wiki Home Page updated");
     jcrDataStorage.updatePage(wikiHome);
 
@@ -83,7 +84,7 @@ public class MigrationServiceTest extends MigrationITSetup {
     page1.setCreatedDate(createdDatePage1);
     page1.setUpdatedDate(createdDatePage1);
     page1.setPermissions(Arrays.asList(rootPagePermissionEntry, administratorsPagePermissionEntry));
-    page1 = jcrDataStorage.createPage(wiki, wikiHome, page1);
+    page1 = jcrDataStorage.createPage(portalWiki, wikiHome, page1);
     page1.setContent("Page 1 Content - Version 2");
     jcrDataStorage.updatePage(page1);
     jcrDataStorage.addPageVersion(page1);
@@ -98,7 +99,7 @@ public class MigrationServiceTest extends MigrationITSetup {
     page2.setCreatedDate(createdDatePage2);
     page2.setUpdatedDate(createdDatePage2);
     page2.setPermissions(Arrays.asList(rootPagePermissionEntry, usersPagePermissionEntry));
-    page2 = jcrDataStorage.createPage(wiki, wikiHome, page2);
+    page2 = jcrDataStorage.createPage(portalWiki, wikiHome, page2);
     Attachment attachment = new Attachment();
     attachment.setName("attachment2");
     attachment.setTitle("Attachment 2");
@@ -133,10 +134,36 @@ public class MigrationServiceTest extends MigrationITSetup {
     Date createdDateTemplate1 = Calendar.getInstance().getTime();
     template1.setCreatedDate(createdDateTemplate1);
     template1.setUpdatedDate(createdDateTemplate1);
-    jcrDataStorage.createTemplatePage(wiki, template1);
+    jcrDataStorage.createTemplatePage(portalWiki, template1);
 
+    // Group wiki
+    Session jcrSession = mowService.getSession().getJCRSession();
+    Node groupsNode = jcrSession.getRootNode().getNode("Groups");
+    Node spacesNode = groupsNode.addNode("spaces");
+    Node space1Node = spacesNode.addNode("space1");
+    space1Node.addNode("ApplicationData");
+    assertTrue(jcrSession.getRootNode().hasNode("Groups/spaces/space1/ApplicationData"));
 
-    startSessionAs("root");
+    Wiki groupWiki = new Wiki(PortalConfig.GROUP_TYPE, "/spaces/space1");
+    groupWiki = jcrDataStorage.createWiki(groupWiki);
+
+    // Pages
+    Page groupPage1 = new Page("PageGroup1", "Page Group 1");
+    groupPage1.setAuthor("john");
+    groupPage1.setContent("Page Group 1 Content");
+    Date createdDateGroupPage1 = Calendar.getInstance().getTime();
+    groupPage1.setCreatedDate(createdDateGroupPage1);
+    groupPage1.setUpdatedDate(createdDateGroupPage1);
+    groupPage1.setPermissions(Collections.EMPTY_LIST);
+    groupPage1 = jcrDataStorage.createPage(groupWiki, groupWiki.getWikiHome(), groupPage1);
+    groupPage1.setContent("Page Group 1 Content - Version 2");
+    jcrDataStorage.updatePage(groupPage1);
+    jcrDataStorage.addPageVersion(groupPage1);
+    jcrDataStorage.addWatcherToPage("john", groupPage1);
+    jcrDataStorage.addWatcherToPage("mary", groupPage1);
+
+    // reset session
+    startSessionAs(null);
 
 
     // DO MIGRATION
@@ -220,8 +247,23 @@ public class MigrationServiceTest extends MigrationITSetup {
     assertEquals("Template 1 Description", fetchedTemplate1.getDescription());
     assertEquals("Template 1 Content", fetchedTemplate1.getContent());
 
+    // check group wiki
+    List<Wiki> groupWikis = jpaDataStorage.getWikisByType(PortalConfig.GROUP_TYPE);
+    assertNotNull(groupWikis);
+    assertEquals(1, groupWikis.size());
+    Wiki wikiSpace1 = groupWikis.get(0);
+    assertEquals(PortalConfig.GROUP_TYPE, wikiSpace1.getType());
+    assertEquals("/spaces/space1", wikiSpace1.getOwner());
+    // check wiki home page
+    Page fetchedGroupWikiHome = wikiSpace1.getWikiHome();
+    assertNotNull(fetchedGroupWikiHome);
+    // check children pages
+    List<Page> fetchedGroupWikiHomeChildrenPages = jpaDataStorage.getChildrenPageOf(fetchedGroupWikiHome);
+    assertNotNull(fetchedGroupWikiHomeChildrenPages);
+    assertEquals(1, fetchedGroupWikiHomeChildrenPages.size());
+
     // check no more JCR data
-    Session jcrSession = mowService.getSession().getJCRSession();
+    jcrSession = mowService.getSession().getJCRSession();
     assertFalse(jcrSession.getRootNode().hasNode("exo:applications/eXoWiki"));
   }
 }

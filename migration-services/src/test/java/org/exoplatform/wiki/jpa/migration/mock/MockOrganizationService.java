@@ -9,6 +9,7 @@ import org.exoplatform.services.organization.*;
 public class MockOrganizationService implements OrganizationService {
 
   private UserHandler userHandler = new MockUserHandler();
+  private GroupHandler groupHandler = new MockGroupHandler();
 
   @Override
   public UserHandler getUserHandler() {
@@ -22,7 +23,7 @@ public class MockOrganizationService implements OrganizationService {
 
   @Override
   public GroupHandler getGroupHandler() {
-    return null;
+    return groupHandler;
   }
 
   @Override
