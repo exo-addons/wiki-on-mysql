@@ -25,6 +25,15 @@
       <outputFileNameMapping>wiki-rdbms-dao-services.jar</outputFileNameMapping>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
+    <dependencySet>
+      <outputDirectory>/</outputDirectory>
+      <includes>
+        <include>org.exoplatform.addons.wiki:wiki-rdbms-migration-services:jar</include>
+      </includes>
+      <scope>provided</scope>
+      <outputFileNameMapping>wiki-rdbms-migration-services.jar</outputFileNameMapping>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
   </dependencySets>
 </assembly>
 
