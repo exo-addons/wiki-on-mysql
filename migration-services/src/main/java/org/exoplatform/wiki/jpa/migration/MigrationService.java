@@ -17,6 +17,7 @@
 package org.exoplatform.wiki.jpa.migration;
 
 import org.exoplatform.commons.utils.ListAccess;
+import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.portal.config.model.PortalConfig;
@@ -37,6 +38,7 @@ import org.exoplatform.wiki.mow.core.api.wiki.WikiContainer;
 import org.exoplatform.wiki.mow.core.api.wiki.WikiImpl;
 import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.impl.JCRDataStorage;
+import org.jgroups.util.DefaultThreadFactory;
 import org.picocontainer.Startable;
 
 import javax.jcr.Node;
@@ -46,6 +48,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Startable service to migrate Wiki data from JCR to RDBMS
@@ -63,6 +69,10 @@ public class MigrationService implements Startable {
   private OrganizationService organizationService;
   private MOWService mowService;
 
+  private ExecutorService executorService;
+
+  private final CountDownLatch latch;
+
   private List<Page> pagesWithRelatedPages = new ArrayList<>();
 
   public MigrationService(JCRDataStorage jcrDataStorage, JPADataStorage jpaDataStorage,
@@ -71,6 +81,16 @@ public class MigrationService implements Startable {
     this.jpaDataStorage = jpaDataStorage;
     this.organizationService = organizationService;
     this.mowService = mowService;
+    this.executorService = Executors.newSingleThreadExecutor(new DefaultThreadFactory("WIKI-MIGRATION-RDBMS", false, false));
+    latch = new CountDownLatch(1);
+  }
+
+  public ExecutorService getExecutorService() {
+    return executorService;
+  }
+
+  public void setExecutorService(ExecutorService executorService) {
+    this.executorService = executorService;
   }
 
   @Override
@@ -80,7 +100,8 @@ public class MigrationService implements Startable {
     long startTime = System.currentTimeMillis();
 
     try {
-      RequestLifeCycle.begin(ExoContainerContext.getCurrentContainer());
+      final ExoContainer currentContainer = ExoContainerContext.getCurrentContainer();
+      RequestLifeCycle.begin(currentContainer);
 
       Identity userIdentity = new Identity(IdentityConstants.SYSTEM);
       ConversationState.setCurrent(new ConversationState(userIdentity));
@@ -92,12 +113,36 @@ public class MigrationService implements Startable {
       migrateDraftPages();
       migrateRelatedPages();
 
-      // cleanup
-      deleteWikisOfType(PortalConfig.PORTAL_TYPE);
-      deleteWikisOfType(PortalConfig.GROUP_TYPE);
-      deleteWikisOfType(PortalConfig.USER_TYPE);
-      deleteEmotionIcons();
-      deleteWikiRootNode();
+      getExecutorService().submit(new Callable<Void>() {
+        @Override
+        public Void call() throws Exception {
+          try {
+            RequestLifeCycle.begin(currentContainer);
+
+            Identity userIdentity = new Identity(IdentityConstants.SYSTEM);
+            ConversationState.setCurrent(new ConversationState(userIdentity));
+
+            // cleanup
+            deleteWikisOfType(PortalConfig.PORTAL_TYPE);
+            deleteWikisOfType(PortalConfig.GROUP_TYPE);
+            deleteWikisOfType(PortalConfig.USER_TYPE);
+            deleteEmotionIcons();
+            deleteWikiRootNode();
+          } catch(Exception e) {
+            LOG.error("Error while cleaning Wiki JCR data to RDBMS - Cause : " + e.getMessage(), e);
+          } finally {
+            // reset session
+            ConversationState.setCurrent(null);
+            RequestLifeCycle.end();
+          }
+
+          latch.countDown();
+
+          return null;
+        }
+      });
+    } catch(Exception e) {
+      LOG.error("Error while migrating Wiki JCR data to RDBMS - Cause : " + e.getMessage(), e);
     } finally {
       // reset session
       ConversationState.setCurrent(null);
@@ -107,6 +152,10 @@ public class MigrationService implements Startable {
     long endTime = System.currentTimeMillis();
 
     LOG.info("=== Wiki data migration from JCR to RDBMS done in " + (endTime - startTime) + " ms");
+  }
+
+  public CountDownLatch getLatch() {
+    return latch;
   }
 
   private void migrateWikiOfType(String wikiType) {
@@ -213,6 +262,7 @@ public class MigrationService implements Startable {
     try {
       session = mowService.getSession().getJCRSession();
       WikiStoreImpl wStore = (WikiStoreImpl) mowService.getWikiStore();
+      wStore.setMOWService(mowService);
       WikiContainer<WikiImpl> wikiContainer = wStore.getWikiContainer(WikiType.valueOf(wikiType.toUpperCase()));
       Collection<WikiImpl> allWikis = wikiContainer.getAllWikis();
       for(WikiImpl wiki : allWikis) {
@@ -225,7 +275,7 @@ public class MigrationService implements Startable {
         wikiNode.remove();
         session.save();
       }
-    } catch (RepositoryException e) {
+    } catch (Exception e) {
       LOG.error("Cannot delete wikis of type " + wikiType + " - Cause : " + e.getMessage(), e);
     } finally {
       if(session != null) {
@@ -240,6 +290,7 @@ public class MigrationService implements Startable {
 
     try {
       WikiStoreImpl wStore = (WikiStoreImpl)this.mowService.getWikiStore();
+      wStore.setMOWService(mowService);
       PageImpl emotionIconsPage = wStore.getEmotionIconsContainer();
       if(emotionIconsPage != null) {
         emotionIconsPage.remove();
@@ -271,6 +322,7 @@ public class MigrationService implements Startable {
       mowService.stopSynchronization(created);
     }
   }
+
 
   @Override
   public void stop() {

@@ -169,6 +169,8 @@ public class MigrationServiceTest extends MigrationITSetup {
     // DO MIGRATION
     migrationService.start();
 
+    migrationService.getLatch().await();
+
 
     // check wiki
     List<Wiki> portalWikis = jpaDataStorage.getWikisByType(PortalConfig.PORTAL_TYPE);

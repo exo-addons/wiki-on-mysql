@@ -16,6 +16,7 @@ import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.bench.WikiDataInjector;
 import org.exoplatform.wiki.jpa.JPADataStorage;
 import org.exoplatform.wiki.jpa.dao.*;
+import org.exoplatform.wiki.jpa.migration.mock.SynchronousExecutorService;
 import org.exoplatform.wiki.mow.api.Attachment;
 import org.exoplatform.wiki.mow.api.Page;
 import org.exoplatform.wiki.mow.api.PermissionEntry;
