@@ -95,16 +95,21 @@ public class MigrationService implements Startable {
 
   @Override
   public void start() {
-    LOG.info("=== Start Wiki data migration from JCR to RDBMS");
-
-    long startTime = System.currentTimeMillis();
-
     try {
       final ExoContainer currentContainer = ExoContainerContext.getCurrentContainer();
       RequestLifeCycle.begin(currentContainer);
 
       Identity userIdentity = new Identity(IdentityConstants.SYSTEM);
       ConversationState.setCurrent(new ConversationState(userIdentity));
+
+      if(!hasDataToMigrate()) {
+        LOG.info("No Wiki data to migrate from JCR to RDBMS");
+        return;
+      }
+
+      LOG.info("=== Start Wiki data migration from JCR to RDBMS");
+
+      long startTime = System.currentTimeMillis();
 
       // migrate
       migrateWikiOfType(PortalConfig.PORTAL_TYPE);
@@ -141,6 +146,11 @@ public class MigrationService implements Startable {
           return null;
         }
       });
+
+      long endTime = System.currentTimeMillis();
+
+      LOG.info("=== Wiki data migration from JCR to RDBMS done in " + (endTime - startTime) + " ms");
+
     } catch(Exception e) {
       LOG.error("Error while migrating Wiki JCR data to RDBMS - Cause : " + e.getMessage(), e);
     } finally {
@@ -148,14 +158,31 @@ public class MigrationService implements Startable {
       ConversationState.setCurrent(null);
       RequestLifeCycle.end();
     }
-
-    long endTime = System.currentTimeMillis();
-
-    LOG.info("=== Wiki data migration from JCR to RDBMS done in " + (endTime - startTime) + " ms");
   }
 
   public CountDownLatch getLatch() {
     return latch;
+  }
+
+  private boolean hasDataToMigrate() {
+    boolean hasDataToMigrate = true;
+
+    Session session = null;
+    boolean created = mowService.startSynchronization();
+
+    try {
+      session = mowService.getSession().getJCRSession();
+      hasDataToMigrate = session.getRootNode().hasNode("exo:applications/eXoWiki");
+    } catch (RepositoryException e) {
+      LOG.error("Cannot get root wiki data node - Cause : " + e.getMessage(), e);
+    } finally {
+      if(session != null) {
+        session.logout();
+      }
+      mowService.stopSynchronization(created);
+    }
+
+    return hasDataToMigrate;
   }
 
   private void migrateWikiOfType(String wikiType) {
