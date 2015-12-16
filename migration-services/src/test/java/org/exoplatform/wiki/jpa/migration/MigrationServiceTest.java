@@ -161,6 +161,15 @@ public class MigrationServiceTest extends MigrationITSetup {
     jcrDataStorage.addPageVersion(groupPage1);
     jcrDataStorage.addWatcherToPage("john", groupPage1);
     jcrDataStorage.addWatcherToPage("mary", groupPage1);
+    Attachment groupPageAttachment = new Attachment();
+    groupPageAttachment.setName("groupAttachment1");
+    groupPageAttachment.setTitle("Group Attachment 1");
+    groupPageAttachment.setContent("group-attachment-content-1".getBytes());
+    groupPageAttachment.setCreator("john");
+    groupPageAttachment.setCreatedDate(Calendar.getInstance());
+    groupPageAttachment.setUpdatedDate(Calendar.getInstance());
+    groupPageAttachment.setMimeType("text/plain");
+    jcrDataStorage.addAttachmentToPage(groupPageAttachment, groupPage1);
 
     // reset session
     startSessionAs(null);
@@ -263,6 +272,11 @@ public class MigrationServiceTest extends MigrationITSetup {
     List<Page> fetchedGroupWikiHomeChildrenPages = jpaDataStorage.getChildrenPageOf(fetchedGroupWikiHome);
     assertNotNull(fetchedGroupWikiHomeChildrenPages);
     assertEquals(1, fetchedGroupWikiHomeChildrenPages.size());
+    Page fetchedGroupPage1 = fetchedGroupWikiHomeChildrenPages.get(0);
+    List<Attachment> attachmentsOfGroupPage1 = jpaDataStorage.getAttachmentsOfPage(fetchedGroupPage1);
+    assertNotNull(attachmentsOfGroupPage1);
+    assertEquals(1, attachmentsOfGroupPage1.size());
+    assertTrue(Arrays.equals("group-attachment-content-1".getBytes(), attachmentsOfGroupPage1.get(0).getContent()));
 
     // check no more JCR data
     jcrSession = mowService.getSession().getJCRSession();

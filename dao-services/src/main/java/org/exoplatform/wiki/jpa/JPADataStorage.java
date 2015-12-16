@@ -1301,7 +1301,7 @@ public class JPADataStorage implements DataStorage {
         .append("/")
         .append(Utils.SPACE)
         .append("/")
-        .append(Utils.validateWikiOwner(wikiType, wikiOwner))
+        .append(wikiOwner)
         .append("/")
         .append(Utils.PAGE)
         .append("/")
