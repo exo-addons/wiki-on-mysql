@@ -28,13 +28,14 @@
     <relativePath/>
   </parent>
   <groupId>org.exoplatform.addons.wiki</groupId>
-  <artifactId>wiki-rdbms-addons</artifactId>
+  <artifactId>wiki-rdbms-addon</artifactId>
   <version>1.0.x-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Wiki RDBMS Addon</name>
   <description>Wiki RDBMS Addon</description>
   <modules>
-    <module>wiki-dao-jpa</module>
+    <module>dao-services</module>
+    <module>migration-services</module>
     <module>extension</module>
     <module>packaging</module>
   </modules>
@@ -119,7 +120,42 @@
       </plugins>
     </pluginManagement>
   </build>
+
   <profiles>
+    <profile>
+      <id>run-pts</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>perf-test</id>
+                <phase>integration-test</phase>
+                <goals>
+                  <goal>integration-test</goal>
+                </goals>
+                <configuration>
+                  <includes>
+                    <include>**/PT*.java</include>
+                    <include>**/*PT.java</include>
+                    <include>**/*PTCase.java</include>
+                  </includes>
+                </configuration>
+              </execution>
+              <execution>
+                <id>verify</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>project-repositories</id>
       <activation>

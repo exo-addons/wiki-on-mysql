@@ -23,16 +23,16 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.exoplatform.addons.wiki</groupId>
-    <artifactId>wiki-rdbms-addons</artifactId>
+    <artifactId>wiki-rdbms-addon</artifactId>
     <version>1.0.x-SNAPSHOT</version>
   </parent>
-  <artifactId>wiki-rdbms-addons-extension</artifactId>
+  <artifactId>wiki-rdbms-extension</artifactId>
   <packaging>war</packaging>
   <name>Wiki RDBMS Addon Extension Webapp</name>
   <description>Wiki RDBMS Addon Extension Webapp</description>
 
   <build>
-    <finalName>wiki-rdbms-addons</finalName>
+    <finalName>wiki-rdbms-extension</finalName>
 
     <plugins>
       <plugin>

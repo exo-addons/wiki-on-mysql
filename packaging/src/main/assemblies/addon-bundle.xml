@@ -11,18 +11,27 @@
       <useProjectArtifact>false</useProjectArtifact>
       <outputDirectory>/</outputDirectory>
       <includes>
-        <include>${project.groupId}:wiki-rdbms-addons-extension:war</include>
+        <include>${project.groupId}:wiki-rdbms-extension:war</include>
       </includes>
       <scope>provided</scope>
-      <outputFileNameMapping>wiki-rdbms-addons.war</outputFileNameMapping>
+      <outputFileNameMapping>wiki-rdbms-extension.war</outputFileNameMapping>
     </dependencySet>
     <dependencySet>
       <outputDirectory>/</outputDirectory>
       <includes>
-        <include>org.exoplatform.addons.wiki:wiki-dao-jpa:jar</include>
+        <include>org.exoplatform.addons.wiki:wiki-rdbms-dao-services:jar</include>
       </includes>
       <scope>provided</scope>
-      <outputFileNameMapping>wiki-dao-jpa.jar</outputFileNameMapping>
+      <outputFileNameMapping>wiki-rdbms-dao-services.jar</outputFileNameMapping>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>/</outputDirectory>
+      <includes>
+        <include>org.exoplatform.addons.wiki:wiki-rdbms-migration-services:jar</include>
+      </includes>
+      <scope>provided</scope>
+      <outputFileNameMapping>wiki-rdbms-migration-services.jar</outputFileNameMapping>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
   </dependencySets>

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (C) 2003-2014 eXo Platform SAS. This is free software; you 
+  can redistribute it and/or modify it under the terms of the GNU Lesser General 
+  Public License as published by the Free Software Foundation; either version 
+  2.1 of the License, or (at your option) any later version. This software 
+  is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+  PURPOSE. See the GNU Lesser General Public License for more details. You 
+  should have received a copy of the GNU Lesser General Public License along 
+  with this software; if not, write to the Free Software Foundation, Inc., 
+  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF site: 
+  http://www.fsf.org. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>wiki-rdbms-addon</artifactId>
+    <groupId>org.exoplatform.addons.wiki</groupId>
+    <version>1.0.x-SNAPSHOT</version>
+  </parent>
+  <artifactId>wiki-rdbms-dao-services</artifactId>
+  <packaging>jar</packaging>
+  <name>Wiki RDBMS Addon DAO Services</name>
+  <description>Wiki RDBMS Addon DAO Services</description>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-core</artifactId>
+        <version>${lucene.version}</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.exoplatform.addons.es</groupId>
+      <artifactId>exo-es-search-service</artifactId>
+      <version>${exo.es.search.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.exoplatform.commons</groupId>
+      <artifactId>commons-api</artifactId>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.lucene</groupId>
+          <artifactId>lucene-spellchecker</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.commons</groupId>
+      <artifactId>commons-component-common</artifactId>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.lucene</groupId>
+          <artifactId>lucene-spellchecker</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.wiki</groupId>
+      <artifactId>wiki-service</artifactId>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.lucene</groupId>
+          <artifactId>lucene-core</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- Tests -->
+    <dependency>
+      <groupId>org.exoplatform.commons</groupId>
+      <artifactId>commons-testing</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hsqldb</groupId>
+      <artifactId>hsqldb</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.integration</groupId>
+      <artifactId>integ-search-service</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.exoplatform.social</groupId>
+          <artifactId>social-component-common</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.exoplatform.social</groupId>
+          <artifactId>social-component-core</artifactId>
+        </exclusion>
+      </exclusions>
+      <scope>test</scope>
+    </dependency>
+    <!-- ES Test -->
+    <dependency>
+      <groupId>org.elasticsearch</groupId>
+      <artifactId>elasticsearch</artifactId>
+      <version>${elasticsearch.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.elasticsearch</groupId>
+      <artifactId>elasticsearch-mapper-attachments</artifactId>
+      <version>${elasticsearch-mapper-attachments.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>${logback.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.jcabi</groupId>
+        <artifactId>jcabi-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+
