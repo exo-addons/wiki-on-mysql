@@ -51,7 +51,7 @@
         <constraints nullable="false"/>
       </column>
       <column name="CONTENT" type="CLOB"/>
-      <column name="SYNTAX" type="TEXT(30)"/>
+      <column name="SYNTAX" type="VARCHAR(30)"/>
       <column name="TITLE" type="VARCHAR(250)"/>
       <column name="COMMENT" type="VARCHAR(1000)"/>
       <column name="URL" type="VARCHAR(500)"/>
@@ -108,7 +108,7 @@
         <constraints nullable="false"/>
       </column>
       <column name="CONTENT" type="CLOB"/>
-      <column name="SYNTAX" type="TEXT(30)"/>
+      <column name="SYNTAX" type="VARCHAR(30)"/>
       <column name="PAGE_ID" type="BIGINT"/>
     </createTable>
     <modifySql dbms="mysql">
@@ -167,7 +167,7 @@
       <column name="NAME" type="VARCHAR(100)"/>
       <column name="DESCRIPTION" type="VARCHAR(250)"/>
       <column name="CONTENT" type="CLOB"/>
-      <column name="SYNTAX" type="TEXT(30)"/>
+      <column name="SYNTAX" type="VARCHAR(30)"/>
       <column name="TITLE" type="VARCHAR(250)"/>
       <column name="CREATED_DATE" type="TIMESTAMP">
         <constraints nullable="false"/>
@@ -193,7 +193,7 @@
       <column name="NAME" type="VARCHAR(100)"/>
       <column name="TITLE" type="VARCHAR(250)"/>
       <column name="CONTENT" type="CLOB"/>
-      <column name="SYNTAX" type="TEXT(30)"/>
+      <column name="SYNTAX" type="VARCHAR(30)"/>
       <column name="CREATED_DATE" type="TIMESTAMP">
         <constraints nullable="false"/>
       </column>
