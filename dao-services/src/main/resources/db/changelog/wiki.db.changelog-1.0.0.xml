@@ -50,7 +50,7 @@
       <column name="UPDATED_DATE" type="TIMESTAMP">
         <constraints nullable="false"/>
       </column>
-      <column name="CONTENT" type="TEXT(20000)"/>
+      <column name="CONTENT" type="CLOB"/>
       <column name="SYNTAX" type="TEXT(30)"/>
       <column name="TITLE" type="VARCHAR(250)"/>
       <column name="COMMENT" type="VARCHAR(1000)"/>
@@ -107,7 +107,7 @@
       <column name="UPDATED_DATE" type="TIMESTAMP">
         <constraints nullable="false"/>
       </column>
-      <column name="CONTENT" type="TEXT(20000)"/>
+      <column name="CONTENT" type="CLOB"/>
       <column name="SYNTAX" type="TEXT(30)"/>
       <column name="PAGE_ID" type="BIGINT"/>
     </createTable>
@@ -166,7 +166,7 @@
       <column name="AUTHOR" type="VARCHAR(36)"/>
       <column name="NAME" type="VARCHAR(100)"/>
       <column name="DESCRIPTION" type="VARCHAR(250)"/>
-      <column name="CONTENT" type="TEXT(20000)"/>
+      <column name="CONTENT" type="CLOB"/>
       <column name="SYNTAX" type="TEXT(30)"/>
       <column name="TITLE" type="VARCHAR(250)"/>
       <column name="CREATED_DATE" type="TIMESTAMP">
@@ -192,7 +192,7 @@
       <column name="AUTHOR" type="VARCHAR(36)"/>
       <column name="NAME" type="VARCHAR(100)"/>
       <column name="TITLE" type="VARCHAR(250)"/>
-      <column name="CONTENT" type="TEXT(20000)"/>
+      <column name="CONTENT" type="CLOB"/>
       <column name="SYNTAX" type="TEXT(30)"/>
       <column name="CREATED_DATE" type="TIMESTAMP">
         <constraints nullable="false"/>
