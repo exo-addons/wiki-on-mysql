@@ -53,7 +53,7 @@
       <column name="CONTENT" type="CLOB"/>
       <column name="SYNTAX" type="VARCHAR(30)"/>
       <column name="TITLE" type="VARCHAR(250)"/>
-      <column name="COMMENT" type="VARCHAR(1000)"/>
+      <column name="EDITION_COMMENT" type="VARCHAR(1000)"/>
       <column name="URL" type="VARCHAR(500)"/>
       <column name="MINOR_EDIT" type="BOOLEAN"/>
       <column name="ACTIVITY_ID" type="VARCHAR(36)"/>

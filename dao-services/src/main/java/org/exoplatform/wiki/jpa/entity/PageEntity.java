@@ -72,7 +72,7 @@ public class PageEntity extends BasePageEntity {
   @Column(name = "OWNER")
   private String owner;
 
-  @Column(name = "COMMENT")
+  @Column(name = "EDITION_COMMENT")
   private String comment;
 
   @Column(name = "URL")
