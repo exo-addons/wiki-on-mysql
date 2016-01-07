@@ -20,13 +20,13 @@
       <column name="WIKI_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
         <constraints nullable="false" primaryKey="true" primaryKeyName="PK_WIKI_WIKIS_ID"/>
       </column>
-      <column name="NAME" type="VARCHAR(550)"/>
-      <column name="OWNER" type="VARCHAR(36)">
+      <column name="NAME" type="NVARCHAR(550)"/>
+      <column name="OWNER" type="NVARCHAR(36)">
         <constraints nullable="true"/>
       </column>
-      <column name="TYPE" type="VARCHAR(50)"/>
+      <column name="TYPE" type="NVARCHAR(50)"/>
       <column name="WIKI_HOME" type="BIGINT"/>
-      <column name="SYNTAX" type="VARCHAR(30)"/>
+      <column name="SYNTAX" type="NVARCHAR(30)"/>
       <column name="ALLOW_MULTI_SYNTAX" type="BOOLEAN"/>
     </createTable>
     <modifySql dbms="mysql">
@@ -41,9 +41,9 @@
       </column>
       <column name="WIKI_ID" type="BIGINT"/>
       <column name="PARENT_PAGE_ID" type="BIGINT"/>
-      <column name="AUTHOR" type="VARCHAR(36)"/>
-      <column name="NAME" type="VARCHAR(550)"/>
-      <column name="OWNER" type="VARCHAR(36)"/>
+      <column name="AUTHOR" type="NVARCHAR(36)"/>
+      <column name="NAME" type="NVARCHAR(550)"/>
+      <column name="OWNER" type="NVARCHAR(36)"/>
       <column name="CREATED_DATE" type="TIMESTAMP">
         <constraints nullable="false"/>
       </column>
@@ -51,12 +51,12 @@
         <constraints nullable="false"/>
       </column>
       <column name="CONTENT" type="CLOB"/>
-      <column name="SYNTAX" type="VARCHAR(30)"/>
-      <column name="TITLE" type="VARCHAR(550)"/>
-      <column name="EDITION_COMMENT" type="VARCHAR(1000)"/>
-      <column name="URL" type="VARCHAR(500)"/>
+      <column name="SYNTAX" type="NVARCHAR(30)"/>
+      <column name="TITLE" type="NVARCHAR(550)"/>
+      <column name="EDITION_COMMENT" type="NVARCHAR(1000)"/>
+      <column name="URL" type="NVARCHAR(500)"/>
       <column name="MINOR_EDIT" type="BOOLEAN"/>
-      <column name="ACTIVITY_ID" type="VARCHAR(36)"/>
+      <column name="ACTIVITY_ID" type="NVARCHAR(36)"/>
       <column name="DELETED" type="BOOLEAN" defaultValueBoolean="false"/>
     </createTable>
     <modifySql dbms="mysql">
@@ -72,8 +72,8 @@
       <column name="WIKI_PAGE_ID" type="BIGINT">
         <constraints foreignKeyName="FK_WIKI_ATTACHMENTS_PAGES" references="WIKI_PAGES(PAGE_ID)" />
       </column>
-      <column name="NAME" type="VARCHAR(550)"/>
-      <column name="CREATOR" type="VARCHAR(36)">
+      <column name="NAME" type="NVARCHAR(550)"/>
+      <column name="CREATOR" type="NVARCHAR(36)">
         <constraints nullable="true"/>
       </column>
       <column name="CREATED_DATE" type="TIMESTAMP">
@@ -82,10 +82,10 @@
       <column name="UPDATED_DATE" type="TIMESTAMP">
         <constraints nullable="false"/>
       </column>
-      <column name="TITLE" type="VARCHAR(550)"/>
-      <column name="FULL_TITLE" type="VARCHAR(250)"/>
+      <column name="TITLE" type="NVARCHAR(550)"/>
+      <column name="FULL_TITLE" type="NVARCHAR(250)"/>
       <column name="CONTENT" type="LONGBLOB"/>
-      <column name="MIMETYPE" type="VARCHAR(50)"/>
+      <column name="MIMETYPE" type="NVARCHAR(50)"/>
     </createTable>
     <modifySql dbms="mysql">
       <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
@@ -98,9 +98,9 @@
         <constraints nullable="false" primaryKey="true" primaryKeyName="PK_WIKI_PAGE_VERSIONS_ID"/>
       </column>
       <column name="VERSION_NUMBER" type="BIGINT"/>
-      <column name="AUTHOR" type="VARCHAR(36)"/>
-      <column name="NAME" type="VARCHAR(550)"/>
-      <column name="TITLE" type="VARCHAR(550)"/>
+      <column name="AUTHOR" type="NVARCHAR(36)"/>
+      <column name="NAME" type="NVARCHAR(550)"/>
+      <column name="TITLE" type="NVARCHAR(550)"/>
       <column name="CREATED_DATE" type="TIMESTAMP">
         <constraints nullable="false"/>
       </column>
@@ -108,7 +108,7 @@
         <constraints nullable="false"/>
       </column>
       <column name="CONTENT" type="CLOB"/>
-      <column name="SYNTAX" type="VARCHAR(30)"/>
+      <column name="SYNTAX" type="NVARCHAR(30)"/>
       <column name="PAGE_ID" type="BIGINT"/>
     </createTable>
     <modifySql dbms="mysql">
@@ -121,9 +121,9 @@
       <column name="PAGE_MOVE_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
         <constraints nullable="false" primaryKey="true" primaryKeyName="PK_WIKI_PAGE_MOVES_ID"/>
       </column>
-      <column name="WIKI_TYPE" type="VARCHAR(50)"/>
-      <column name="WIKI_OWNER" type="VARCHAR(50)"/>
-      <column name="PAGE_NAME" type="VARCHAR(550)"/>
+      <column name="WIKI_TYPE" type="NVARCHAR(50)"/>
+      <column name="WIKI_OWNER" type="NVARCHAR(50)"/>
+      <column name="PAGE_NAME" type="NVARCHAR(550)"/>
       <column name="CREATED_DATE" type="TIMESTAMP">
         <constraints nullable="false"/>
       </column>
@@ -136,7 +136,7 @@
 
   <changeSet author="wiki" id="1.0.0-7">
     <createTable tableName="WIKI_WATCHERS">
-      <column name="USERNAME" type="VARCHAR(36)"/>
+      <column name="USERNAME" type="NVARCHAR(36)"/>
       <column name="PAGE_ID" type="BIGINT"/>
     </createTable>
     <modifySql dbms="mysql">
@@ -149,7 +149,7 @@
       <column name="EMOTION_ICON_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
         <constraints nullable="false" primaryKey="true" primaryKeyName="PK_WIKI_EMOTION_ICONS_ID"/>
       </column>
-      <column name="NAME" type="VARCHAR(550)"/>
+      <column name="NAME" type="NVARCHAR(550)"/>
       <column name="IMAGE" type="LONGBLOB"/>
     </createTable>
     <modifySql dbms="mysql">
@@ -163,12 +163,12 @@
         <constraints nullable="false" primaryKey="true" primaryKeyName="PK_WIKI_TEMPLATES_ID"/>
       </column>
       <column name="WIKI_ID" type="BIGINT"/>
-      <column name="AUTHOR" type="VARCHAR(36)"/>
-      <column name="NAME" type="VARCHAR(550)"/>
-      <column name="DESCRIPTION" type="VARCHAR(250)"/>
+      <column name="AUTHOR" type="NVARCHAR(36)"/>
+      <column name="NAME" type="NVARCHAR(550)"/>
+      <column name="DESCRIPTION" type="NVARCHAR(250)"/>
       <column name="CONTENT" type="CLOB"/>
-      <column name="SYNTAX" type="VARCHAR(30)"/>
-      <column name="TITLE" type="VARCHAR(550)"/>
+      <column name="SYNTAX" type="NVARCHAR(30)"/>
+      <column name="TITLE" type="NVARCHAR(550)"/>
       <column name="CREATED_DATE" type="TIMESTAMP">
         <constraints nullable="false"/>
       </column>
@@ -187,13 +187,13 @@
         <constraints nullable="false" primaryKey="true" primaryKeyName="PK_WIKI_DRAFT_PAGES_ID"/>
       </column>
       <column name="TARGET_PAGE_ID" type="BIGINT"/>
-      <column name="TARGET_PAGE_REVISION" type="VARCHAR(50)"/>
+      <column name="TARGET_PAGE_REVISION" type="NVARCHAR(50)"/>
       <column name="NEW_PAGE" type="BOOLEAN"/>
-      <column name="AUTHOR" type="VARCHAR(36)"/>
-      <column name="NAME" type="VARCHAR(550)"/>
-      <column name="TITLE" type="VARCHAR(550)"/>
+      <column name="AUTHOR" type="NVARCHAR(36)"/>
+      <column name="NAME" type="NVARCHAR(550)"/>
+      <column name="TITLE" type="NVARCHAR(550)"/>
       <column name="CONTENT" type="CLOB"/>
-      <column name="SYNTAX" type="VARCHAR(30)"/>
+      <column name="SYNTAX" type="NVARCHAR(30)"/>
       <column name="CREATED_DATE" type="TIMESTAMP">
         <constraints nullable="false"/>
       </column>
@@ -214,8 +214,8 @@
       <column name="DRAFT_PAGE_ID" type="BIGINT">
         <constraints foreignKeyName="FK_WIKI_DRAFTATTACHMENTS_PAGES" references="WIKI_DRAFT_PAGES(DRAFT_PAGE_ID)" />
       </column>
-      <column name="NAME" type="VARCHAR(550)"/>
-      <column name="CREATOR" type="VARCHAR(36)">
+      <column name="NAME" type="NVARCHAR(550)"/>
+      <column name="CREATOR" type="NVARCHAR(36)">
         <constraints nullable="true"/>
       </column>
       <column name="CREATED_DATE" type="TIMESTAMP">
@@ -224,10 +224,10 @@
       <column name="UPDATED_DATE" type="TIMESTAMP">
         <constraints nullable="false"/>
       </column>
-      <column name="TITLE" type="VARCHAR(550)"/>
-      <column name="FULL_TITLE" type="VARCHAR(250)"/>
+      <column name="TITLE" type="NVARCHAR(550)"/>
+      <column name="FULL_TITLE" type="NVARCHAR(250)"/>
       <column name="CONTENT" type="LONGBLOB"/>
-      <column name="MIMETYPE" type="VARCHAR(50)"/>
+      <column name="MIMETYPE" type="NVARCHAR(50)"/>
     </createTable>
     <modifySql dbms="mysql">
       <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
@@ -237,9 +237,9 @@
   <changeSet author="wiki" id="1.0.0-13">
     <createTable tableName="WIKI_WIKI_PERMISSIONS">
       <column name="WIKI_ID" type="BIGINT"/>
-      <column name="IDENTITY" type="VARCHAR(36)"/>
-      <column name="IDENTITY_TYPE" type="VARCHAR(50)"/>
-      <column name="PERMISSION" type="VARCHAR(15)"/>
+      <column name="IDENTITY" type="NVARCHAR(36)"/>
+      <column name="IDENTITY_TYPE" type="NVARCHAR(50)"/>
+      <column name="PERMISSION" type="NVARCHAR(15)"/>
     </createTable>
     <modifySql dbms="mysql">
       <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
@@ -249,9 +249,9 @@
   <changeSet author="wiki" id="1.0.0-14">
     <createTable tableName="WIKI_PAGE_PERMISSIONS">
       <column name="PAGE_ID" type="BIGINT"/>
-      <column name="IDENTITY" type="VARCHAR(36)"/>
-      <column name="IDENTITY_TYPE" type="VARCHAR(50)"/>
-      <column name="PERMISSION" type="VARCHAR(15)"/>
+      <column name="IDENTITY" type="NVARCHAR(36)"/>
+      <column name="IDENTITY_TYPE" type="NVARCHAR(50)"/>
+      <column name="PERMISSION" type="NVARCHAR(15)"/>
     </createTable>
     <modifySql dbms="mysql">
       <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
