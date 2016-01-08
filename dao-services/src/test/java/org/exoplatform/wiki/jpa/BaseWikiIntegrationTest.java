@@ -226,12 +226,14 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
     wiki.setType("test");
     wikiDAO.create(wiki);
     PageEntity page = new PageEntity();
+    page.setName("wikiPage");
     page.setCreatedDate(new Date());
     page.setUpdatedDate(new Date());
     page.setUrl("/url/to/my/wikiPage");
     page.setWiki(wiki);
     pageDAO.create(page);
     PageAttachmentEntity attachment = new PageAttachmentEntity();
+    attachment.setName(title);
     attachment.setTitle(title);
     attachment.setContent(Files.readAllBytes(Paths.get(filePath)));
     attachment.setCreatedDate(new Date());

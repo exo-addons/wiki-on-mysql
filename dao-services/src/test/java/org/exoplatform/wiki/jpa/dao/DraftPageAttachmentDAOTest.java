@@ -17,9 +17,7 @@
 package org.exoplatform.wiki.jpa.dao;
 
 import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
-import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
-import org.exoplatform.wiki.jpa.entity.DraftPageAttachmentEntity;
-import org.exoplatform.wiki.jpa.entity.PermissionEntity;
+import org.exoplatform.wiki.jpa.entity.*;
 import org.exoplatform.wiki.mow.api.PermissionType;
 
 import java.io.File;
@@ -42,11 +40,29 @@ public class DraftPageAttachmentDAOTest extends BaseWikiJPAIntegrationTest {
 
   public void testInsertDelete() throws IOException, URISyntaxException {
     //Given
+    WikiEntity wiki = new WikiEntity();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = wikiDAO.create(wiki);
+    PageEntity page = new PageEntity();
+    page.setName("name");
+    page.setWiki(wiki);
+    page.setCreatedDate(new Date());
+    page.setUpdatedDate(new Date());
+    page = pageDAO.create(page);
+    DraftPageEntity dp = new DraftPageEntity();
+    dp.setName("draft1");
+    dp.setTargetPage(page);
+    dp.setCreatedDate(new Date());
+    dp.setUpdatedDate(new Date());
+    dp = draftPageDAO.create(dp);
     URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
     DraftPageAttachmentEntity att = new DraftPageAttachmentEntity();
     att.setContent(Files.readAllBytes(Paths.get(fileResource.toURI())));
+    att.setName("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
     att.setCreatedDate(new Date());
     att.setUpdatedDate(new Date());
+    att.setDraftPage(dp);
     //When
     draftPageAttachmentDAO.create(att);
     Long id = att.getId();
@@ -61,11 +77,29 @@ public class DraftPageAttachmentDAOTest extends BaseWikiJPAIntegrationTest {
 
   public void testUpdate() throws IOException, URISyntaxException {
     //Given
+    WikiEntity wiki = new WikiEntity();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = wikiDAO.create(wiki);
+    PageEntity page = new PageEntity();
+    page.setName("name");
+    page.setWiki(wiki);
+    page.setCreatedDate(new Date());
+    page.setUpdatedDate(new Date());
+    page = pageDAO.create(page);
+    DraftPageEntity dp = new DraftPageEntity();
+    dp.setName("draft1");
+    dp.setTargetPage(page);
+    dp.setCreatedDate(new Date());
+    dp.setUpdatedDate(new Date());
+    dp = draftPageDAO.create(dp);
     URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
     DraftPageAttachmentEntity att = new DraftPageAttachmentEntity();
     att.setContent(Files.readAllBytes(Paths.get(fileResource.toURI())));
+    att.setName("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
     att.setCreatedDate(new Date());
     att.setUpdatedDate(new Date());
+    att.setDraftPage(dp);
     //When
     draftPageAttachmentDAO.create(att);
     Long id = att.getId();

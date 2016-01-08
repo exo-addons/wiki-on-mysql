@@ -21,6 +21,9 @@ package org.exoplatform.wiki.jpa;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.exoplatform.addons.es.dao.IndexingOperationDAO;
+import org.exoplatform.addons.es.index.IndexingOperationProcessor;
+import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.ValuesParam;
@@ -43,7 +46,16 @@ import java.util.*;
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
  * 9/8/15
  */
-public class JPADataStorageTest extends BaseWikiIntegrationTest {
+public class JPADataStorageTest extends BaseWikiJPAIntegrationTest {
+
+  protected JPADataStorage storage;
+
+  public void setUp() {
+    super.setUp();
+
+    // Init services
+    storage = PortalContainer.getInstance().getComponentInstanceOfType(JPADataStorage.class);
+  }
 
   @Test
   public void testCreateWiki() throws Exception {

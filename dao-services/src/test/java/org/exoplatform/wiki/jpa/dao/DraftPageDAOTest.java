@@ -19,6 +19,7 @@ package org.exoplatform.wiki.jpa.dao;
 import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
 import org.exoplatform.wiki.jpa.entity.DraftPageEntity;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
+import org.exoplatform.wiki.jpa.entity.WikiEntity;
 import org.junit.Test;
 
 import java.util.Calendar;
@@ -35,12 +36,18 @@ public class DraftPageDAOTest extends BaseWikiJPAIntegrationTest {
 
   @Test
   public void testInsert(){
-    DraftPageEntity dp = new DraftPageEntity();
+    WikiEntity wiki = new WikiEntity();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = wikiDAO.create(wiki);
     PageEntity page = new PageEntity();
     page.setName("name");
+    page.setWiki(wiki);
     page.setCreatedDate(new Date());
     page.setUpdatedDate(new Date());
-    pageDAO.create(page);
+    page = pageDAO.create(page);
+    DraftPageEntity dp = new DraftPageEntity();
+    dp.setName("draft1");
     dp.setTargetPage(page);
     dp.setCreatedDate(new Date());
     dp.setUpdatedDate(new Date());
@@ -61,12 +68,18 @@ public class DraftPageDAOTest extends BaseWikiJPAIntegrationTest {
 
   @Test
   public void testFindDraftPagesByUser(){
-    DraftPageEntity dp = new DraftPageEntity();
+    WikiEntity wiki = new WikiEntity();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = wikiDAO.create(wiki);
     PageEntity page = new PageEntity();
     page.setName("name");
+    page.setWiki(wiki);
     page.setCreatedDate(new Date());
     page.setUpdatedDate(new Date());
-    pageDAO.create(page);
+    page = pageDAO.create(page);
+    DraftPageEntity dp = new DraftPageEntity();
+    dp.setName("draft1");
     dp.setTargetPage(page);
     dp.setAuthor("user1");
     dp.setCreatedDate(new Date());
@@ -93,12 +106,18 @@ public class DraftPageDAOTest extends BaseWikiJPAIntegrationTest {
     calendar.roll(Calendar.YEAR, 1);
     Date oneYearAgo = calendar.getTime();
 
+    WikiEntity wiki = new WikiEntity();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = wikiDAO.create(wiki);
     PageEntity page = new PageEntity();
     page.setName("page1");
+    page.setWiki(wiki);
     page.setUpdatedDate(oneYearAgo);
     page.setCreatedDate(oneYearAgo);
     pageDAO.create(page);
     DraftPageEntity dp1 = new DraftPageEntity();
+    dp1.setName("draft1");
     dp1.setTargetPage(page);
     dp1.setAuthor("user1");
     dp1.setUpdatedDate(oneYearAgo);
@@ -106,6 +125,7 @@ public class DraftPageDAOTest extends BaseWikiJPAIntegrationTest {
     dp1.setTargetRevision("1");
     draftPageDAO.create(dp1);
     DraftPageEntity dp2 = new DraftPageEntity();
+    dp2.setName("draft2");
     dp2.setTargetPage(page);
     dp2.setAuthor("user1");
     dp2.setUpdatedDate(now);
@@ -128,23 +148,28 @@ public class DraftPageDAOTest extends BaseWikiJPAIntegrationTest {
   @Test
   public void testFindDraftPagesByUserAndTargetPage(){
     //Given
-    DraftPageEntity dp = new DraftPageEntity();
+    WikiEntity wiki = new WikiEntity();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = wikiDAO.create(wiki);
     PageEntity page = new PageEntity();
+    page.setWiki(wiki);
     page.setCreatedDate(new Date());
     page.setUpdatedDate(new Date());
     page.setName("page1");
-    pageDAO.create(page);
+    page = pageDAO.create(page);
+    DraftPageEntity dp = new DraftPageEntity();
+    dp.setName("draft1");
     dp.setTargetPage(page);
-    PageEntity createdPage = pageDAO.create(page);
     dp.setAuthor("user1");
     dp.setCreatedDate(new Date());
     dp.setUpdatedDate(new Date());
     draftPageDAO.create(dp);
 
     //When
-    List<DraftPageEntity> drafts1 = draftPageDAO.findDraftPagesByUserAndTargetPage("user1", createdPage.getId());
-    List<DraftPageEntity> drafts2 = draftPageDAO.findDraftPagesByUserAndTargetPage("user2", createdPage.getId());
-    List<DraftPageEntity> drafts3 = draftPageDAO.findDraftPagesByUserAndTargetPage("user1", createdPage.getId() + 1);
+    List<DraftPageEntity> drafts1 = draftPageDAO.findDraftPagesByUserAndTargetPage("user1", page.getId());
+    List<DraftPageEntity> drafts2 = draftPageDAO.findDraftPagesByUserAndTargetPage("user2", page.getId());
+    List<DraftPageEntity> drafts3 = draftPageDAO.findDraftPagesByUserAndTargetPage("user1", page.getId() + 1);
 
     //Then
     assertNotNull(draftPageDAO.find(dp.getId()));
@@ -167,13 +192,19 @@ public class DraftPageDAOTest extends BaseWikiJPAIntegrationTest {
     calendar.roll(Calendar.YEAR, 1);
     Date oneYearAgo = calendar.getTime();
 
+    WikiEntity wiki = new WikiEntity();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = wikiDAO.create(wiki);
     PageEntity page1 = new PageEntity();
     page1.setName("page1");
+    page1.setWiki(wiki);
     page1.setUpdatedDate(oneYearAgo);
     page1.setCreatedDate(oneYearAgo);
     pageDAO.create(page1);
     PageEntity page2 = new PageEntity();
     page2.setName("page2");
+    page2.setWiki(wiki);
     page2.setUpdatedDate(now);
     page2.setCreatedDate(now);
     pageDAO.create(page2);
@@ -216,13 +247,19 @@ public class DraftPageDAOTest extends BaseWikiJPAIntegrationTest {
     calendar.roll(Calendar.YEAR, 1);
     Date oneYearAgo = calendar.getTime();
 
+    WikiEntity wiki = new WikiEntity();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = wikiDAO.create(wiki);
     PageEntity page1 = new PageEntity();
     page1.setName("page1");
+    page1.setWiki(wiki);
     page1.setUpdatedDate(oneYearAgo);
     page1.setCreatedDate(oneYearAgo);
     pageDAO.create(page1);
     PageEntity page2 = new PageEntity();
     page2.setName("page2");
+    page2.setWiki(wiki);
     page2.setUpdatedDate(now);
     page2.setCreatedDate(now);
     pageDAO.create(page2);

@@ -44,7 +44,10 @@ public class PageVersionDAOTest extends BaseWikiJPAIntegrationTest {
     wiki.setType("portal");
     wiki.setOwner("wiki1");
     wiki = wikiDAO.create(wiki);
+
     PageEntity parentPage = new PageEntity();
+    parentPage.setWiki(wiki);
+    parentPage.setName("parentPage1");
     parentPage.setCreatedDate(new Date());
     parentPage.setUpdatedDate(new Date());
 
@@ -60,6 +63,7 @@ public class PageVersionDAOTest extends BaseWikiJPAIntegrationTest {
 
     PageVersionEntity pageVersion1 = new PageVersionEntity();
     pageVersion1.setPage(page);
+    pageVersion1.setName("1");
     pageVersion1.setCreatedDate(new Date());
     pageVersion1.setUpdatedDate(new Date());
     pageVersion1.setVersionNumber(1);
@@ -67,6 +71,7 @@ public class PageVersionDAOTest extends BaseWikiJPAIntegrationTest {
 
     PageVersionEntity pageVersion2 = new PageVersionEntity();
     pageVersion2.setPage(page);
+    pageVersion2.setName("2");
     pageVersion2.setCreatedDate(new Date());
     pageVersion2.setUpdatedDate(new Date());
     pageVersion2.setVersionNumber(2);
@@ -81,7 +86,10 @@ public class PageVersionDAOTest extends BaseWikiJPAIntegrationTest {
     wiki.setType("portal");
     wiki.setOwner("wiki1");
     wiki = wikiDAO.create(wiki);
+
     PageEntity parentPage = new PageEntity();
+    parentPage.setWiki(wiki);
+    parentPage.setName("parentPage1");
     parentPage.setCreatedDate(new Date());
     parentPage.setUpdatedDate(new Date());
 
@@ -97,6 +105,7 @@ public class PageVersionDAOTest extends BaseWikiJPAIntegrationTest {
 
     PageVersionEntity pageVersion1 = new PageVersionEntity();
     pageVersion1.setPage(page);
+    pageVersion1.setName("1");
     pageVersion1.setCreatedDate(new Date());
     pageVersion1.setUpdatedDate(new Date());
     pageVersion1.setVersionNumber(1);
@@ -105,6 +114,7 @@ public class PageVersionDAOTest extends BaseWikiJPAIntegrationTest {
 
     PageVersionEntity pageVersion2 = new PageVersionEntity();
     pageVersion2.setPage(page);
+    pageVersion2.setName("2");
     pageVersion2.setCreatedDate(new Date());
     pageVersion2.setUpdatedDate(new Date());
     pageVersion2.setVersionNumber(2);

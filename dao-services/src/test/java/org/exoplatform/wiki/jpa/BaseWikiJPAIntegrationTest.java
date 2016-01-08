@@ -22,6 +22,7 @@ package org.exoplatform.wiki.jpa;
 import org.exoplatform.commons.api.persistence.DataInitializer;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.wiki.jpa.dao.*;
+import org.exoplatform.wiki.jpa.entity.WikiEntity;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
@@ -70,9 +71,14 @@ public abstract class BaseWikiJPAIntegrationTest extends BaseTest {
     templateDAO.deleteAll();
     pageMoveDAO.deleteAll();
     pageVersionDAO.deleteAll();
+    draftPageAttachmentDAO.deleteAll();
     draftPageDAO.deleteAll();
     pageAttachmentDAO.deleteAll();
-    draftPageAttachmentDAO.deleteAll();
+    // remove foreign keys to pages
+    for (WikiEntity wikiEntity : wikiDAO.findAll()) {
+      wikiEntity.setWikiHome(null);
+      wikiDAO.update(wikiEntity);
+    }
     pageDAO.deleteAll();
     wikiDAO.deleteAll();
   }

@@ -45,9 +45,10 @@ public class PageDAOTest extends BaseWikiJPAIntegrationTest {
     wiki.setOwner("wiki1");
     wiki = wikiDAO.create(wiki);
     PageEntity parentPage = new PageEntity();
+    parentPage.setWiki(wiki);
+    parentPage.setName("parentPage1");
     parentPage.setCreatedDate(new Date());
     parentPage.setUpdatedDate(new Date());
-
     PageEntity page = new PageEntity();
     page.setWiki(wiki);
     page.setParentPage(parentPage);
@@ -71,9 +72,17 @@ public class PageDAOTest extends BaseWikiJPAIntegrationTest {
   @Test
   public void testInsert(){
     //Given
+    WikiEntity wiki = new WikiEntity();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = wikiDAO.create(wiki);
+
     PageEntity page = new PageEntity();
+    page.setWiki(wiki);
+
     PermissionEntity per = new PermissionEntity();
     per.setIdentity("user");
+    per.setIdentityType("User");
     per.setPermissionType(PermissionType.EDITPAGE);
     List<PermissionEntity> permissions = new ArrayList<PermissionEntity>();
     permissions.add(per);
@@ -90,9 +99,11 @@ public class PageDAOTest extends BaseWikiJPAIntegrationTest {
     page.setSyntax("syntax");
     page.setTitle("title");
     page.setUrl("url");
+
     // When
     pageDAO.create(page);
     PageEntity got = pageDAO.find(page.getId());
+
     // Then
     assertNotNull(got);
     assertEquals("name", got.getName());

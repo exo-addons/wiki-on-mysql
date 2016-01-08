@@ -52,8 +52,8 @@ public class WikiDAOTest extends BaseWikiJPAIntegrationTest {
   @Test
   public void testFindAllIds() {
     //Given
-    wikiDAO.create(new WikiEntity().setName("My wiki #1"));
-    wikiDAO.create(new WikiEntity().setName("My wiki #2"));
+    wikiDAO.create(new WikiEntity().setName("My wiki #1").setType("portal").setOwner("wiki1"));
+    wikiDAO.create(new WikiEntity().setName("My wiki #2").setType("portal").setOwner("wiki1"));
     //When
     List<Long> ids = wikiDAO.findAllIds(0, 10);
     //Then

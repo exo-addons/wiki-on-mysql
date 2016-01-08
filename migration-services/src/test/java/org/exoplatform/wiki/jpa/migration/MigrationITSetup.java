@@ -1,6 +1,7 @@
 package org.exoplatform.wiki.jpa.migration;
 
 import org.exoplatform.commons.api.persistence.DataInitializer;
+import org.exoplatform.commons.persistence.impl.EntityManagerService;
 import org.exoplatform.commons.testing.BaseExoTestCase;
 import org.exoplatform.component.test.ConfigurationUnit;
 import org.exoplatform.component.test.ConfiguredBy;
@@ -16,6 +17,7 @@ import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.bench.WikiDataInjector;
 import org.exoplatform.wiki.jpa.JPADataStorage;
 import org.exoplatform.wiki.jpa.dao.*;
+import org.exoplatform.wiki.jpa.entity.WikiEntity;
 import org.exoplatform.wiki.jpa.migration.mock.SynchronousExecutorService;
 import org.exoplatform.wiki.mow.api.Attachment;
 import org.exoplatform.wiki.mow.api.Page;
@@ -124,9 +126,14 @@ public class MigrationITSetup extends BaseExoTestCase {
     templateDAO.deleteAll();
     pageMoveDAO.deleteAll();
     pageVersionDAO.deleteAll();
+    draftPageAttachmentDAO.deleteAll();
     draftPageDAO.deleteAll();
     pageAttachmentDAO.deleteAll();
-    draftPageAttachmentDAO.deleteAll();
+    // remove foreign keys to pages
+    for (WikiEntity wikiEntity : wikiDAO.findAll()) {
+      wikiEntity.setWikiHome(null);
+      wikiDAO.update(wikiEntity);
+    }
     pageDAO.deleteAll();
     wikiDAO.deleteAll();
   }

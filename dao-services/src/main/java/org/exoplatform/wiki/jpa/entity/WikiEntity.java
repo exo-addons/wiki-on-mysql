@@ -50,7 +50,7 @@ public class WikiEntity {
   @Column(name = "TYPE")
   private String type;
 
-  @OneToOne(cascade = CascadeType.ALL)
+  @OneToOne
   @JoinColumn(name = "WIKI_HOME")
   private PageEntity wikiHome;
 

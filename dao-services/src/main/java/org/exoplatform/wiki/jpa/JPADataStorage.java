@@ -582,33 +582,40 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public Page getExsitedOrNewDraftPageById(String wikiType, String wikiOwner, String pageName, String username) throws WikiException {
-    Page page;
+    DraftPage draftPage;
 
     if(pageName.contains(Utils.SPLIT_TEXT_OF_DRAFT_FOR_NEW_PAGE)) {
       String[] pageNameParts = pageName.split(Utils.SPLIT_TEXT_OF_DRAFT_FOR_NEW_PAGE);
       username = pageNameParts[0];
     }
 
-    page = getDraft(pageName, username);
+    draftPage = getDraft(pageName, username);
 
-    if (page == null) {
+    if (draftPage == null) {
       Date now = GregorianCalendar.getInstance().getTime();
       // create draft page for non existing draft page
-      DraftPage draftPage = new DraftPage();
+      draftPage = new DraftPage();
       draftPage.setWikiType(PortalConfig.USER_TYPE);
       draftPage.setWikiOwner(username);
       draftPage.setName(pageName);
       draftPage.setAuthor(username);
       draftPage.setNewPage(true);
-      draftPage.setTargetPageId(null);
-      draftPage.setTargetPageRevision("1");
       draftPage.setCreatedDate(now);
       draftPage.setUpdatedDate(now);
+
+      if(wikiType != null && wikiOwner != null) {
+        Page targetPage = getPageOfWikiByName(wikiType, wikiOwner, pageName);
+        if (targetPage == null) {
+          throw new WikiException("Cannot get target page for draft (" + wikiType + ":" + wikiOwner + ":" + pageName + ")");
+        }
+        draftPage.setTargetPageId(targetPage.getId());
+        draftPage.setTargetPageRevision("1");
+      }
+
       createDraftPageForUser(draftPage, username);
-      page = draftPage;
     }
 
-    return page;
+    return draftPage;
   }
 
   @Override
@@ -825,6 +832,7 @@ public class JPADataStorage implements DataStorage {
         throw new WikiException("Cannot add an attachment to page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
             + page.getName() + " because page does not exist.");
       }
+      attachmentEntity.setPage(pageEntity);
 
       // attachment must be saved here because of Hibernate bug HHH-6776
       pageAttachmentDAO.create(attachmentEntity);

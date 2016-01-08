@@ -17,9 +17,7 @@
 package org.exoplatform.wiki.jpa.dao;
 
 import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
-import org.exoplatform.wiki.jpa.entity.AttachmentEntity;
-import org.exoplatform.wiki.jpa.entity.PageAttachmentEntity;
-import org.exoplatform.wiki.jpa.entity.PermissionEntity;
+import org.exoplatform.wiki.jpa.entity.*;
 import org.exoplatform.wiki.mow.api.PermissionType;
 
 import java.io.File;
@@ -42,9 +40,21 @@ public class PageAttachmentDAOTest extends BaseWikiJPAIntegrationTest {
 
   public void testInsertDelete() throws IOException, URISyntaxException {
     //Given
+    WikiEntity wiki = new WikiEntity();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = wikiDAO.create(wiki);
+    PageEntity page = new PageEntity();
+    page.setName("page1");
+    page.setWiki(wiki);
+    page.setCreatedDate(new Date());
+    page.setUpdatedDate(new Date());
+    page = pageDAO.create(page);
     URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
     PageAttachmentEntity att = new PageAttachmentEntity();
     att.setContent(Files.readAllBytes(Paths.get(fileResource.toURI())));
+    att.setName("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
+    att.setPage(page);
     att.setCreatedDate(new Date());
     att.setUpdatedDate(new Date());
     //When
@@ -61,9 +71,21 @@ public class PageAttachmentDAOTest extends BaseWikiJPAIntegrationTest {
 
   public void testUpdate() throws IOException, URISyntaxException {
     //Given
+    WikiEntity wiki = new WikiEntity();
+    wiki.setType("portal");
+    wiki.setOwner("wiki1");
+    wiki = wikiDAO.create(wiki);
+    PageEntity page = new PageEntity();
+    page.setName("page1");
+    page.setWiki(wiki);
+    page.setCreatedDate(new Date());
+    page.setUpdatedDate(new Date());
+    page = pageDAO.create(page);
     URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
     PageAttachmentEntity att = new PageAttachmentEntity();
     att.setContent(Files.readAllBytes(Paths.get(fileResource.toURI())));
+    att.setName("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
+    att.setPage(page);
     att.setCreatedDate(new Date());
     att.setUpdatedDate(new Date());
     //When
