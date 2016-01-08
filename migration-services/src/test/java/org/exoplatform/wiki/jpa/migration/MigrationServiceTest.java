@@ -121,6 +121,33 @@ public class MigrationServiceTest extends MigrationITSetup {
     draftPage1.setUpdatedDate(createdDateDraftPage1);
     jcrDataStorage.createDraftPageForUser(draftPage1, "john");
 
+    Page pageA = new Page("PageA", "Page A");
+    pageA.setAuthor("john");
+    pageA.setContent("Page A Content");
+    Date createdDatePageA = Calendar.getInstance().getTime();
+    pageA.setCreatedDate(createdDatePageA);
+    pageA.setUpdatedDate(createdDatePageA);
+    pageA.setPermissions(Arrays.asList(rootPagePermissionEntry, administratorsPagePermissionEntry));
+    pageA = jcrDataStorage.createPage(portalWiki, wikiHome, pageA);
+
+    Page pagea = new Page("Pagea", "Page a");
+    pagea.setAuthor("john");
+    pagea.setContent("Page a Content");
+    Date createdDatePagea = Calendar.getInstance().getTime();
+    pagea.setCreatedDate(createdDatePagea);
+    pagea.setUpdatedDate(createdDatePagea);
+    pagea.setPermissions(Arrays.asList(rootPagePermissionEntry, administratorsPagePermissionEntry));
+    pagea = jcrDataStorage.createPage(portalWiki, wikiHome, pagea);
+
+    Page pageaChild = new Page("ChildPagea", "Child Page a");
+    pageaChild.setAuthor("john");
+    pageaChild.setContent("Child Page a Content");
+    Date createdDateChildPagea = Calendar.getInstance().getTime();
+    pageaChild.setCreatedDate(createdDateChildPagea);
+    pageaChild.setUpdatedDate(createdDateChildPagea);
+    pageaChild.setPermissions(Arrays.asList(rootPagePermissionEntry, administratorsPagePermissionEntry));
+    pageaChild = jcrDataStorage.createPage(portalWiki, pagea, pageaChild);
+
     // Related pages
     jcrDataStorage.addRelatedPage(page1, page2);
 
@@ -202,7 +229,7 @@ public class MigrationServiceTest extends MigrationITSetup {
     // check children pages
     List<Page> fetchedWikiHomeChildrenPages = jpaDataStorage.getChildrenPageOf(wikiHome);
     assertNotNull(fetchedWikiHomeChildrenPages);
-    assertEquals(2, fetchedWikiHomeChildrenPages.size());
+    assertEquals(4, fetchedWikiHomeChildrenPages.size());
     // check page1
     Page fetchedPage1 = jpaDataStorage.getPageOfWikiByName(wikiIntranet.getType(), wikiIntranet.getOwner(), "Page1");
     assertNotNull(fetchedPage1);

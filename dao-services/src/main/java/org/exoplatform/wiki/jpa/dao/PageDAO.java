@@ -20,6 +20,7 @@ import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
 
 import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
@@ -30,16 +31,32 @@ import java.util.List;
 public class PageDAO extends GenericDAOJPAImpl<PageEntity, Long> {
 
   public PageEntity getPageOfWikiByName(String wikiType, String wikiOwner, String pageName) {
+    PageEntity pageEntity = null;
     TypedQuery<PageEntity> query = getEntityManager().createNamedQuery("wikiPage.getPageOfWikiByName", PageEntity.class)
                                                .setParameter("name", pageName)
                                                .setParameter("type", wikiType)
                                                .setParameter("owner", wikiOwner);
 
-    try {
-      return query.getSingleResult();
-    } catch (NoResultException e) {
-      return null;
+    // We don't use "query.getSingleResult()" because there is no good solution to have a case sensitive comparison
+    // on the page name between all supported databases (I look at you MySQL). Having several pages in a wiki
+    // with the same name with different cases is allowed functionally speaking, so we post-process results in Java
+    // to be sure to have a case sensitive match in a database agnostic way
+    List<PageEntity> results = query.getResultList();
+    if(results != null) {
+      for (PageEntity pageEntityResult : results) {
+        // compare names with case sensitivity
+        if (pageEntityResult.getName().equals(pageName)) {
+          if (pageEntity == null) {
+            pageEntity = pageEntityResult;
+          } else {
+            throw new NonUniqueResultException("More than 1 page with the name " + pageName
+                    + " in the wiki " + wikiType + ":" + wikiOwner + " has been returned");
+          }
+        }
+      }
     }
+
+    return pageEntity;
   }
 
   public List<PageEntity> getChildrenPages(PageEntity page) {
