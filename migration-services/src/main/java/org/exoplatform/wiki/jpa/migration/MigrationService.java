@@ -229,35 +229,45 @@ public class MigrationService implements Startable {
   }
 
   private void migrateDraftPages() {
+    int pageSize = 20;
+    int current = 0;
     try {
       LOG.info("  Start migration of draft pages");
       ListAccess<User> allUsersListAccess = organizationService.getUserHandler().findAllUsers();
-      User[] allUsers = allUsersListAccess.load(0, allUsersListAccess.getSize());
-      for(User user : allUsers) {
-        try {
-          List<DraftPage> draftPages = jcrDataStorage.getDraftPagesOfUser(user.getUserName());
-          for (DraftPage jcrDraftPage : draftPages) {
-            LOG.info("    Draft page " + jcrDraftPage.getName() + " of user " + user.getUserName());
-            try {
-              // old target id (JCR uuid - String) must be converted to new target id (PK - long)
-              Page jcrPageOfDraft = jcrDataStorage.getPageById(jcrDraftPage.getTargetPageId());
-              if(jcrPageOfDraft != null) {
-                Page jpaPageOfDraft = jpaDataStorage.getPageOfWikiByName(jcrPageOfDraft.getWikiType(), jcrPageOfDraft.getWikiOwner(), jcrPageOfDraft.getName());
-                jcrDraftPage.setTargetPageId(jpaPageOfDraft.getId());
-                jpaDataStorage.createDraftPageForUser(jcrDraftPage, user.getUserName());
-              } else {
-                LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
-                        + " - Cause : target page " + jcrDraftPage.getTargetPageId() + " does not exist");
-              }
-            } catch (WikiException e) {
-              LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
-                      + " - Cause : " + e.getMessage(), e);
-            }
-          }
-        } catch (WikiException e) {
-          LOG.error("Cannot migrate draft pages of user " + user.getUserName() + " - Cause : " + e.getMessage(), e);
+      int totalUsers = allUsersListAccess.getSize();
+      User[] users;
+      do {
+        if(current + pageSize > totalUsers) {
+          pageSize = totalUsers - current;
         }
-      }
+        users = allUsersListAccess.load(current, pageSize);
+        for(User user : users) {
+          try {
+            List<DraftPage> draftPages = jcrDataStorage.getDraftPagesOfUser(user.getUserName());
+            for (DraftPage jcrDraftPage : draftPages) {
+              LOG.info("    Draft page " + jcrDraftPage.getName() + " of user " + user.getUserName());
+              try {
+                // old target id (JCR uuid - String) must be converted to new target id (PK - long)
+                Page jcrPageOfDraft = jcrDataStorage.getPageById(jcrDraftPage.getTargetPageId());
+                if (jcrPageOfDraft != null) {
+                  Page jpaPageOfDraft = jpaDataStorage.getPageOfWikiByName(jcrPageOfDraft.getWikiType(), jcrPageOfDraft.getWikiOwner(), jcrPageOfDraft.getName());
+                  jcrDraftPage.setTargetPageId(jpaPageOfDraft.getId());
+                  jpaDataStorage.createDraftPageForUser(jcrDraftPage, user.getUserName());
+                } else {
+                  LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
+                          + " - Cause : target page " + jcrDraftPage.getTargetPageId() + " does not exist");
+                }
+              } catch (WikiException e) {
+                LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
+                        + " - Cause : " + e.getMessage(), e);
+              }
+            }
+          } catch (WikiException e) {
+            LOG.error("Cannot migrate draft pages of user " + user.getUserName() + " - Cause : " + e.getMessage(), e);
+          }
+        }
+        current += users.length;
+      } while(users != null && users.length > 0);
       LOG.info("  Migration of draft pages done");
     } catch (Exception e) {
       LOG.error("Cannot migrate draft pages - Cause : " + e.getMessage(), e);
