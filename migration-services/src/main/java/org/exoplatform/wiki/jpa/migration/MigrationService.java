@@ -195,36 +195,41 @@ public class MigrationService implements Startable {
 
       // for each wiki...
       for(Wiki jcrWiki : wikis) {
-        LOG.info("  Start migration of wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner());
-        Wiki existingPortalWiki = jpaDataStorage.getWikiByTypeAndOwner(jcrWiki.getType(), jcrWiki.getOwner());
-        if(existingPortalWiki != null) {
-          LOG.error("  Cannot migrate wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner() + " because it already exists.");
-        } else {
-          LOG.info("    Migration of wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner());
-          // create the wiki
-          Page jcrWikiHome = jcrWiki.getWikiHome();
-          // remove wiki home to make the createWiki method recreate it
-          jcrWiki.setWikiHome(null);
-          Wiki createdWiki = jpaDataStorage.createWiki(jcrWiki);
+        try {
+          LOG.info("  Start migration of wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner());
+          Wiki existingPortalWiki = jpaDataStorage.getWikiByTypeAndOwner(jcrWiki.getType(), jcrWiki.getOwner());
+          if (existingPortalWiki != null) {
+            LOG.error("  Cannot migrate wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner() + " because it already exists.");
+          } else {
+            LOG.info("    Migration of wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner());
+            // create the wiki
+            Page jcrWikiHome = jcrWiki.getWikiHome();
+            // remove wiki home to make the createWiki method recreate it
+            jcrWiki.setWikiHome(null);
+            Wiki createdWiki = jpaDataStorage.createWiki(jcrWiki);
 
-          // PAGES
-          LOG.info("    Update wiki home page");
-          // create pages recursively
-          LOG.info("    Creation of all wiki pages ...");
-          jcrWiki.setWikiHome(jcrWikiHome);
-          createChildrenPagesOf(createdWiki, jcrWiki, null, 1);
-          LOG.info("    Pages migrated");
+            // PAGES
+            LOG.info("    Update wiki home page");
+            // create pages recursively
+            LOG.info("    Creation of all wiki pages ...");
+            jcrWiki.setWikiHome(jcrWikiHome);
+            createChildrenPagesOf(createdWiki, jcrWiki, null, 1);
+            LOG.info("    Pages migrated");
 
-          // TEMPLATES
-          LOG.info("    Start migration of templates ...");
-          createTemplates(jcrWiki);
-          LOG.info("    Templates migrated");
+            // TEMPLATES
+            LOG.info("    Start migration of templates ...");
+            createTemplates(jcrWiki);
+            LOG.info("    Templates migrated");
 
-          LOG.info("  Wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner() + " migrated successfully");
+            LOG.info("  Wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner() + " migrated successfully");
+          }
+        } catch(Exception e) {
+          LOG.error("Cannot migrate wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner()
+                  + " - Cause : " + e.getMessage(), e);
         }
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.error("Cannot finish migrating " + wikiType + " wikis - Cause " + e.getMessage(), e);
     }
   }
 
@@ -257,12 +262,12 @@ public class MigrationService implements Startable {
                   LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
                           + " - Cause : target page " + jcrDraftPage.getTargetPageId() + " does not exist");
                 }
-              } catch (WikiException e) {
+              } catch (Exception e) {
                 LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
                         + " - Cause : " + e.getMessage(), e);
               }
             }
-          } catch (WikiException e) {
+          } catch (Exception e) {
             LOG.error("Cannot migrate draft pages of user " + user.getUserName() + " - Cause : " + e.getMessage(), e);
           }
         }
@@ -281,12 +286,16 @@ public class MigrationService implements Startable {
       for(Page pageWithRelatedPages : pagesWithRelatedPages) {
         LOG.info("    Related pages of page " + pageWithRelatedPages.getName());
         for(Page relatedPage : jcrDataStorage.getRelatedPagesOfPage(pageWithRelatedPages)) {
-          LOG.info("      Add related page " + relatedPage.getName());
-          jpaDataStorage.addRelatedPage(pageWithRelatedPages, relatedPage);
+          try {
+            LOG.info("      Add related page " + relatedPage.getName());
+            jpaDataStorage.addRelatedPage(pageWithRelatedPages, relatedPage);
+          } catch(Exception e) {
+            LOG.error("Cannot migrate related page " + relatedPage.getName() + " - Cause : " + e.getMessage(), e);
+          }
         }
       }
       LOG.info("  Related pages migrated");
-    } catch (WikiException e) {
+    } catch (Exception e) {
       LOG.error("Cannot migrate related pages - Cause : " + e.getMessage(), e);
     }
   }
@@ -304,14 +313,18 @@ public class MigrationService implements Startable {
       WikiContainer<WikiImpl> wikiContainer = wStore.getWikiContainer(WikiType.valueOf(wikiType.toUpperCase()));
       Collection<WikiImpl> allWikis = wikiContainer.getAllWikis();
       for(WikiImpl wiki : allWikis) {
-        LOG.info("    Delete wiki " + wiki.getType() + ":" + wiki.getOwner());
-        String wikiPath = wiki.getPath();
-        if(wikiPath.startsWith("/")) {
-          wikiPath = wikiPath.substring(1);
+        try {
+          LOG.info("    Delete wiki " + wiki.getType() + ":" + wiki.getOwner());
+          String wikiPath = wiki.getPath();
+          if (wikiPath.startsWith("/")) {
+            wikiPath = wikiPath.substring(1);
+          }
+          Node wikiNode = session.getRootNode().getNode(wikiPath);
+          wikiNode.remove();
+          session.save();
+        } catch(Exception e) {
+          LOG.error("Cannot delete wiki " + wiki.getType() + ":" + wiki.getOwner() + " - Cause : " + e.getMessage(), e);
         }
-        Node wikiNode = session.getRootNode().getNode(wikiPath);
-        wikiNode.remove();
-        session.save();
       }
     } catch (Exception e) {
       LOG.error("Cannot delete wikis of type " + wikiType + " - Cause : " + e.getMessage(), e);
@@ -324,6 +337,8 @@ public class MigrationService implements Startable {
   }
 
   private void deleteEmotionIcons() {
+    LOG.info("  Start deletion of emotion icons ...");
+
     boolean created = mowService.startSynchronization();
 
     try {
@@ -333,6 +348,8 @@ public class MigrationService implements Startable {
       if(emotionIconsPage != null) {
         emotionIconsPage.remove();
       }
+    } catch(Exception e) {
+      LOG.error("Cannot delete emotion icons - Cause : " + e.getMessage(), e);
     } finally {
       mowService.stopSynchronization(created);
     }
@@ -379,16 +396,31 @@ public class MigrationService implements Startable {
 
     if (childrenPages != null) {
       for (Page childrenPage : childrenPages) {
-        LOG.info(String.format("    %1$" + ((level) * 2) + "s Page %2$s", " ", childrenPage.getName()));
-        createPage(jpaWiki, jcrPage, childrenPage);
-
-        // check if the page has related pages, and keep it if so
-        List<Page> relatedPages = jcrDataStorage.getRelatedPagesOfPage(childrenPage);
-        if(relatedPages != null && !relatedPages.isEmpty()) {
-          pagesWithRelatedPages.add(childrenPage);
+        boolean pageCreated;
+        try {
+          LOG.info(String.format("    %1$" + ((level) * 2) + "s Page %2$s", " ", childrenPage.getName()));
+          createPage(jpaWiki, jcrPage, childrenPage);
+          pageCreated = true;
+        } catch(Exception e) {
+          LOG.error("Cannot create page " + jpaWiki.getType() + ":" + jpaWiki.getOwner() + ":" + childrenPage.getName()
+                  + " - Cause : " + e.getMessage(), e);
+          pageCreated = false;
         }
 
-        createChildrenPagesOf(jpaWiki, jcrWiki, childrenPage, level + 1);
+        if(pageCreated) {
+          try {
+            // check if the page has related pages, and keep it if so
+            List<Page> relatedPages = jcrDataStorage.getRelatedPagesOfPage(childrenPage);
+            if (relatedPages != null && !relatedPages.isEmpty()) {
+              pagesWithRelatedPages.add(childrenPage);
+            }
+          } catch(Exception e) {
+            LOG.error("Cannot get related pages of page " + jpaWiki.getType() + ":" + jpaWiki.getOwner() + ":" + childrenPage.getName()
+                    + " - Cause : " + e.getMessage(), e);
+          }
+
+          createChildrenPagesOf(jpaWiki, jcrWiki, childrenPage, level + 1);
+        }
       }
     }
   }
