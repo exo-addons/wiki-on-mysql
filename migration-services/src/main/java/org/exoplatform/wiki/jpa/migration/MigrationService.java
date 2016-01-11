@@ -16,6 +16,7 @@
  */
 package org.exoplatform.wiki.jpa.migration;
 
+import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
@@ -382,6 +383,7 @@ public class MigrationService implements Startable {
     }
   }
 
+  @ExoTransactional
   private void createPage(Wiki wiki, Page jcrParentPage, Page jcrPage) throws WikiException {
     // versions
     List<PageVersion> pageVersions = jcrDataStorage.getVersionsOfPage(jcrPage);
