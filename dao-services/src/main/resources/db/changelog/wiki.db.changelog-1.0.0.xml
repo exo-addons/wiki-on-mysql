@@ -21,7 +21,7 @@
         <constraints nullable="false" primaryKey="true" primaryKeyName="PK_WIKI_WIKIS_ID"/>
       </column>
       <column name="NAME" type="NVARCHAR(550)"/>
-      <column name="OWNER" type="NVARCHAR(36)">
+      <column name="OWNER" type="NVARCHAR(200)">
         <constraints nullable="true"/>
       </column>
       <column name="TYPE" type="NVARCHAR(50)"/>
