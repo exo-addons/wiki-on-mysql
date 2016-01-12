@@ -41,9 +41,9 @@
       </column>
       <column name="WIKI_ID" type="BIGINT"/>
       <column name="PARENT_PAGE_ID" type="BIGINT"/>
-      <column name="AUTHOR" type="NVARCHAR(36)"/>
+      <column name="AUTHOR" type="NVARCHAR(200)"/>
       <column name="NAME" type="NVARCHAR(550)"/>
-      <column name="OWNER" type="NVARCHAR(36)"/>
+      <column name="OWNER" type="NVARCHAR(200)"/>
       <column name="CREATED_DATE" type="TIMESTAMP">
         <constraints nullable="false"/>
       </column>
@@ -73,7 +73,7 @@
         <constraints foreignKeyName="FK_WIKI_ATTACHMENTS_PAGES" references="WIKI_PAGES(PAGE_ID)" />
       </column>
       <column name="NAME" type="NVARCHAR(550)"/>
-      <column name="CREATOR" type="NVARCHAR(36)">
+      <column name="CREATOR" type="NVARCHAR(200)">
         <constraints nullable="true"/>
       </column>
       <column name="CREATED_DATE" type="TIMESTAMP">
@@ -98,7 +98,7 @@
         <constraints nullable="false" primaryKey="true" primaryKeyName="PK_WIKI_PAGE_VERSIONS_ID"/>
       </column>
       <column name="VERSION_NUMBER" type="BIGINT"/>
-      <column name="AUTHOR" type="NVARCHAR(36)"/>
+      <column name="AUTHOR" type="NVARCHAR(200)"/>
       <column name="NAME" type="NVARCHAR(550)"/>
       <column name="TITLE" type="NVARCHAR(550)"/>
       <column name="CREATED_DATE" type="TIMESTAMP">
@@ -136,7 +136,7 @@
 
   <changeSet author="wiki" id="1.0.0-7">
     <createTable tableName="WIKI_WATCHERS">
-      <column name="USERNAME" type="NVARCHAR(36)"/>
+      <column name="USERNAME" type="NVARCHAR(200)"/>
       <column name="PAGE_ID" type="BIGINT"/>
     </createTable>
     <modifySql dbms="mysql">
@@ -163,7 +163,7 @@
         <constraints nullable="false" primaryKey="true" primaryKeyName="PK_WIKI_TEMPLATES_ID"/>
       </column>
       <column name="WIKI_ID" type="BIGINT"/>
-      <column name="AUTHOR" type="NVARCHAR(36)"/>
+      <column name="AUTHOR" type="NVARCHAR(200)"/>
       <column name="NAME" type="NVARCHAR(550)"/>
       <column name="DESCRIPTION" type="NVARCHAR(1000)"/>
       <column name="CONTENT" type="CLOB"/>
@@ -189,7 +189,7 @@
       <column name="TARGET_PAGE_ID" type="BIGINT"/>
       <column name="TARGET_PAGE_REVISION" type="NVARCHAR(50)"/>
       <column name="NEW_PAGE" type="BOOLEAN"/>
-      <column name="AUTHOR" type="NVARCHAR(36)"/>
+      <column name="AUTHOR" type="NVARCHAR(200)"/>
       <column name="NAME" type="NVARCHAR(550)"/>
       <column name="TITLE" type="NVARCHAR(550)"/>
       <column name="CONTENT" type="CLOB"/>
@@ -215,7 +215,7 @@
         <constraints foreignKeyName="FK_WIKI_DRAFTATTACHMENTS_PAGES" references="WIKI_DRAFT_PAGES(DRAFT_PAGE_ID)" />
       </column>
       <column name="NAME" type="NVARCHAR(550)"/>
-      <column name="CREATOR" type="NVARCHAR(36)">
+      <column name="CREATOR" type="NVARCHAR(200)">
         <constraints nullable="true"/>
       </column>
       <column name="CREATED_DATE" type="TIMESTAMP">
