@@ -34,7 +34,8 @@ public class AttachmentEntity {
 
   @Id
   @Column(name = "ATTACHMENT_ID")
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @SequenceGenerator(name="SEQ_WIKI_PAGE_ATTACH_ATTACH_ID", sequenceName="SEQ_WIKI_PAGE_ATTACH_ATTACH_ID")
+  @GeneratedValue(strategy=GenerationType.AUTO, generator="SEQ_WIKI_PAGE_ATTACH_ATTACH_ID")
   private Long id;
 
   @Column(name = "NAME")
@@ -57,7 +58,6 @@ public class AttachmentEntity {
   @Column(name = "FULL_TITLE")
   private String fullTitle;
 
-  @Lob
   @Column(name = "CONTENT")
   private byte[] content;
 

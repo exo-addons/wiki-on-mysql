@@ -421,4 +421,39 @@
                    constraintName="PK_WIKI_PAGES_RELATED_PAGES"/>
   </changeSet>
 
+
+  <!-- Sequences -->
+
+  <changeSet author="wiki" id="1.0.0-31" dbms="oracle,postgresql">
+    <createSequence sequenceName="SEQ_WIKI_WIKIS_WIKI_ID" startValue="1"/>
+  </changeSet>
+
+  <changeSet author="wiki" id="1.0.0-32" dbms="oracle,postgresql">
+    <createSequence sequenceName="SEQ_WIKI_PAGES_PAGE_ID" startValue="1"/>
+  </changeSet>
+
+  <changeSet author="wiki" id="1.0.0-33" dbms="oracle,postgresql">
+    <createSequence sequenceName="SEQ_WIKI_PAGE_ATTACH_ATTACH_ID" startValue="1"/>
+  </changeSet>
+
+  <changeSet author="wiki" id="1.0.0-34" dbms="oracle,postgresql">
+    <createSequence sequenceName="SEQ_WIKI_PAGE_VERSIONS_VERS_ID" startValue="1"/>
+  </changeSet>
+
+  <changeSet author="wiki" id="1.0.0-35" dbms="oracle,postgresql">
+    <createSequence sequenceName="SEQ_WIKI_PAGE_MOVES_MOVE_ID" startValue="1"/>
+  </changeSet>
+
+  <changeSet author="wiki" id="1.0.0-36" dbms="oracle,postgresql">
+    <createSequence sequenceName="SEQ_WIKI_EMOTION_ICONS_ICON_ID" startValue="1"/>
+  </changeSet>
+
+  <changeSet author="wiki" id="1.0.0-37" dbms="oracle,postgresql">
+    <createSequence sequenceName="SEQ_WIKI_TEMPLATES_TEMPLATE_ID" startValue="1"/>
+  </changeSet>
+
+  <changeSet author="wiki" id="1.0.0-38" dbms="oracle,postgresql">
+    <createSequence sequenceName="SEQ_WIKI_DRAFT_PAGES_DRAFT_ID" startValue="1"/>
+  </changeSet>
+
 </databaseChangeLog>

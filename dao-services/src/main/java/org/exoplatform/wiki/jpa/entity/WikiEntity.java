@@ -38,7 +38,8 @@ import java.util.List;
 public class WikiEntity {
   @Id
   @Column(name = "WIKI_ID")
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @SequenceGenerator(name="SEQ_WIKI_WIKIS_WIKI_ID", sequenceName="SEQ_WIKI_WIKIS_WIKI_ID")
+  @GeneratedValue(strategy=GenerationType.AUTO, generator="SEQ_WIKI_WIKIS_WIKI_ID")
   private long id;
 
   @Column(name = "NAME")

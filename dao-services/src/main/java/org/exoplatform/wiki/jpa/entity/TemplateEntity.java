@@ -40,8 +40,9 @@ import javax.persistence.*;
 public class TemplateEntity extends BasePageEntity {
 
   @Id
+  @SequenceGenerator(name="SEQ_WIKI_TEMPLATES_TEMPLATE_ID", sequenceName="SEQ_WIKI_TEMPLATES_TEMPLATE_ID")
+  @GeneratedValue(strategy=GenerationType.AUTO, generator="SEQ_WIKI_TEMPLATES_TEMPLATE_ID")
   @Column(name = "TEMPLATE_ID")
-  @GeneratedValue(strategy = GenerationType.AUTO)
   private long id;
 
   @Column(name = "DESCRIPTION")

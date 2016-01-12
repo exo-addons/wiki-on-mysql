@@ -12,14 +12,14 @@ import javax.persistence.*;
 })
 public class EmotionIconEntity {
   @Id
+  @SequenceGenerator(name="SEQ_WIKI_EMOTION_ICONS_ICON_ID", sequenceName="SEQ_WIKI_EMOTION_ICONS_ICON_ID")
+  @GeneratedValue(strategy=GenerationType.AUTO, generator="SEQ_WIKI_EMOTION_ICONS_ICON_ID")
   @Column(name = "EMOTION_ICON_ID")
-  @GeneratedValue(strategy = GenerationType.AUTO)
   private long id;
 
   @Column(name = "NAME")
   private String name;
 
-  @Lob
   @Column(name = "IMAGE", length = 20971520)
   private byte[] image;
 

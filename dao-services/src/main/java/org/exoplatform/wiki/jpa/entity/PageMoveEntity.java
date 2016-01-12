@@ -47,8 +47,9 @@ public class PageMoveEntity {
   }
 
   @Id
+  @SequenceGenerator(name="SEQ_WIKI_PAGE_MOVES_MOVE_ID", sequenceName="SEQ_WIKI_PAGE_MOVES_MOVE_ID")
+  @GeneratedValue(strategy=GenerationType.AUTO, generator="SEQ_WIKI_PAGE_MOVES_MOVE_ID")
   @Column(name = "PAGE_MOVE_ID")
-  @GeneratedValue(strategy = GenerationType.AUTO)
   private long id;
 
   @ManyToOne

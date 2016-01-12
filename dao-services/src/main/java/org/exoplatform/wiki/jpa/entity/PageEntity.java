@@ -45,7 +45,8 @@ public class PageEntity extends BasePageEntity {
 
   @Id
   @Column(name = "PAGE_ID")
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @SequenceGenerator(name="SEQ_WIKI_PAGES_PAGE_ID", sequenceName="SEQ_WIKI_PAGES_PAGE_ID")
+  @GeneratedValue(strategy=GenerationType.AUTO, generator="SEQ_WIKI_PAGES_PAGE_ID")
   private long id;
 
   @ManyToOne(cascade = CascadeType.PERSIST)
