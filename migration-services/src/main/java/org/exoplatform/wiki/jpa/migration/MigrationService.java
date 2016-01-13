@@ -366,7 +366,11 @@ public class MigrationService implements Startable {
                   Page jcrPageOfDraft = jcrDataStorage.getPageById(jcrDraftPage.getTargetPageId());
                   if (jcrPageOfDraft != null) {
                     Page jpaPageOfDraft = jpaDataStorage.getPageOfWikiByName(jcrPageOfDraft.getWikiType(), jcrPageOfDraft.getWikiOwner(), jcrPageOfDraft.getName());
-                    jcrDraftPage.setTargetPageId(jpaPageOfDraft.getId());
+                    if(jpaPageOfDraft != null) {
+                      jcrDraftPage.setTargetPageId(jpaPageOfDraft.getId());
+                    } else {
+                      LOG.warn("Target page " + jcrPageOfDraft.getName() + " of draft page " + jcrDraftPage.getName() + " does not exist in JPA database");
+                    }
                     jpaDataStorage.createDraftPageForUser(jcrDraftPage, user.getUserName());
                   } else {
                     LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
