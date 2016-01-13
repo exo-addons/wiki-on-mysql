@@ -119,9 +119,9 @@ public class MigrationService implements Startable {
       long startTime = System.currentTimeMillis();
 
       // migrate
-      migrateWikiOfType(PortalConfig.PORTAL_TYPE);
-      migrateWikiOfType(PortalConfig.GROUP_TYPE);
-      migrateWikiOfType(PortalConfig.USER_TYPE);
+      migrateWikisOfType(PortalConfig.PORTAL_TYPE);
+      migrateWikisOfType(PortalConfig.GROUP_TYPE);
+      migrateUsersWikis();
       migrateDraftPages();
       migrateRelatedPages();
 
@@ -198,50 +198,98 @@ public class MigrationService implements Startable {
     return hasDataToMigrate;
   }
 
-  private void migrateWikiOfType(String wikiType) {
+  private void migrateWikisOfType(String wikiType) {
     try {
-      // get all portal wikis
+      // get all wikis
       List<Wiki> wikis = jcrDataStorage.getWikisByType(wikiType);
 
-      LOG.info("  Number of " + wikiType + " wikis to migrate = " + wikis.size());
+      if(wikis != null && !wikis.isEmpty()) {
+        LOG.info("  Number of " + wikiType + " wikis to migrate = " + wikis.size());
 
-      // for each wiki...
-      for(Wiki jcrWiki : wikis) {
-        try {
-          LOG.info("  Start migration of wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner());
-          Wiki existingPortalWiki = jpaDataStorage.getWikiByTypeAndOwner(jcrWiki.getType(), jcrWiki.getOwner());
-          if (existingPortalWiki != null) {
-            LOG.error("  Cannot migrate wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner() + " because it already exists.");
-          } else {
-            LOG.info("    Migration of wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner());
-            // create the wiki
-            Page jcrWikiHome = jcrWiki.getWikiHome();
-            // remove wiki home to make the createWiki method recreate it
-            jcrWiki.setWikiHome(null);
-            Wiki createdWiki = jpaDataStorage.createWiki(jcrWiki);
-
-            // PAGES
-            LOG.info("    Update wiki home page");
-            // create pages recursively
-            LOG.info("    Creation of all wiki pages ...");
-            jcrWiki.setWikiHome(jcrWikiHome);
-            createChildrenPagesOf(createdWiki, jcrWiki, null, 1);
-            LOG.info("    Pages migrated");
-
-            // TEMPLATES
-            LOG.info("    Start migration of templates ...");
-            createTemplates(jcrWiki);
-            LOG.info("    Templates migrated");
-
-            LOG.info("  Wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner() + " migrated successfully");
-          }
-        } catch(Exception e) {
-          LOG.error("Cannot migrate wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner()
-                  + " - Cause : " + e.getMessage(), e);
+        // for each wiki...
+        for (Wiki jcrWiki : wikis) {
+          migrateWiki(jcrWiki);
         }
+      } else {
+        LOG.info("  No " + wikiType + " wikis to migrate");
       }
+
     } catch (Exception e) {
-      LOG.error("Cannot finish migrating " + wikiType + " wikis - Cause " + e.getMessage(), e);
+      LOG.error("Cannot finish the migration of " + wikiType + " wikis - Cause " + e.getMessage(), e);
+    }
+  }
+
+  private void migrateUsersWikis() {
+    int pageSize = 20;
+    int current = 0;
+    try {
+      LOG.info("  Start migration of user wikis");
+      ListAccess<User> allUsersListAccess = organizationService.getUserHandler().findAllUsers();
+      int totalUsers = allUsersListAccess.getSize();
+      LOG.info("    Number of users = " + totalUsers);
+      User[] users;
+      do {
+        LOG.info("    Progression of users wikis migration : " + current + "/" + totalUsers);
+        if (current + pageSize > totalUsers) {
+          pageSize = totalUsers - current;
+        }
+        users = allUsersListAccess.load(current, pageSize);
+        for (User user : users) {
+          try {
+            // get user wiki
+            Wiki jcrWiki = jcrDataStorage.getWikiByTypeAndOwner(PortalConfig.USER_TYPE, user.getUserName());
+
+            // if it exists, migrate it
+            if(jcrWiki != null) {
+              LOG.info("    Migration of the wiki of the user " + user.getUserName());
+              migrateWiki(jcrWiki);
+            } else {
+              LOG.info("    No wiki for user " + user.getUserName());
+            }
+
+          } catch (Exception e) {
+            LOG.error("Cannot migrate wiki of user " + user.getUserName() + " - Cause " + e.getMessage(), e);
+          }
+        }
+        current += users.length;
+      } while(users != null && users.length > 0);
+      LOG.info("    Migration of users wikis done");
+    } catch (Exception e) {
+      LOG.error("Cannot migrate users wikis - Cause : " + e.getMessage(), e);
+    }
+  }
+
+  private void migrateWiki(Wiki jcrWiki) {
+    try {
+      LOG.info("  Start migration of wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner());
+      Wiki existingPortalWiki = jpaDataStorage.getWikiByTypeAndOwner(jcrWiki.getType(), jcrWiki.getOwner());
+      if (existingPortalWiki != null) {
+        LOG.error("  Cannot migrate wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner() + " because it already exists.");
+      } else {
+        // create the wiki
+        Page jcrWikiHome = jcrWiki.getWikiHome();
+        // remove wiki home to make the createWiki method recreate it
+        jcrWiki.setWikiHome(null);
+        Wiki createdWiki = jpaDataStorage.createWiki(jcrWiki);
+
+        // PAGES
+        LOG.info("    Update wiki home page");
+        // create pages recursively
+        LOG.info("    Creation of all wiki pages ...");
+        jcrWiki.setWikiHome(jcrWikiHome);
+        createChildrenPagesOf(createdWiki, jcrWiki, null, 1);
+        LOG.info("    Pages migrated");
+
+        // TEMPLATES
+        LOG.info("    Start migration of templates ...");
+        createTemplates(jcrWiki);
+        LOG.info("    Templates migrated");
+
+        LOG.info("  Wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner() + " migrated successfully");
+      }
+    } catch(Exception e) {
+      LOG.error("Cannot migrate wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner()
+              + " - Cause : " + e.getMessage(), e);
     }
   }
 
@@ -262,6 +310,7 @@ public class MigrationService implements Startable {
           try {
             List<DraftPage> draftPages = jcrDataStorage.getDraftPagesOfUser(user.getUserName());
             for (DraftPage jcrDraftPage : draftPages) {
+
               LOG.info("    Draft page " + jcrDraftPage.getName() + " of user " + user.getUserName());
               try {
                 // old target id (JCR uuid - String) must be converted to new target id (PK - long)
