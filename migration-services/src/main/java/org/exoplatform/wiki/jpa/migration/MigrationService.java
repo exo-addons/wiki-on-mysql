@@ -441,55 +441,68 @@ public class MigrationService implements Startable {
   private void createPage(Wiki wiki, Page jcrParentPage, Page jcrPage) throws WikiException {
     // versions
     List<PageVersion> pageVersions = jcrDataStorage.getVersionsOfPage(jcrPage);
+    if(pageVersions == null || pageVersions.isEmpty()) {
+      LOG.warn("Page " + jcrPage.getName() + " is not versioned, migrating the page as the only version");
+      PageVersion pageOnlyVersion = new PageVersion();
+      pageOnlyVersion.setAuthor(jcrPage.getAuthor());
+      pageOnlyVersion.setContent(jcrPage.getContent());
+      pageOnlyVersion.setCreatedDate(jcrPage.getCreatedDate());
+      pageOnlyVersion.setUpdatedDate(jcrPage.getUpdatedDate());
+      pageOnlyVersion.setComment(jcrPage.getComment());
 
-    if(pageVersions != null && !pageVersions.isEmpty()) {
-      PageVersion firstVersion = pageVersions.get(pageVersions.size() - 1);
-
-      Page jpaPage = new Page();
-      jpaPage.setWikiType(wiki.getType());
-      jpaPage.setWikiOwner(wiki.getOwner());
-      jpaPage.setName(jcrPage.getName());
-      jpaPage.setTitle(jcrPage.getTitle());
-      jpaPage.setAuthor(firstVersion.getAuthor());
-      jpaPage.setSyntax(jcrPage.getSyntax());
-      jpaPage.setContent(firstVersion.getContent());
-      jpaPage.setPermissions(jcrPage.getPermissions());
-      jpaPage.setCreatedDate(firstVersion.getCreatedDate());
-      jpaPage.setUpdatedDate(firstVersion.getUpdatedDate());
-      jpaPage.setOwner(jcrPage.getOwner());
-      jpaPage.setComment(firstVersion.getComment());
-      // TODO minorEdit should be in PageVersion, not Page
-      jpaPage.setMinorEdit(jcrPage.isMinorEdit());
-      jpaPage.setActivityId(jcrPage.getActivityId());
-
-      if(jcrParentPage == null) {
-        // home page case
-        String wikiHomeId = wiki.getWikiHome().getId();
-        jpaPage.setId(wikiHomeId);
-        jpaDataStorage.updatePage(jpaPage);
-      } else {
-        jpaPage = jpaDataStorage.createPage(wiki, jcrParentPage, jpaPage);
+      if(pageVersions == null) {
+        pageVersions = new ArrayList<>();
       }
-      jpaDataStorage.addPageVersion(jpaPage);
-
-      for (int i = pageVersions.size() - 2; i >= 0; i--) {
-        PageVersion version = pageVersions.get(i);
-
-        jpaPage.setAuthor(version.getAuthor());
-        jpaPage.setContent(version.getContent());
-        jpaPage.setUpdatedDate(version.getUpdatedDate());
-        jpaPage.setComment(version.getComment());
-
-        jpaDataStorage.updatePage(jpaPage);
-        jpaDataStorage.addPageVersion(jpaPage);
-      }
-
-      // last update with the page itself (needed if some updates have been done without requiring a new version, like a name change for example)
-      String jcrPageId = jcrPage.getId();
-      jcrPage.setId(jpaPage.getId());
-      jpaDataStorage.updatePage(jcrPage);
-      jcrPage.setId(jcrPageId);
+      pageVersions.add(pageOnlyVersion);
     }
+
+    PageVersion firstVersion = pageVersions.get(pageVersions.size() - 1);
+
+    Page jpaPage = new Page();
+    jpaPage.setWikiType(wiki.getType());
+    jpaPage.setWikiOwner(wiki.getOwner());
+    jpaPage.setName(jcrPage.getName());
+    jpaPage.setTitle(jcrPage.getTitle());
+    jpaPage.setAuthor(firstVersion.getAuthor());
+    jpaPage.setSyntax(jcrPage.getSyntax());
+    jpaPage.setContent(firstVersion.getContent());
+    jpaPage.setPermissions(jcrPage.getPermissions());
+    jpaPage.setCreatedDate(firstVersion.getCreatedDate());
+    jpaPage.setUpdatedDate(firstVersion.getUpdatedDate());
+    jpaPage.setOwner(jcrPage.getOwner());
+    jpaPage.setComment(firstVersion.getComment());
+    // TODO minorEdit should be in PageVersion, not Page
+    jpaPage.setMinorEdit(jcrPage.isMinorEdit());
+    jpaPage.setActivityId(jcrPage.getActivityId());
+
+    if(jcrParentPage == null) {
+      // home page case
+      String wikiHomeId = wiki.getWikiHome().getId();
+      jpaPage.setId(wikiHomeId);
+      jpaDataStorage.updatePage(jpaPage);
+    } else {
+      jpaPage = jpaDataStorage.createPage(wiki, jcrParentPage, jpaPage);
+    }
+    jpaDataStorage.addPageVersion(jpaPage);
+
+    for (int i = pageVersions.size() - 2; i >= 0; i--) {
+      PageVersion version = pageVersions.get(i);
+
+      jpaPage.setAuthor(version.getAuthor());
+      jpaPage.setContent(version.getContent());
+      jpaPage.setUpdatedDate(version.getUpdatedDate());
+      jpaPage.setComment(version.getComment());
+
+      jpaDataStorage.updatePage(jpaPage);
+      jpaDataStorage.addPageVersion(jpaPage);
+    }
+
+    // last update with the page itself (needed if some updates have been done without requiring a new version, like a name change for example)
+    String jcrPageId = jcrPage.getId();
+    jcrPage.setId(jpaPage.getId());
+    jpaDataStorage.updatePage(jcrPage);
+    jcrPage.setId(jcrPageId);
+
 
     // watchers
     List<String> watchers = jcrDataStorage.getWatchersOfPage(jcrPage);
