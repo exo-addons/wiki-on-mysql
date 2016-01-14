@@ -63,15 +63,23 @@ public class WikiPageIndexingServiceConnector extends ElasticIndexingServiceConn
     properties.put("permissions", notAnalyzedField);
     properties.put("url", notAnalyzedField);
     properties.put("sites", notAnalyzedField);
-    //Add Wiki type and owner filter
     properties.put("wikiType", notAnalyzedField);
     properties.put("wikiOwner", notAnalyzedField);
 
+    //Use Posting Highlighter
+    JSONObject defaultField = new JSONObject();
+    defaultField.put("type", "string");
+    defaultField.put("index_options", "offsets");
+    properties.put("name", defaultField);
+    properties.put("title", defaultField);
+    properties.put("content", defaultField);
+    properties.put("comment", defaultField);
+
     JSONObject mappingProperties = new JSONObject();
-    mappingProperties.put("properties",properties);
+    mappingProperties.put("properties", properties);
 
     JSONObject mappingJSON = new JSONObject();
-    mappingJSON.put(getType(), mappingProperties);
+    mappingJSON.put(this.getType(), mappingProperties);
 
     return mappingJSON.toJSONString();
   }

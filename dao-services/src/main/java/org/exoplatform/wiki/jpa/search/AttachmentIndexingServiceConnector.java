@@ -115,31 +115,38 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
     notAnalyzedField.put("type", "string");
     notAnalyzedField.put("index", "not_analyzed");
 
+    //Use Fast Vector Highlighter
     JSONObject file = new JSONObject();
     file.put("term_vector", "with_positions_offsets");
-    file.put("store", true);
+    file.put("store", Boolean.valueOf(true));
 
-    JSONObject fields = new JSONObject();
-    fields.put("file", file);
+    JSONObject attachmentFields = new JSONObject();
+    attachmentFields.put("file", file);
 
     JSONObject attachment = new JSONObject();
     attachment.put("type", "attachment");
-    attachment.put("fields", fields);
+    attachment.put("fields", attachmentFields);
 
     JSONObject properties = new JSONObject();
     properties.put("file", attachment);
     properties.put("permissions", notAnalyzedField);
     properties.put("url", notAnalyzedField);
     properties.put("sites", notAnalyzedField);
-    //Add Wiki type and owner filter
     properties.put("wikiType", notAnalyzedField);
     properties.put("wikiOwner", notAnalyzedField);
 
+    //Use Posting Highlighter
+    JSONObject defaultField = new JSONObject();
+    defaultField.put("type", "string");
+    defaultField.put("index_options", "offsets");
+    properties.put("name", defaultField);
+    properties.put("title", defaultField);
+
     JSONObject mappingProperties = new JSONObject();
-    mappingProperties.put("properties",properties);
+    mappingProperties.put("properties", properties);
 
     JSONObject mappingJSON = new JSONObject();
-    mappingJSON.put(getType(), mappingProperties);
+    mappingJSON.put(this.getType(), mappingProperties);
 
     return mappingJSON.toJSONString();
   }
