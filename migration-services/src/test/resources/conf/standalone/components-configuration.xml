@@ -156,6 +156,31 @@
     <type>org.exoplatform.services.jdbc.impl.DataSourceProviderImpl</type>
   </component>
 
+  <component>
+    <key>org.exoplatform.addons.es.index.IndexingService</key>
+    <type>org.exoplatform.addons.es.index.impl.QueueIndexingService</type>
+  </component>
+  <component>
+    <key>org.exoplatform.addons.es.index.IndexingOperationProcessor</key>
+    <type>org.exoplatform.addons.es.index.impl.ElasticIndexingOperationProcessor</type>
+  </component>
+  <component>
+    <key>org.exoplatform.addons.es.dao.IndexingOperationDAO</key>
+    <type>org.exoplatform.addons.es.dao.impl.IndexingOperationDAOImpl</type>
+  </component>
+  <component>
+    <type>org.exoplatform.addons.es.client.ElasticIndexingClient</type>
+  </component>
+  <component>
+    <type>org.exoplatform.addons.es.client.ElasticSearchingClient</type>
+  </component>
+  <component>
+    <type>org.exoplatform.addons.es.client.ElasticIndexingAuditTrail</type>
+  </component>
+  <component>
+    <type>org.exoplatform.addons.es.client.ElasticContentRequestBuilder</type>
+  </component>
+
   <!-- Bind datasource -->
   <external-component-plugins>
     <target-component>org.exoplatform.services.naming.InitialContextInitializer</target-component>
@@ -199,6 +224,7 @@
         <values-param>
           <name>changelogs</name>
           <description>Change logs of wiki</description>
+          <value>db/changelog/exo-search.db.changelog-1.0.0.xml</value>
           <value>db/changelog/wiki.db.changelog-1.0.0.xml</value>
         </values-param>
       </init-params>

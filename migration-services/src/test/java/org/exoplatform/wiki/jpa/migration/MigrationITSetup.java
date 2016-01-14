@@ -1,5 +1,6 @@
 package org.exoplatform.wiki.jpa.migration;
 
+import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.commons.api.persistence.DataInitializer;
 import org.exoplatform.commons.persistence.impl.EntityManagerService;
 import org.exoplatform.commons.testing.BaseExoTestCase;
@@ -43,6 +44,7 @@ public class MigrationITSetup extends BaseExoTestCase {
   protected JPADataStorage jpaDataStorage;
   protected OrganizationService organizationService;
   protected MOWService mowService;
+  private IndexingService indexingService;
   protected MigrationService migrationService;
 
   protected WikiDAO        wikiDAO;
@@ -86,12 +88,11 @@ public class MigrationITSetup extends BaseExoTestCase {
 
     jcrDataStorage = ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(JCRDataStorage.class);
     jpaDataStorage = ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(JPADataStorage.class);
-
     organizationService = ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(OrganizationService.class);
-
     mowService = ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(MOWService.class);
+    indexingService = ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(IndexingService.class);
 
-    migrationService = new MigrationService(jcrDataStorage, jpaDataStorage, organizationService, mowService);
+    migrationService = new MigrationService(jcrDataStorage, jpaDataStorage, organizationService, mowService, indexingService);
 
     // Init DAO
     wikiDAO = PortalContainer.getInstance().getComponentInstanceOfType(WikiDAO.class);

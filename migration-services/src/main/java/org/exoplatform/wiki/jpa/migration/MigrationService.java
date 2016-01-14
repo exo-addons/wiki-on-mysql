@@ -16,6 +16,7 @@
  */
 package org.exoplatform.wiki.jpa.migration;
 
+import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.container.ExoContainer;
@@ -31,6 +32,8 @@ import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.jpa.JPADataStorage;
+import org.exoplatform.wiki.jpa.search.AttachmentIndexingServiceConnector;
+import org.exoplatform.wiki.jpa.search.WikiPageIndexingServiceConnector;
 import org.exoplatform.wiki.mow.api.*;
 import org.exoplatform.wiki.mow.core.api.MOWService;
 import org.exoplatform.wiki.mow.core.api.WikiStoreImpl;
@@ -69,6 +72,7 @@ public class MigrationService implements Startable {
   private JPADataStorage jpaDataStorage;
   private OrganizationService organizationService;
   private MOWService mowService;
+  private IndexingService indexingService;
 
   private ExecutorService executorService;
 
@@ -77,11 +81,13 @@ public class MigrationService implements Startable {
   private List<Page> pagesWithRelatedPages = new ArrayList<>();
 
   public MigrationService(JCRDataStorage jcrDataStorage, JPADataStorage jpaDataStorage,
-                          OrganizationService organizationService, MOWService mowService) {
+                          OrganizationService organizationService, MOWService mowService,
+                          IndexingService indexingService) {
     this.jcrDataStorage = jcrDataStorage;
     this.jpaDataStorage = jpaDataStorage;
     this.organizationService = organizationService;
     this.mowService = mowService;
+    this.indexingService = indexingService;
     this.executorService = Executors.newSingleThreadExecutor(new DefaultThreadFactory("WIKI-MIGRATION-RDBMS", false, false));
     latch = new CountDownLatch(1);
   }
@@ -127,6 +133,12 @@ public class MigrationService implements Startable {
 
             Identity userIdentity = new Identity(IdentityConstants.SYSTEM);
             ConversationState.setCurrent(new ConversationState(userIdentity));
+
+            // indexation
+            LOG.info("Start reindexation of all wiki pages");
+            indexingService.reindexAll(WikiPageIndexingServiceConnector.TYPE);
+            LOG.info("Start reindexation of all wiki pages attachments");
+            indexingService.reindexAll(AttachmentIndexingServiceConnector.TYPE);
 
             // cleanup
             deleteWikisOfType(PortalConfig.PORTAL_TYPE);
