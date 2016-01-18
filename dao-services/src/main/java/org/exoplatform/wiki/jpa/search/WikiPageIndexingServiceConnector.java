@@ -59,6 +59,11 @@ public class WikiPageIndexingServiceConnector extends ElasticIndexingServiceConn
     notAnalyzedField.put("type", "string");
     notAnalyzedField.put("index", "not_analyzed");
 
+    //Use Posting Highlighter
+    JSONObject postingHighlighterField = new JSONObject();
+    postingHighlighterField.put("type", "string");
+    postingHighlighterField.put("index_options", "offsets");
+
     JSONObject properties = new JSONObject();
     properties.put("permissions", notAnalyzedField);
     properties.put("url", notAnalyzedField);
@@ -66,14 +71,10 @@ public class WikiPageIndexingServiceConnector extends ElasticIndexingServiceConn
     properties.put("wikiType", notAnalyzedField);
     properties.put("wikiOwner", notAnalyzedField);
 
-    //Use Posting Highlighter
-    JSONObject defaultField = new JSONObject();
-    defaultField.put("type", "string");
-    defaultField.put("index_options", "offsets");
-    properties.put("name", defaultField);
-    properties.put("title", defaultField);
-    properties.put("content", defaultField);
-    properties.put("comment", defaultField);
+    properties.put("name", postingHighlighterField);
+    properties.put("title", postingHighlighterField);
+    properties.put("content", postingHighlighterField);
+    properties.put("comment", postingHighlighterField);
 
     JSONObject mappingProperties = new JSONObject();
     mappingProperties.put("properties", properties);

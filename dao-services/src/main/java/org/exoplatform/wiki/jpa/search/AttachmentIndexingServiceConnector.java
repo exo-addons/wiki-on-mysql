@@ -116,31 +116,33 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
     notAnalyzedField.put("index", "not_analyzed");
 
     //Use Fast Vector Highlighter
-    JSONObject file = new JSONObject();
-    file.put("term_vector", "with_positions_offsets");
-    file.put("store", Boolean.valueOf(true));
+    JSONObject fastVectorHighlighterField = new JSONObject();
+    fastVectorHighlighterField.put("term_vector", "with_positions_offsets");
+    fastVectorHighlighterField.put("store", Boolean.valueOf(true));
+    //Use Posting Highlighter
+    JSONObject postingHighlighterField = new JSONObject();
+    postingHighlighterField.put("type", "string");
+    postingHighlighterField.put("index_options", "offsets");
 
+    //Construct attachment field
     JSONObject attachmentFields = new JSONObject();
-    attachmentFields.put("file", file);
+    attachmentFields.put("file", fastVectorHighlighterField);
+    attachmentFields.put("title", postingHighlighterField);
+    JSONObject attachmentField = new JSONObject();
+    attachmentField.put("type", "attachment");
+    attachmentField.put("fields", attachmentFields);
 
-    JSONObject attachment = new JSONObject();
-    attachment.put("type", "attachment");
-    attachment.put("fields", attachmentFields);
-
+    //Add all field mapping
     JSONObject properties = new JSONObject();
-    properties.put("file", attachment);
+    properties.put("file", attachmentField);
     properties.put("permissions", notAnalyzedField);
     properties.put("url", notAnalyzedField);
     properties.put("sites", notAnalyzedField);
     properties.put("wikiType", notAnalyzedField);
     properties.put("wikiOwner", notAnalyzedField);
 
-    //Use Posting Highlighter
-    JSONObject defaultField = new JSONObject();
-    defaultField.put("type", "string");
-    defaultField.put("index_options", "offsets");
-    properties.put("name", defaultField);
-    properties.put("title", defaultField);
+    properties.put("name", postingHighlighterField);
+    properties.put("title", postingHighlighterField);
 
     JSONObject mappingProperties = new JSONObject();
     mappingProperties.put("properties", properties);
