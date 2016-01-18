@@ -2,7 +2,6 @@ package org.exoplatform.wiki.jpa.migration;
 
 import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.commons.api.persistence.DataInitializer;
-import org.exoplatform.commons.persistence.impl.EntityManagerService;
 import org.exoplatform.commons.testing.BaseExoTestCase;
 import org.exoplatform.component.test.ConfigurationUnit;
 import org.exoplatform.component.test.ConfiguredBy;
@@ -106,9 +105,13 @@ public class MigrationITSetup extends BaseExoTestCase {
     emotionIconDAO = PortalContainer.getInstance().getComponentInstanceOfType(EmotionIconDAO.class);
     // Clean Data
     cleanDB();
+
+    RequestLifeCycle.end();
   }
 
   public void tearDown() {
+    RequestLifeCycle.begin(this.getContainer());
+
     // Clean Data
     cleanDB();
 

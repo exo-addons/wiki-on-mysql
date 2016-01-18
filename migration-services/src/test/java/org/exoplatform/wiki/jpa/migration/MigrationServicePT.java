@@ -3,6 +3,7 @@ package org.exoplatform.wiki.jpa.migration;
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
+import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.portal.config.model.PortalConfig;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -30,6 +31,8 @@ public class MigrationServicePT extends MigrationITSetup {
   @Override
   public void setUp() {
     super.setUp();
+
+    RequestLifeCycle.begin(this.getContainer());
 
     WikiService wikiService = PortalContainer.getInstance().getComponentInstanceOfType(WikiService.class);
 
@@ -69,6 +72,8 @@ public class MigrationServicePT extends MigrationITSetup {
     } catch (Exception e) {
       fail("Cannot create draft pages - Cause : " + e.getMessage());
     }
+
+    RequestLifeCycle.end();
   }
 
   public void testWikiMigration() throws WikiException {

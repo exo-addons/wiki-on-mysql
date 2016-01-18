@@ -79,6 +79,7 @@ public class MigrationService implements Startable {
   private final CountDownLatch latch;
 
   private List<Page> pagesWithRelatedPages = new ArrayList<>();
+  private ExoContainer currentContainer;
 
   public MigrationService(JCRDataStorage jcrDataStorage, JPADataStorage jpaDataStorage,
                           OrganizationService organizationService, MOWService mowService,
@@ -102,8 +103,8 @@ public class MigrationService implements Startable {
 
   @Override
   public void start() {
+    currentContainer = ExoContainerContext.getCurrentContainer();
     try {
-      final ExoContainer currentContainer = ExoContainerContext.getCurrentContainer();
       RequestLifeCycle.begin(currentContainer);
 
       Identity userIdentity = new Identity(IdentityConstants.SYSTEM);
@@ -261,6 +262,9 @@ public class MigrationService implements Startable {
 
   private void migrateWiki(Wiki jcrWiki) {
     try {
+      RequestLifeCycle.end();
+      RequestLifeCycle.begin(currentContainer);
+
       LOG.info("  Start migration of wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner());
       Wiki existingPortalWiki = jpaDataStorage.getWikiByTypeAndOwner(jcrWiki.getType(), jcrWiki.getOwner());
       if (existingPortalWiki != null) {
@@ -290,6 +294,9 @@ public class MigrationService implements Startable {
     } catch(Exception e) {
       LOG.error("Cannot migrate wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner()
               + " - Cause : " + e.getMessage(), e);
+    } finally {
+      RequestLifeCycle.end();
+      RequestLifeCycle.begin(currentContainer);
     }
   }
 
@@ -460,6 +467,8 @@ public class MigrationService implements Startable {
         boolean pageCreated;
         try {
           LOG.info(String.format("    %1$" + ((level) * 2) + "s Page %2$s", " ", childrenPage.getName()));
+          RequestLifeCycle.end();
+          RequestLifeCycle.begin(currentContainer);
           createPage(jpaWiki, jcrPage, childrenPage);
           pageCreated = true;
         } catch(Exception e) {
@@ -488,81 +497,86 @@ public class MigrationService implements Startable {
 
   @ExoTransactional
   private void createPage(Wiki wiki, Page jcrParentPage, Page jcrPage) throws WikiException {
-    // versions
-    List<PageVersion> pageVersions = jcrDataStorage.getVersionsOfPage(jcrPage);
-    if(pageVersions == null || pageVersions.isEmpty()) {
-      LOG.warn("Page " + jcrPage.getName() + " is not versioned, migrating the page as the only version");
-      PageVersion pageOnlyVersion = new PageVersion();
-      pageOnlyVersion.setAuthor(jcrPage.getAuthor());
-      pageOnlyVersion.setContent(jcrPage.getContent());
-      pageOnlyVersion.setCreatedDate(jcrPage.getCreatedDate());
-      pageOnlyVersion.setUpdatedDate(jcrPage.getUpdatedDate());
-      pageOnlyVersion.setComment(jcrPage.getComment());
+    try {
+      // versions
+      List<PageVersion> pageVersions = jcrDataStorage.getVersionsOfPage(jcrPage);
+      if (pageVersions == null || pageVersions.isEmpty()) {
+        LOG.warn("Page " + jcrPage.getName() + " is not versioned, migrating the page as the only version");
+        PageVersion pageOnlyVersion = new PageVersion();
+        pageOnlyVersion.setAuthor(jcrPage.getAuthor());
+        pageOnlyVersion.setContent(jcrPage.getContent());
+        pageOnlyVersion.setCreatedDate(jcrPage.getCreatedDate());
+        pageOnlyVersion.setUpdatedDate(jcrPage.getUpdatedDate());
+        pageOnlyVersion.setComment(jcrPage.getComment());
 
-      if(pageVersions == null) {
-        pageVersions = new ArrayList<>();
+        if (pageVersions == null) {
+          pageVersions = new ArrayList<>();
+        }
+        pageVersions.add(pageOnlyVersion);
       }
-      pageVersions.add(pageOnlyVersion);
-    }
 
-    PageVersion firstVersion = pageVersions.get(pageVersions.size() - 1);
+      PageVersion firstVersion = pageVersions.get(pageVersions.size() - 1);
 
-    Page jpaPage = new Page();
-    jpaPage.setWikiType(wiki.getType());
-    jpaPage.setWikiOwner(wiki.getOwner());
-    jpaPage.setName(jcrPage.getName());
-    jpaPage.setTitle(jcrPage.getTitle());
-    jpaPage.setAuthor(firstVersion.getAuthor());
-    jpaPage.setSyntax(jcrPage.getSyntax());
-    jpaPage.setContent(firstVersion.getContent());
-    jpaPage.setPermissions(jcrPage.getPermissions());
-    jpaPage.setCreatedDate(firstVersion.getCreatedDate());
-    jpaPage.setUpdatedDate(firstVersion.getUpdatedDate());
-    jpaPage.setOwner(jcrPage.getOwner());
-    jpaPage.setComment(firstVersion.getComment());
-    // TODO minorEdit should be in PageVersion, not Page
-    jpaPage.setMinorEdit(jcrPage.isMinorEdit());
-    jpaPage.setActivityId(jcrPage.getActivityId());
+      Page jpaPage = new Page();
+      jpaPage.setWikiType(wiki.getType());
+      jpaPage.setWikiOwner(wiki.getOwner());
+      jpaPage.setName(jcrPage.getName());
+      jpaPage.setTitle(jcrPage.getTitle());
+      jpaPage.setAuthor(firstVersion.getAuthor());
+      jpaPage.setSyntax(jcrPage.getSyntax());
+      jpaPage.setContent(firstVersion.getContent());
+      jpaPage.setPermissions(jcrPage.getPermissions());
+      jpaPage.setCreatedDate(firstVersion.getCreatedDate());
+      jpaPage.setUpdatedDate(firstVersion.getUpdatedDate());
+      jpaPage.setOwner(jcrPage.getOwner());
+      jpaPage.setComment(firstVersion.getComment());
+      // TODO minorEdit should be in PageVersion, not Page
+      jpaPage.setMinorEdit(jcrPage.isMinorEdit());
+      jpaPage.setActivityId(jcrPage.getActivityId());
 
-    if(jcrParentPage == null) {
-      // home page case
-      String wikiHomeId = wiki.getWikiHome().getId();
-      jpaPage.setId(wikiHomeId);
-      jpaDataStorage.updatePage(jpaPage);
-    } else {
-      jpaPage = jpaDataStorage.createPage(wiki, jcrParentPage, jpaPage);
-    }
-    jpaDataStorage.addPageVersion(jpaPage);
-
-    for (int i = pageVersions.size() - 2; i >= 0; i--) {
-      PageVersion version = pageVersions.get(i);
-
-      jpaPage.setAuthor(version.getAuthor());
-      jpaPage.setContent(version.getContent());
-      jpaPage.setUpdatedDate(version.getUpdatedDate());
-      jpaPage.setComment(version.getComment());
-
-      jpaDataStorage.updatePage(jpaPage);
+      if (jcrParentPage == null) {
+        // home page case
+        String wikiHomeId = wiki.getWikiHome().getId();
+        jpaPage.setId(wikiHomeId);
+        jpaDataStorage.updatePage(jpaPage);
+      } else {
+        jpaPage = jpaDataStorage.createPage(wiki, jcrParentPage, jpaPage);
+      }
       jpaDataStorage.addPageVersion(jpaPage);
-    }
 
-    // last update with the page itself (needed if some updates have been done without requiring a new version, like a name change for example)
-    String jcrPageId = jcrPage.getId();
-    jcrPage.setId(jpaPage.getId());
-    jpaDataStorage.updatePage(jcrPage);
-    jcrPage.setId(jcrPageId);
+      for (int i = pageVersions.size() - 2; i >= 0; i--) {
+        PageVersion version = pageVersions.get(i);
+
+        jpaPage.setAuthor(version.getAuthor());
+        jpaPage.setContent(version.getContent());
+        jpaPage.setUpdatedDate(version.getUpdatedDate());
+        jpaPage.setComment(version.getComment());
+
+        jpaDataStorage.updatePage(jpaPage);
+        jpaDataStorage.addPageVersion(jpaPage);
+      }
+
+      // last update with the page itself (needed if some updates have been done without requiring a new version, like a name change for example)
+      String jcrPageId = jcrPage.getId();
+      jcrPage.setId(jpaPage.getId());
+      jpaDataStorage.updatePage(jcrPage);
+      jcrPage.setId(jcrPageId);
 
 
-    // watchers
-    List<String> watchers = jcrDataStorage.getWatchersOfPage(jcrPage);
-    for(String watcher : watchers) {
-      jpaDataStorage.addWatcherToPage(watcher, jcrPage);
-    }
+      // watchers
+      List<String> watchers = jcrDataStorage.getWatchersOfPage(jcrPage);
+      for (String watcher : watchers) {
+        jpaDataStorage.addWatcherToPage(watcher, jcrPage);
+      }
 
-    // attachments
-    List<Attachment> attachments = jcrDataStorage.getAttachmentsOfPage(jcrPage);
-    for(Attachment attachment : attachments) {
-      jpaDataStorage.addAttachmentToPage(attachment, jcrPage);
+      // attachments
+      List<Attachment> attachments = jcrDataStorage.getAttachmentsOfPage(jcrPage);
+      for (Attachment attachment : attachments) {
+        jpaDataStorage.addAttachmentToPage(attachment, jcrPage);
+      }
+    } finally {
+      RequestLifeCycle.end();
+      RequestLifeCycle.begin(currentContainer);
     }
   }
 

@@ -1,5 +1,6 @@
 package org.exoplatform.wiki.jpa.migration;
 
+import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.portal.config.model.PortalConfig;
 import org.exoplatform.services.organization.Group;
 import org.exoplatform.services.organization.GroupHandler;
@@ -19,6 +20,8 @@ import java.util.*;
 public class MigrationServiceTest extends MigrationITSetup {
 
   public void testWikiMigration() throws Exception {
+    RequestLifeCycle.begin(this.getContainer());
+
     // Users
     UserHandler userHandler = organizationService.getUserHandler();
     User userJohn = userHandler.createUserInstance("john");
@@ -201,12 +204,16 @@ public class MigrationServiceTest extends MigrationITSetup {
     // reset session
     startSessionAs(null);
 
+    RequestLifeCycle.end();
+
 
     // DO MIGRATION
     migrationService.start();
 
     migrationService.getLatch().await();
 
+
+    RequestLifeCycle.begin(this.getContainer());
 
     // check wiki
     List<Wiki> portalWikis = jpaDataStorage.getWikisByType(PortalConfig.PORTAL_TYPE);
@@ -308,5 +315,7 @@ public class MigrationServiceTest extends MigrationITSetup {
     // check no more JCR data
     jcrSession = mowService.getSession().getJCRSession();
     assertFalse(jcrSession.getRootNode().hasNode("exo:applications/eXoWiki"));
+
+    RequestLifeCycle.end();
   }
 }
