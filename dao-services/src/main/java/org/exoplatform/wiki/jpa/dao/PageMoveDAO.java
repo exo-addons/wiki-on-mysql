@@ -18,13 +18,18 @@ package org.exoplatform.wiki.jpa.dao;
 
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 import org.exoplatform.wiki.jpa.entity.PageMoveEntity;
+import org.exoplatform.wiki.mow.api.WikiType;
 
 import javax.persistence.TypedQuery;
 import java.util.List;
 
-public class PageMoveDAO extends GenericDAOJPAImpl<PageMoveEntity,Long> {
+public class PageMoveDAO extends WikiBaseDAO<PageMoveEntity,Long> {
 
   public List<PageMoveEntity> findInPageMoves(String wikiType, String wikiOwner, String pageName) {
+
+    //We need to add the first "/" on the wiki owner if it's  wiki group
+    if (wikiType.toUpperCase().equals(WikiType.GROUP.name())) wikiOwner = validateWikiOwner(wikiOwner);
+
     TypedQuery<PageMoveEntity> query = getEntityManager().createNamedQuery("wikiPageMove.getPreviousPage", PageMoveEntity.class)
             .setParameter("wikiType", wikiType)
             .setParameter("wikiOwner", wikiOwner)

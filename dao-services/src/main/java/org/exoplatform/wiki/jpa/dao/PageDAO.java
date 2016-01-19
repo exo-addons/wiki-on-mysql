@@ -16,21 +16,26 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
-import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
-import org.exoplatform.wiki.jpa.entity.PageEntity;
+import java.util.List;
 
-import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.TypedQuery;
-import java.util.List;
+
+import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
+import org.exoplatform.wiki.jpa.entity.PageEntity;
+import org.exoplatform.wiki.mow.api.WikiType;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com Jun
  * 24, 2015
  */
-public class PageDAO extends GenericDAOJPAImpl<PageEntity, Long> {
+public class PageDAO extends WikiBaseDAO<PageEntity, Long> {
 
   public PageEntity getPageOfWikiByName(String wikiType, String wikiOwner, String pageName) {
+
+    //We need to add the first "/" on the wiki owner if it's  wiki group
+    if (wikiType.toUpperCase().equals(WikiType.GROUP.name())) wikiOwner = validateWikiOwner(wikiOwner);
+
     PageEntity pageEntity = null;
     TypedQuery<PageEntity> query = getEntityManager().createNamedQuery("wikiPage.getPageOfWikiByName", PageEntity.class)
                                                .setParameter("name", pageName)

@@ -29,7 +29,7 @@ import org.exoplatform.wiki.mow.api.WikiType;
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com Jun
  * 24, 2015
  */
-public class WikiDAO extends GenericDAOJPAImpl<WikiEntity, Long> {
+public class WikiDAO extends WikiBaseDAO<WikiEntity, Long> {
 
   public List<Long> findAllIds(int offset, int limit) {
     return getEntityManager().createNamedQuery("wiki.getAllIds").setFirstResult(offset).setMaxResults(limit).getResultList();
@@ -37,8 +37,8 @@ public class WikiDAO extends GenericDAOJPAImpl<WikiEntity, Long> {
 
   public WikiEntity getWikiByTypeAndOwner(String wikiType, String wikiOwner) {
 
-    //We need to add the first "/" on the wiki owner
-    if (wikiType.equals(WikiType.GROUP)) wikiOwner = validateWikiOwner(wikiOwner);
+    //We need to add the first "/" on the wiki owner if it's  wiki group
+    if (wikiType.toUpperCase().equals(WikiType.GROUP.name())) wikiOwner = validateWikiOwner(wikiOwner);
 
     TypedQuery<WikiEntity> query = getEntityManager().createNamedQuery("wiki.getWikiByTypeAndOwner", WikiEntity.class)
                                                .setParameter("type", wikiType)
@@ -56,19 +56,6 @@ public class WikiDAO extends GenericDAOJPAImpl<WikiEntity, Long> {
                                                .setParameter("type", wikiType);
 
     return query.getResultList();
-  }
-
-  protected String validateWikiOwner(String wikiOwner){
-    if(wikiOwner == null || wikiOwner.length() == 0){
-      return null;
-    }
-    if(!wikiOwner.startsWith("/")){
-      wikiOwner = "/" + wikiOwner;
-    }
-    if(wikiOwner.endsWith("/")){
-      wikiOwner = wikiOwner.substring(0,wikiOwner.length()-1);
-    }
-    return wikiOwner;
   }
 
 }

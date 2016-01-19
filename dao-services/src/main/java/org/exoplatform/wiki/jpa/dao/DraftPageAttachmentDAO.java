@@ -28,7 +28,7 @@ import org.exoplatform.wiki.jpa.entity.DraftPageAttachmentEntity;
  *          exo@exoplatform.com
  * Jun 24, 2015  
  */
-public class DraftPageAttachmentDAO extends GenericDAOJPAImpl<DraftPageAttachmentEntity,Long> {
+public class DraftPageAttachmentDAO extends WikiBaseDAO<DraftPageAttachmentEntity,Long> {
 
   public List<Long> findAllIds(int offset, int limit) {
     return getEntityManager().createNamedQuery("draftAttachment.getAllIds").setFirstResult(offset).setMaxResults(limit).getResultList();

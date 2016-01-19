@@ -32,7 +32,7 @@ import java.util.List;
  *          exo@exoplatform.com
  * Jun 24, 2015  
  */
-public class DraftPageDAO extends GenericDAOJPAImpl<DraftPageEntity, Long> {
+public class DraftPageDAO extends WikiBaseDAO<DraftPageEntity, Long> {
 
   public List<DraftPageEntity> findDraftPagesByUser(String username) {
     TypedQuery<DraftPageEntity> query = getEntityManager().createNamedQuery("wikiDraftPage.findDraftPagesByUser", DraftPageEntity.class)

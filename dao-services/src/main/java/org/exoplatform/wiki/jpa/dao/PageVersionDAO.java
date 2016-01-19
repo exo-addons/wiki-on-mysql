@@ -25,7 +25,7 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
-public class PageVersionDAO extends GenericDAOJPAImpl<PageVersionEntity, Long> {
+public class PageVersionDAO extends WikiBaseDAO<PageVersionEntity, Long> {
    public Long getLastversionNumberOfPage(Long pageId) {
      Query query = getEntityManager().createNamedQuery("wikiPageVersion.getLastversionNumberOfPage")
              .setParameter("pageId", pageId);

@@ -28,7 +28,7 @@ import java.util.List;
  *          exo@exoplatform.com
  * Jun 24, 2015  
  */
-public class PageAttachmentDAO extends GenericDAOJPAImpl<PageAttachmentEntity,Long> {
+public class PageAttachmentDAO extends WikiBaseDAO<PageAttachmentEntity,Long> {
 
   public List<Long> findAllIds(int offset, int limit) {
     return getEntityManager().createNamedQuery("pageAttachment.getAllIds").setFirstResult(offset).setMaxResults(limit).getResultList();

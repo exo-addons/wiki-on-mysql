@@ -22,7 +22,7 @@ import org.exoplatform.wiki.jpa.entity.EmotionIconEntity;
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 
-public class EmotionIconDAO extends GenericDAOJPAImpl<EmotionIconEntity, Long> {
+public class EmotionIconDAO extends WikiBaseDAO<EmotionIconEntity, Long> {
 
   public EmotionIconEntity getEmotionIconByName(String emotionIconName) {
     TypedQuery<EmotionIconEntity> query = getEntityManager().createNamedQuery("emotionIcon.getEmotionIconByName", EmotionIconEntity.class)
