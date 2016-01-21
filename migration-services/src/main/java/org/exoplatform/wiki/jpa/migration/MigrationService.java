@@ -18,6 +18,12 @@ package org.exoplatform.wiki.jpa.migration;
 
 import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.commons.api.persistence.ExoTransactional;
+import org.exoplatform.commons.api.settings.SettingService;
+import org.exoplatform.commons.api.settings.SettingValue;
+import org.exoplatform.commons.api.settings.data.Context;
+import org.exoplatform.commons.api.settings.data.Scope;
+import org.exoplatform.commons.chromattic.ChromatticManager;
+import org.exoplatform.commons.utils.CommonsUtils;
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
@@ -30,6 +36,7 @@ import org.exoplatform.services.organization.User;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.IdentityConstants;
+import org.exoplatform.settings.impl.SettingServiceImpl;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.jpa.JPADataStorage;
 import org.exoplatform.wiki.jpa.search.AttachmentIndexingServiceConnector;
@@ -73,6 +80,7 @@ public class MigrationService implements Startable {
   private OrganizationService organizationService;
   private MOWService mowService;
   private IndexingService indexingService;
+  private SettingService settingService;
 
   private ExecutorService executorService;
 
@@ -83,12 +91,13 @@ public class MigrationService implements Startable {
 
   public MigrationService(JCRDataStorage jcrDataStorage, JPADataStorage jpaDataStorage,
                           OrganizationService organizationService, MOWService mowService,
-                          IndexingService indexingService) {
+                          IndexingService indexingService, SettingService settingService) {
     this.jcrDataStorage = jcrDataStorage;
     this.jpaDataStorage = jpaDataStorage;
     this.organizationService = organizationService;
     this.mowService = mowService;
     this.indexingService = indexingService;
+    this.settingService = settingService;
     this.executorService = Executors.newSingleThreadExecutor(new DefaultThreadFactory("WIKI-MIGRATION-RDBMS", false, false));
     latch = new CountDownLatch(1);
   }
@@ -103,67 +112,93 @@ public class MigrationService implements Startable {
 
   @Override
   public void start() {
+
     currentContainer = ExoContainerContext.getCurrentContainer();
     try {
+
       RequestLifeCycle.begin(currentContainer);
 
       Identity userIdentity = new Identity(IdentityConstants.SYSTEM);
       ConversationState.setCurrent(new ConversationState(userIdentity));
 
-      if(!hasDataToMigrate()) {
+      initMigrationSetting();
+
+      if (WikiMigrationContext.isMigrationDone()) {
         LOG.info("No Wiki data to migrate from JCR to RDBMS");
-        return;
+      } else {
+
+        LOG.info("=== Start Wiki data migration from JCR to RDBMS");
+
+        long startTime = System.currentTimeMillis();
+
+        // migrate
+        if (!WikiMigrationContext.isPortalWikiMigrationDone()) migrateWikisOfType(PortalConfig.PORTAL_TYPE);
+        if (!WikiMigrationContext.isSpaceWikiMigrationDone()) migrateWikisOfType(PortalConfig.GROUP_TYPE);
+        if (!WikiMigrationContext.isUserWikiMigrationDone()) migrateUsersWikis();
+        if (!WikiMigrationContext.isDraftPageMigrationDone()) migrateDraftPages();
+        if (!WikiMigrationContext.isRelatedPageMigrationDone()) migrateRelatedPages();
+
+        long endTime = System.currentTimeMillis();
+
+        updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_KEY, true);
+        LOG.info("=== Wiki data migration from JCR to RDBMS done in " + (endTime - startTime) + " ms");
+
       }
 
-      LOG.info("=== Start Wiki data migration from JCR to RDBMS");
+      if(WikiMigrationContext.isDeletionDone()) {
+        LOG.info("No Wiki data to delete from JCR");
+      } else {
 
-      long startTime = System.currentTimeMillis();
+        LOG.info("=== Start Wiki JCR data cleaning due to RDBMS migration");
 
-      // migrate
-      migrateWikisOfType(PortalConfig.PORTAL_TYPE);
-      migrateWikisOfType(PortalConfig.GROUP_TYPE);
-      migrateUsersWikis();
-      migrateDraftPages();
-      migrateRelatedPages();
+        getExecutorService().submit(new Callable<Void>() {
+          @Override
+          public Void call() throws Exception {
+            try {
 
-      getExecutorService().submit(new Callable<Void>() {
-        @Override
-        public Void call() throws Exception {
-          try {
-            RequestLifeCycle.begin(currentContainer);
+              long startTime = System.currentTimeMillis();
 
-            Identity userIdentity = new Identity(IdentityConstants.SYSTEM);
-            ConversationState.setCurrent(new ConversationState(userIdentity));
+              RequestLifeCycle.begin(currentContainer);
 
-            // indexation
-            LOG.info("Start reindexation of all wiki pages");
-            indexingService.reindexAll(WikiPageIndexingServiceConnector.TYPE);
-            LOG.info("Start reindexation of all wiki pages attachments");
-            indexingService.reindexAll(AttachmentIndexingServiceConnector.TYPE);
+              Identity userIdentity = new Identity(IdentityConstants.SYSTEM);
+              ConversationState.setCurrent(new ConversationState(userIdentity));
 
-            // cleanup
-            deleteWikisOfType(PortalConfig.PORTAL_TYPE);
-            deleteWikisOfType(PortalConfig.GROUP_TYPE);
-            deleteWikisOfType(PortalConfig.USER_TYPE);
-            deleteEmotionIcons();
-            deleteWikiRootNode();
-          } catch(Exception e) {
-            LOG.error("Error while cleaning Wiki JCR data to RDBMS - Cause : " + e.getMessage(), e);
-          } finally {
-            // reset session
-            ConversationState.setCurrent(null);
-            RequestLifeCycle.end();
+              // indexation
+              if (!WikiMigrationContext.isReindexDone()) {
+                LOG.info("Start reindexation of all wiki pages");
+                indexingService.reindexAll(WikiPageIndexingServiceConnector.TYPE);
+                LOG.info("Start reindexation of all wiki pages attachments");
+                indexingService.reindexAll(AttachmentIndexingServiceConnector.TYPE);
+                updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_REINDEX_KEY, true);
+              }
+
+              // cleanup
+              if (!WikiMigrationContext.isPortalWikiCleanupDone()) deleteWikisOfType(PortalConfig.PORTAL_TYPE);
+              if (!WikiMigrationContext.isSpaceWikiCleanupDone()) deleteWikisOfType(PortalConfig.GROUP_TYPE);
+              if (!WikiMigrationContext.isUserWikiCleanupDone()) deleteWikisOfType(PortalConfig.USER_TYPE);
+              if (!WikiMigrationContext.isEmoticonCleanupDone()) deleteEmotionIcons();
+              deleteWikiRootNode();
+
+              long endTime = System.currentTimeMillis();
+
+              updateSettingValue(WikiMigrationContext.WIKI_RDBMS_DELETION_KEY, true);
+              LOG.info("=== Wiki JCR data cleaning due to RDBMS migration done in " + (endTime - startTime) + " ms");
+
+            } catch (Exception e) {
+              LOG.error("Error while cleaning Wiki JCR data to RDBMS - Cause : " + e.getMessage(), e);
+            } finally {
+              // reset session
+              ConversationState.setCurrent(null);
+              RequestLifeCycle.end();
+            }
+
+            latch.countDown();
+
+            return null;
           }
+        });
 
-          latch.countDown();
-
-          return null;
-        }
-      });
-
-      long endTime = System.currentTimeMillis();
-
-      LOG.info("=== Wiki data migration from JCR to RDBMS done in " + (endTime - startTime) + " ms");
+      }
 
     } catch(Exception e) {
       LOG.error("Error while migrating Wiki JCR data to RDBMS - Cause : " + e.getMessage(), e);
@@ -201,6 +236,9 @@ public class MigrationService implements Startable {
 
   private void migrateWikisOfType(String wikiType) {
     try {
+
+      LOG.info("  Start migration of "+wikiType+" wikis");
+
       // get all wikis
       List<Wiki> wikis = jcrDataStorage.getWikisByType(wikiType);
 
@@ -214,6 +252,8 @@ public class MigrationService implements Startable {
       } else {
         LOG.info("  No " + wikiType + " wikis to migrate");
       }
+      setWikiMigrationOfTypeDone(wikiType);
+      LOG.info("    Migration of "+wikiType+" wikis done");
 
     } catch (Exception e) {
       LOG.error("Cannot finish the migration of " + wikiType + " wikis - Cause " + e.getMessage(), e);
@@ -254,6 +294,7 @@ public class MigrationService implements Startable {
         }
         current += users.length;
       } while(users != null && users.length > 0);
+      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_USER_WIKI_KEY, true);
       LOG.info("    Migration of users wikis done");
     } catch (Exception e) {
       LOG.error("Cannot migrate users wikis - Cause : " + e.getMessage(), e);
@@ -341,6 +382,7 @@ public class MigrationService implements Startable {
         }
         current += users.length;
       } while(users != null && users.length > 0);
+      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_DRAFT_PAGE_KEY, true);
       LOG.info("  Migration of draft pages done");
     } catch (Exception e) {
       LOG.error("Cannot migrate draft pages - Cause : " + e.getMessage(), e);
@@ -362,6 +404,7 @@ public class MigrationService implements Startable {
           }
         }
       }
+      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_RELATED_PAGE_KEY, true);
       LOG.info("  Related pages migrated");
     } catch (Exception e) {
       LOG.error("Cannot migrate related pages - Cause : " + e.getMessage(), e);
@@ -394,6 +437,8 @@ public class MigrationService implements Startable {
           LOG.error("Cannot delete wiki " + wiki.getType() + ":" + wiki.getOwner() + " - Cause : " + e.getMessage(), e);
         }
       }
+      setWikiCleanupOfTypeDone(wikiType);
+      LOG.info("  Deletion of wikis of type " + wikiType + "done");
     } catch (Exception e) {
       LOG.error("Cannot delete wikis of type " + wikiType + " - Cause : " + e.getMessage(), e);
     } finally {
@@ -416,6 +461,8 @@ public class MigrationService implements Startable {
       if(emotionIconsPage != null) {
         emotionIconsPage.remove();
       }
+      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_EMOTICON_KEY, true);
+      LOG.info("  Deletion of emotion icons done");
     } catch(Exception e) {
       LOG.error("Cannot delete emotion icons - Cause : " + e.getMessage(), e);
     } finally {
@@ -436,6 +483,7 @@ public class MigrationService implements Startable {
         wikiRootNode.remove();
         session.save();
       }
+      LOG.info("  Deletion of root wiki data node done");
     } catch (RepositoryException e) {
       LOG.error("Cannot delete root wiki data node - Cause : " + e.getMessage(), e);
     } finally {
@@ -589,4 +637,76 @@ public class MigrationService implements Startable {
       }
     }
   }
+
+  private void initMigrationSetting() {
+    settingService = CommonsUtils.getService(SettingService.class);
+
+    //Init migration state
+    WikiMigrationContext.setMigrationDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_KEY));
+    WikiMigrationContext.setPortalWikiMigrationDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_PORTAL_WIKI_KEY));
+    WikiMigrationContext.setSpaceWikiMigrationDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_SPACE_WIKI_KEY));
+    WikiMigrationContext.setUserWikiMigrationDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_USER_WIKI_KEY));
+    WikiMigrationContext.setDraftPageMigrationDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_DRAFT_PAGE_KEY));
+    WikiMigrationContext.setRelatedPageMigrationDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_RELATED_PAGE_KEY));
+
+    //Init reindex state
+    WikiMigrationContext.setReindexDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_REINDEX_KEY));
+
+    //Init deletion state
+    WikiMigrationContext.setDeletionDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_DELETION_KEY));
+    WikiMigrationContext.setPortalWikiCleanupDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_PORTAL_WIKI_KEY));
+    WikiMigrationContext.setSpaceWikiCleanupDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_SPACE_WIKI_KEY));
+    WikiMigrationContext.setUserWikiCleanupDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_USER_WIKI_KEY));
+    WikiMigrationContext.setEmoticonCleanupDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_EMOTICON_KEY));
+  }
+
+  private boolean getOrCreateSettingValue(String key) {
+    try {
+      if (settingService == null) LOG.info("settingService is null");
+      SettingValue<?> migrationValue =  settingService.get(Context.GLOBAL, Scope.GLOBAL.id(WikiMigrationContext.WIKI_MIGRATION_SETTING_GLOBAL_KEY), key);
+      if (migrationValue != null) {
+        return Boolean.parseBoolean(migrationValue.getValue().toString());
+      } else {
+        updateSettingValue(key, Boolean.FALSE);
+        return false;
+      }
+    } finally {
+      Scope.GLOBAL.id(null);
+    }
+  }
+
+  private void updateSettingValue(String key, Boolean status) {
+    SettingServiceImpl settingServiceImpl = CommonsUtils.getService(SettingServiceImpl.class);
+    boolean created = settingServiceImpl.startSynchronization();
+    try {
+      settingService.set(Context.GLOBAL, Scope.GLOBAL.id(WikiMigrationContext.WIKI_MIGRATION_SETTING_GLOBAL_KEY), key, SettingValue.create(status));
+      try {
+        CommonsUtils.getService(ChromatticManager.class).getLifeCycle("setting").getContext().getSession().save();
+      } catch (Exception e) {
+        LOG.warn(e);
+      }
+    } finally {
+      Scope.GLOBAL.id(null);
+      settingServiceImpl.stopSynchronization(created);
+    }
+  }
+
+  private void setWikiMigrationOfTypeDone(String wikiType) {
+    if (wikiType.equals(PortalConfig.PORTAL_TYPE)) {
+      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_PORTAL_WIKI_KEY, true);
+    } else if (wikiType.equals(PortalConfig.GROUP_TYPE)) {
+      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_SPACE_WIKI_KEY, true);
+    }
+  }
+
+  private void setWikiCleanupOfTypeDone(String wikiType) {
+    if (wikiType.equals(PortalConfig.PORTAL_TYPE)) {
+      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_PORTAL_WIKI_KEY, true);
+    } else if (wikiType.equals(PortalConfig.GROUP_TYPE)) {
+      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_SPACE_WIKI_KEY, true);
+    } else if (wikiType.equals(PortalConfig.USER_TYPE)) {
+      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_USER_WIKI_KEY, true);
+    }
+  }
+  
 }

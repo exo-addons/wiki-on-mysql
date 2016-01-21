@@ -2,6 +2,7 @@ package org.exoplatform.wiki.jpa.migration;
 
 import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.commons.api.persistence.DataInitializer;
+import org.exoplatform.commons.api.settings.SettingService;
 import org.exoplatform.commons.testing.BaseExoTestCase;
 import org.exoplatform.component.test.ConfigurationUnit;
 import org.exoplatform.component.test.ConfiguredBy;
@@ -9,26 +10,17 @@ import org.exoplatform.component.test.ContainerScope;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.component.RequestLifeCycle;
-import org.exoplatform.portal.config.model.PortalConfig;
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
-import org.exoplatform.wiki.WikiException;
-import org.exoplatform.wiki.bench.WikiDataInjector;
 import org.exoplatform.wiki.jpa.JPADataStorage;
 import org.exoplatform.wiki.jpa.dao.*;
 import org.exoplatform.wiki.jpa.entity.WikiEntity;
-import org.exoplatform.wiki.jpa.migration.mock.SynchronousExecutorService;
-import org.exoplatform.wiki.mow.api.Attachment;
-import org.exoplatform.wiki.mow.api.Page;
-import org.exoplatform.wiki.mow.api.PermissionEntry;
-import org.exoplatform.wiki.mow.api.Wiki;
 import org.exoplatform.wiki.mow.core.api.MOWService;
 import org.exoplatform.wiki.service.impl.JCRDataStorage;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
 
 /**
  *
@@ -45,6 +37,7 @@ public class MigrationITSetup extends BaseExoTestCase {
   protected MOWService mowService;
   private IndexingService indexingService;
   protected MigrationService migrationService;
+  protected SettingService settingService;
 
   protected WikiDAO        wikiDAO;
   protected PageDAO        pageDAO;
@@ -90,8 +83,10 @@ public class MigrationITSetup extends BaseExoTestCase {
     organizationService = ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(OrganizationService.class);
     mowService = ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(MOWService.class);
     indexingService = ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(IndexingService.class);
+    settingService = ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(SettingService.class);
 
-    migrationService = new MigrationService(jcrDataStorage, jpaDataStorage, organizationService, mowService, indexingService);
+
+    migrationService = new MigrationService(jcrDataStorage, jpaDataStorage, organizationService, mowService, indexingService, settingService);
 
     // Init DAO
     wikiDAO = PortalContainer.getInstance().getComponentInstanceOfType(WikiDAO.class);

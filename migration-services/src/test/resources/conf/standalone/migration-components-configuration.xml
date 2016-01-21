@@ -23,6 +23,26 @@
   <component>
     <type>org.exoplatform.services.jcr.impl.RepositoryCreationSynchronizer</type>
   </component>
+
+  <component>
+    <key>org.exoplatform.commons.chromattic.ChromatticManager</key>
+    <type>org.exoplatform.commons.chromattic.ChromatticManager</type>
+  </component>
+
+  <component>
+    <key>org.exoplatform.commons.api.event.EventManager</key>
+    <type>org.exoplatform.commons.event.impl.EventManagerImpl</type>
+  </component>
+
+  <component>
+    <key>org.exoplatform.settings.impl.SettingServiceImpl</key>
+    <type>org.exoplatform.settings.impl.SettingServiceImpl</type>
+  </component>
+
+  <component>
+    <key>org.exoplatform.commons.api.settings.SettingService</key>
+    <type>org.exoplatform.settings.cache.CacheSettingServiceImpl</type>
+  </component>
   
   <component>
     <key>org.exoplatform.services.jcr.ext.distribution.DataDistributionManager</key>
@@ -94,6 +114,7 @@
         <properties-param>
           <name>namespaces</name>
           <property name="wiki" value="http://exoplatform.org/wiki/1.0/"/>
+          <property name="stg" value="http://www.social.org/jcr/stg/1.0/"/>
         </properties-param>
       </init-params>
     </component-plugin>
@@ -106,6 +127,7 @@
           <name>autoCreatedInNewRepository</name>
           <description>Node types configuration file</description>
           <value>jar:/conf/portal/wiki-nodetypes.xml</value>
+          <value>classpath:/conf/standalone/settings-nodetypes.xml</value>
         </values-param>
       </init-params>
     </component-plugin>
@@ -332,6 +354,33 @@
             </field>
           </object>
         </object-param>
+      </init-params>
+    </component-plugin>
+  </external-component-plugins>
+
+  <external-component-plugins>
+    <target-component>org.exoplatform.commons.chromattic.ChromatticManager</target-component>
+    <component-plugin>
+      <name>chromattic</name>
+      <set-method>addLifeCycle</set-method>
+      <type>org.exoplatform.commons.chromattic.ChromatticLifeCycle</type>
+      <init-params>
+        <value-param>
+          <name>domain-name</name>
+          <value>setting</value>
+        </value-param>
+        <value-param>
+          <name>workspace-name</name>
+          <value>collaboration</value>
+        </value-param>
+        <values-param>
+          <name>entities</name>
+          <value>org.exoplatform.settings.chromattic.SettingsRoot</value>
+          <value>org.exoplatform.settings.chromattic.ContextEntity</value>
+          <value>org.exoplatform.settings.chromattic.SimpleContextEntity</value>
+          <value>org.exoplatform.settings.chromattic.SubContextEntity</value>
+          <value>org.exoplatform.settings.chromattic.ScopeEntity</value>
+        </values-param>
       </init-params>
     </component-plugin>
   </external-component-plugins>
