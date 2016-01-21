@@ -213,32 +213,11 @@ public class MigrationService implements Startable {
     return latch;
   }
 
-  private boolean hasDataToMigrate() {
-    boolean hasDataToMigrate = true;
-
-    Session session = null;
-    boolean created = mowService.startSynchronization();
-
-    try {
-      session = mowService.getSession().getJCRSession();
-      hasDataToMigrate = session.getRootNode().hasNode("exo:applications/eXoWiki");
-    } catch (RepositoryException e) {
-      LOG.error("Cannot get root wiki data node - Cause : " + e.getMessage(), e);
-    } finally {
-      if(session != null) {
-        session.logout();
-      }
-      mowService.stopSynchronization(created);
-    }
-
-    return hasDataToMigrate;
-  }
-
   private void migrateWikisOfType(String wikiType) {
     try {
 
       LOG.info("  Start migration of "+wikiType+" wikis");
-
+      
       // get all wikis
       List<Wiki> wikis = jcrDataStorage.getWikisByType(wikiType);
 
@@ -309,7 +288,7 @@ public class MigrationService implements Startable {
       LOG.info("  Start migration of wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner());
       Wiki existingPortalWiki = jpaDataStorage.getWikiByTypeAndOwner(jcrWiki.getType(), jcrWiki.getOwner());
       if (existingPortalWiki != null) {
-        LOG.error("  Cannot migrate wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner() + " because it already exists.");
+        LOG.info("  Wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner() + " has already been migrated.");
       } else {
         // create the wiki
         Page jcrWikiHome = jcrWiki.getWikiHome();
