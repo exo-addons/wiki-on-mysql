@@ -16,6 +16,8 @@
  */
 package org.exoplatform.wiki.jpa.migration;
 
+import org.apache.commons.lang.StringUtils;
+import org.chromattic.api.ChromatticSession;
 import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.commons.api.settings.SettingService;
@@ -29,6 +31,7 @@ import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.portal.config.model.PortalConfig;
+import org.exoplatform.services.jcr.impl.core.query.QueryImpl;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.organization.OrganizationService;
@@ -49,12 +52,16 @@ import org.exoplatform.wiki.mow.core.api.wiki.WikiContainer;
 import org.exoplatform.wiki.mow.core.api.wiki.WikiImpl;
 import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.service.impl.JCRDataStorage;
+import org.exoplatform.wiki.service.search.WikiSearchData;
+import org.exoplatform.wiki.service.search.jcr.JCRWikiSearchQueryBuilder;
 import org.jgroups.util.DefaultThreadFactory;
 import org.picocontainer.Startable;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.query.Query;
+import javax.jcr.query.QueryManager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -143,6 +150,14 @@ public class MigrationService implements Startable {
         updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_KEY, true);
         LOG.info("=== Wiki data migration from JCR to RDBMS done in " + (endTime - startTime) + " ms");
 
+        Long errorNumber = getErrorNumber();
+
+        if (errorNumber == 0l) {
+          LOG.info("No error during migration");
+        } else {
+          LOG.info("Numbers of error during migration = " + errorNumber);
+        }
+
       }
 
       if(WikiMigrationContext.isDeletionDone()) {
@@ -177,7 +192,14 @@ public class MigrationService implements Startable {
               if (!WikiMigrationContext.isSpaceWikiCleanupDone()) deleteWikisOfType(PortalConfig.GROUP_TYPE);
               if (!WikiMigrationContext.isUserWikiCleanupDone()) deleteWikisOfType(PortalConfig.USER_TYPE);
               if (!WikiMigrationContext.isEmoticonCleanupDone()) deleteEmotionIcons();
-              deleteWikiRootNode();
+              Long errorNumber = getErrorNumber();
+              if (errorNumber > 0) {
+                LOG.warn("Numbers of error during migration = " + errorNumber);
+                LOG.warn("Due to the error during migration, Wiki Root node and wiki(s) in error are not deleted from JCR. " +
+                    "Please delete it manually after checking issues.");
+              } else {
+                deleteWikiRootNode();
+              }
 
               long endTime = System.currentTimeMillis();
 
@@ -217,7 +239,7 @@ public class MigrationService implements Startable {
     try {
 
       LOG.info("  Start migration of "+wikiType+" wikis");
-      
+
       // get all wikis
       List<Wiki> wikis = jcrDataStorage.getWikisByType(wikiType);
 
@@ -281,6 +303,7 @@ public class MigrationService implements Startable {
   }
 
   private void migrateWiki(Wiki jcrWiki) {
+    Boolean isWikiMigrationSuccess = true;
     try {
       RequestLifeCycle.end();
       RequestLifeCycle.begin(currentContainer);
@@ -301,7 +324,7 @@ public class MigrationService implements Startable {
         // create pages recursively
         LOG.info("    Creation of all wiki pages ...");
         jcrWiki.setWikiHome(jcrWikiHome);
-        createChildrenPagesOf(createdWiki, jcrWiki, null, 1);
+        isWikiMigrationSuccess = createChildrenPagesOf(createdWiki, jcrWiki, null, 1);
         LOG.info("    Pages migrated");
 
         // TEMPLATES
@@ -313,10 +336,14 @@ public class MigrationService implements Startable {
       }
     } catch(Exception e) {
       LOG.error("Cannot migrate wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner()
-              + " - Cause : " + e.getMessage(), e);
+          + " - Cause : " + e.getMessage(), e);
+      setErrorMigrationMixinToWikiNode(jcrWiki.getType(), jcrWiki.getOwner());
     } finally {
       RequestLifeCycle.end();
       RequestLifeCycle.begin(currentContainer);
+    }
+    if (!isWikiMigrationSuccess) {
+      setErrorMigrationMixinToWikiNode(jcrWiki.getType(), jcrWiki.getOwner());
     }
   }
 
@@ -353,15 +380,15 @@ public class MigrationService implements Startable {
                     jpaDataStorage.createDraftPageForUser(jcrDraftPage, user.getUserName());
                   } else {
                     LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
-                            + " - Cause : target page " + jcrDraftPage.getTargetPageId() + " does not exist");
+                        + " - Cause : target page " + jcrDraftPage.getTargetPageId() + " does not exist");
                   }
                 } catch (Exception e) {
                   LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
-                          + " - Cause : " + e.getMessage(), e);
+                      + " - Cause : " + e.getMessage(), e);
                 }
               } else {
                 LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
-                        + " - Cause : target page id is null");
+                    + " - Cause : target page id is null");
               }
             }
           } catch (Exception e) {
@@ -415,26 +442,29 @@ public class MigrationService implements Startable {
         String owner = wiki.getOwner();
         String type = wiki.getType();
         try {
-          LOG.info("    Delete wiki " + type + ":" + owner);
           String wikiPath = wiki.getPath();
           if (wikiPath.startsWith("/")) {
             wikiPath = wikiPath.substring(1);
           }
           Node wikiNode = session.getRootNode().getNode(wikiPath);
-          wikiNode.remove();
-          session.save();
+          //Do not remove wiki with migration error mixin
+          if (!wikiNode.isNodeType("wiki:migrationError")) {
+            LOG.info("    Delete wiki " + wiki.getType() + ":" + wiki.getOwner());
+            wikiNode.remove();
+            session.save();
+          }
         } catch(Exception e) {
           LOG.error("Cannot delete wiki " + type + ":" + owner + " - Cause : " + e.getMessage(), e);
         }
       }
       setWikiCleanupOfTypeDone(wikiType);
-      LOG.info("  Deletion of wikis of type " + wikiType + "done");
+      LOG.info("  Deletion of wikis of type " + wikiType + " done");
     } catch (Exception e) {
       LOG.error("Cannot delete wikis of type " + wikiType + " - Cause : " + e.getMessage(), e);
     } finally {
-      if(session != null) {
+      /*if(session != null) {
         session.logout();
-      }
+      }*/
       mowService.stopSynchronization(created);
     }
   }
@@ -477,9 +507,9 @@ public class MigrationService implements Startable {
     } catch (RepositoryException e) {
       LOG.error("Cannot delete root wiki data node - Cause : " + e.getMessage(), e);
     } finally {
-      if(session != null) {
+      /*if(session != null) {
         session.logout();
-      }
+      }*/
       mowService.stopSynchronization(created);
     }
   }
@@ -490,7 +520,8 @@ public class MigrationService implements Startable {
 
   }
 
-  private void createChildrenPagesOf(Wiki jpaWiki, Wiki jcrWiki, Page jcrPage, int level) throws WikiException {
+  private Boolean createChildrenPagesOf(Wiki jpaWiki, Wiki jcrWiki, Page jcrPage, int level) throws WikiException {
+    Boolean isMigrationSuccess = true;
     List<Page> childrenPages = new ArrayList<>();
     if(jcrPage == null) {
       Page jcrWikiHome = jcrWiki.getWikiHome();
@@ -511,8 +542,11 @@ public class MigrationService implements Startable {
           pageCreated = true;
         } catch(Exception e) {
           LOG.error("Cannot create page " + jpaWiki.getType() + ":" + jpaWiki.getOwner() + ":" + childrenPage.getName()
-                  + " - Cause : " + e.getMessage(), e);
+              + " - Cause : " + e.getMessage(), e);
           pageCreated = false;
+          isMigrationSuccess = false;
+          //Stamp page as migration error
+          setErrorMigrationMixinToPageNode(childrenPage);
         }
 
         if(pageCreated) {
@@ -524,13 +558,19 @@ public class MigrationService implements Startable {
             }
           } catch(Exception e) {
             LOG.error("Cannot get related pages of page " + jpaWiki.getType() + ":" + jpaWiki.getOwner() + ":" + childrenPage.getName()
-                    + " - Cause : " + e.getMessage(), e);
+                + " - Cause : " + e.getMessage(), e);
+            isMigrationSuccess = false;
+            //Stamp page as migration error
+            setErrorMigrationMixinToPageNode(childrenPage);
           }
 
-          createChildrenPagesOf(jpaWiki, jcrWiki, childrenPage, level + 1);
+          Boolean isChildrenSuccess = createChildrenPagesOf(jpaWiki, jcrWiki, childrenPage, level + 1);
+          //If the creation of this page is success return result of the creation of its child
+          if (isMigrationSuccess) isMigrationSuccess = isChildrenSuccess;
         }
       }
     }
+    return isMigrationSuccess;
   }
 
   @ExoTransactional
@@ -694,13 +734,181 @@ public class MigrationService implements Startable {
   }
 
   private void setWikiCleanupOfTypeDone(String wikiType) {
+    LOG.info("Enter setWikiCleanupOfTypeDone");
     if (wikiType.equals(PortalConfig.PORTAL_TYPE)) {
       updateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_PORTAL_WIKI_KEY, true);
     } else if (wikiType.equals(PortalConfig.GROUP_TYPE)) {
       updateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_SPACE_WIKI_KEY, true);
     } else if (wikiType.equals(PortalConfig.USER_TYPE)) {
+      LOG.info("Set WIKI_RDBMS_CLEANUP_USER_WIKI_KEY has done");
       updateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_USER_WIKI_KEY, true);
     }
   }
-  
+
+  /**
+   * Add a mixin type to a wiki to do not delete it in case migration error happened
+   *
+   * @param wikiType
+   * @param wikiOwner
+   */
+  private void setErrorMigrationMixinToWikiNode(String wikiType, String wikiOwner) {
+
+    Session session = null;
+    boolean created = mowService.startSynchronization();
+
+    LOG.info("Wiki "+wikiType+":"+wikiOwner+" get issue during migration, it will be not deleted from JCR.");
+
+    try {
+
+      WikiImpl wiki = fetchWikiImpl(wikiType, wikiOwner);
+
+      session = mowService.getSession().getJCRSession();
+
+      String wikiPath = wiki.getPath();
+      if (wikiPath.startsWith("/")) {
+        wikiPath = wikiPath.substring(1);
+      }
+      Node wikiNode = session.getRootNode().getNode(wikiPath);
+      wikiNode.addMixin("wiki:migrationError");
+      session.save();
+
+    } catch (Exception e) {
+      LOG.error("Impossible to add ErrorMigration mixin to wiki " + wikiType + ":" + wikiOwner + " - Cause : " + e.getMessage(), e);
+    } finally {
+      /*if (session != null) {
+        session.logout();
+      }*/
+      mowService.stopSynchronization(created);
+    }
+  }
+
+  /**
+   * Add a mixin type to a Page to kno that an error happened on it during migration
+   *
+   */
+  private void setErrorMigrationMixinToPageNode(Page page) {
+
+    LOG.info("Page "+page.getName()+" get issue during migration, it will be not deleted from JCR.");
+
+    Session session = null;
+    boolean created = mowService.startSynchronization();
+
+    try {
+
+      PageImpl pageImpl = fetchPageImpl(page);
+
+      session = mowService.getSession().getJCRSession();
+
+      String pagePath = pageImpl.getPath();
+      //TODO check if we really need this:
+      if (pagePath.startsWith("/")) {
+        pagePath = pagePath.substring(1);
+      }
+      Node pageNode = session.getRootNode().getNode(pagePath);
+      pageNode.addMixin("wiki:migrationError");
+
+    } catch (Exception e) {
+      LOG.error("Impossible to add ErrorMigration mixin to page " + page.getName() + " - Cause : " + e.getMessage(), e);
+    } finally {
+      /*if (session != null) {
+        session.logout();
+      }*/
+      mowService.stopSynchronization(created);
+    }
+  }
+
+  private WikiImpl fetchWikiImpl(String wikiType, String wikiOwner) throws WikiException {
+    boolean created = this.mowService.startSynchronization();
+
+    WikiImpl userWikiContainer1;
+    try {
+      WikiStoreImpl wStore = (WikiStoreImpl)this.mowService.getWikiStore();
+      WikiImpl wiki = null;
+      WikiContainer userWikiContainer;
+      if(PortalConfig.PORTAL_TYPE.equals(wikiType)) {
+        userWikiContainer = wStore.getWikiContainer(WikiType.PORTAL);
+        wiki = userWikiContainer.getWiki(wikiOwner);
+      } else if(PortalConfig.GROUP_TYPE.equals(wikiType)) {
+        userWikiContainer = wStore.getWikiContainer(WikiType.GROUP);
+        wiki = userWikiContainer.getWiki(wikiOwner);
+      } else if(PortalConfig.USER_TYPE.equals(wikiType)) {
+        userWikiContainer = wStore.getWikiContainer(WikiType.USER);
+        wiki = userWikiContainer.getWiki(wikiOwner);
+      }
+
+      userWikiContainer1 = wiki;
+    } finally {
+      this.mowService.stopSynchronization(created);
+    }
+
+    return userWikiContainer1;
+  }
+
+  private PageImpl fetchPageImpl(Page page) throws WikiException {
+    boolean created = this.mowService.startSynchronization();
+
+    Object searchData2;
+    try {
+      Object wikiPage = null;
+      ChromatticSession session = this.mowService.getSession();
+      if(page.getId() != null && !StringUtils.isEmpty(page.getId())) {
+        wikiPage = (PageImpl)session.findById(PageImpl.class, page.getId());
+      } else if("WikiHome".equals(page.getName())) {
+        WikiImpl searchData = this.fetchWikiImpl(page.getWikiType(), page.getWikiOwner());
+        wikiPage = searchData.getWikiHome();
+      } else {
+        WikiSearchData searchData1 = new WikiSearchData(page.getWikiType(), page.getWikiOwner(), page.getName());
+        JCRWikiSearchQueryBuilder queryBuilder = new JCRWikiSearchQueryBuilder(searchData1);
+        String statement = queryBuilder.getPageConstraint();
+        if(statement != null) {
+          org.chromattic.api.query.QueryResult path = session.createQueryBuilder(PageImpl.class).where(statement).get().objects();
+          if(path.hasNext()) {
+            wikiPage = (PageImpl)path.next();
+          }
+        }
+
+        if(wikiPage != null) {
+          String path1 = ((PageImpl)wikiPage).getPath();
+          if(path1.startsWith("/")) {
+            path1 = path1.substring(1, path1.length());
+          }
+
+          wikiPage = (PageImpl)session.findByPath(PageImpl.class, path1);
+        }
+      }
+
+      searchData2 = wikiPage;
+    } finally {
+      this.mowService.stopSynchronization(created);
+    }
+
+    return (PageImpl)searchData2;
+  }
+
+  private Long getErrorNumber() {
+
+    Session session = null;
+    boolean created = mowService.startSynchronization();
+
+    try {
+      QueryManager ex = mowService.getSession().getJCRSession().getWorkspace().getQueryManager();
+      Query query = ex.createQuery("SELECT * FROM wiki:migrationError", "sql");
+      if(query instanceof QueryImpl) {
+        QueryImpl impl = (QueryImpl)query;
+        return impl.execute().getNodes().getSize();
+      } else {
+        return query.execute().getNodes().getSize();
+      }
+    } catch (Exception e) {
+      LOG.error("Impossible to retrieve number of errors during migration - Cause: ", e);
+      return null;
+    } finally {
+      /*if(session != null) {
+        session.logout();
+      }
+      */
+      mowService.stopSynchronization(created);
+    }
+  }
+
 }

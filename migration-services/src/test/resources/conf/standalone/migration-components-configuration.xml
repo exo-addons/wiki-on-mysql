@@ -127,7 +127,9 @@
           <name>autoCreatedInNewRepository</name>
           <description>Node types configuration file</description>
           <value>jar:/conf/portal/wiki-nodetypes.xml</value>
+          <value>jar:/conf/portal/wiki-nodetypes.xml</value>
           <value>classpath:/conf/standalone/settings-nodetypes.xml</value>
+          <value>classpath:/conf/portal/wiki-migration-error-nodetypes.xml</value>
         </values-param>
       </init-params>
     </component-plugin>
