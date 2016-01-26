@@ -28,6 +28,10 @@
   </component>
 
   <component>
+    <type>org.exoplatform.wiki.jpa.migration.WikiMigrationSettingService</type>
+  </component>
+
+  <component>
     <type>org.exoplatform.wiki.jpa.migration.MigrationService</type>
   </component>
 
