@@ -38,6 +38,7 @@ public class MigrationITSetup extends BaseExoTestCase {
   private IndexingService indexingService;
   protected MigrationService migrationService;
   protected SettingService settingService;
+  protected WikiMigrationSettingService wikiMigrationSettingService;
 
   protected WikiDAO        wikiDAO;
   protected PageDAO        pageDAO;
@@ -85,8 +86,8 @@ public class MigrationITSetup extends BaseExoTestCase {
     indexingService = ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(IndexingService.class);
     settingService = ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(SettingService.class);
 
-
-    migrationService = new MigrationService(jcrDataStorage, jpaDataStorage, organizationService, mowService, indexingService, settingService);
+    wikiMigrationSettingService = new WikiMigrationSettingService(settingService);
+    migrationService = new MigrationService(jcrDataStorage, jpaDataStorage, organizationService, mowService, indexingService, wikiMigrationSettingService);
 
     // Init DAO
     wikiDAO = PortalContainer.getInstance().getComponentInstanceOfType(WikiDAO.class);

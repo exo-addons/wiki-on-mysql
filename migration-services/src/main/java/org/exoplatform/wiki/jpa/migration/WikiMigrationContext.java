@@ -40,6 +40,14 @@ public class WikiMigrationContext {
   public static final String WIKI_RDBMS_CLEANUP_USER_WIKI_KEY = "WIKI_RDBMS_CLEANUP_USER_WIKI_DONE";
   public static final String WIKI_RDBMS_CLEANUP_EMOTICON_KEY = "WIKI_RDBMS_CLEANUP_DRAFT_PAGE_DONE";
 
+  public static final String WIKI_RDBMS_MIGRATION_ERROR_WIKI_LIST_SETTING = "WIKI_RDBMS_MIGRATION_ERROR_WIKI_LIST";
+  public static final String WIKI_RDBMS_MIGRATION_ERROR_PAGE_LIST_SETTING = "WIKI_RDBMS_MIGRATION_ERROR_PAGE_LIST";
+
+  public static final String WIKI_RDBMS_MIGRATION_RELATED_PAGE_LIST_SETTING = "WIKI_RDBMS_MIGRATION_RELATED_PAGE_LIST";
+
+  public static final String WIKI_RDBMS_MIGRATION_FORCE_DELETION_PROPERTY_NAME = "exo.wiki.migration.forceJCRDeletion";
+  public static final String WIKI_RDBMS_MIGRATION_FORCE_MIGRATION_PROPERTY_NAME = "exo.wiki.migration.forceRunMigration";
+
   private static boolean migrationDone = false;
   private static boolean portalWikiMigrationDone = false;
   private static boolean spaceWikiMigrationDone = false;

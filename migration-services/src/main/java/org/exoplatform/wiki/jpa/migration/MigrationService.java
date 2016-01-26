@@ -16,17 +16,9 @@
  */
 package org.exoplatform.wiki.jpa.migration;
 
-import org.apache.commons.lang.StringUtils;
 import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.commons.api.persistence.ExoTransactional;
-import org.exoplatform.commons.api.settings.SettingService;
-import org.exoplatform.commons.api.settings.SettingValue;
-import org.exoplatform.commons.api.settings.data.Context;
-import org.exoplatform.commons.api.settings.data.Scope;
-import org.exoplatform.commons.chromattic.ChromatticManager;
-import org.exoplatform.commons.utils.CommonsUtils;
 import org.exoplatform.commons.utils.ListAccess;
-import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.component.RequestLifeCycle;
@@ -38,7 +30,6 @@ import org.exoplatform.services.organization.User;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.IdentityConstants;
-import org.exoplatform.settings.impl.SettingServiceImpl;
 import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.jpa.JPADataStorage;
 import org.exoplatform.wiki.jpa.search.AttachmentIndexingServiceConnector;
@@ -74,27 +65,15 @@ public class MigrationService implements Startable {
 
   private static final Log LOG = ExoLogger.getLogger(MigrationService.class);
 
-  private static final String WIKI_RDBMS_MIGRATION_FORCE_DELETION_PROPERTY_NAME = "exo.wiki.migration.forceJCRDeletion";
-  private static final String WIKI_RDBMS_MIGRATION_FORCE_MIGRATION_PROPERTY_NAME = "exo.wiki.migration.forceRunMigration";
-
-  private static final String WIKI_RDBMS_MIGRATION_ERROR_WIKI_LIST_SETTING = "WIKI_RDBMS_MIGRATION_ERROR_WIKI_LIST";
-  private static final String WIKI_RDBMS_MIGRATION_ERROR_PAGE_LIST_SETTING = "WIKI_RDBMS_MIGRATION_ERROR_PAGE_LIST";
-
-  private static final String WIKI_RDBMS_MIGRATION_RELATED_PAGE_LIST_SETTING = "WIKI_RDBMS_MIGRATION_RELATED_PAGE_LIST";
-
   private JCRDataStorage jcrDataStorage;
   private JPADataStorage jpaDataStorage;
   private OrganizationService organizationService;
   private MOWService mowService;
   private IndexingService indexingService;
-  private SettingService settingService;
   private ExecutorService executorService;
+  private WikiMigrationSettingService settingService;
 
   private final CountDownLatch latch;
-
-  //eXo Properties
-  private Boolean isForceJCRDeletion = false;
-  private Boolean isForceRunMigration = false;
 
   private List<String> wikiErrorsList = new ArrayList<>();
   private List<String> pageErrorsList = new ArrayList<>();
@@ -103,22 +82,15 @@ public class MigrationService implements Startable {
 
   public MigrationService(JCRDataStorage jcrDataStorage, JPADataStorage jpaDataStorage,
                           OrganizationService organizationService, MOWService mowService,
-                          IndexingService indexingService, SettingService settingService) {
+                          IndexingService indexingService, WikiMigrationSettingService wikiMigrationSettingService) {
     this.jcrDataStorage = jcrDataStorage;
     this.jpaDataStorage = jpaDataStorage;
     this.organizationService = organizationService;
     this.mowService = mowService;
     this.indexingService = indexingService;
-    this.settingService = settingService;
+    this.settingService = wikiMigrationSettingService;
     this.executorService = Executors.newSingleThreadExecutor(new DefaultThreadFactory("WIKI-MIGRATION-RDBMS", false, false));
     latch = new CountDownLatch(1);
-
-    if (StringUtils.isNotBlank(PropertyManager.getProperty(WIKI_RDBMS_MIGRATION_FORCE_DELETION_PROPERTY_NAME))) {
-      this.isForceJCRDeletion = Boolean.valueOf(PropertyManager.getProperty(WIKI_RDBMS_MIGRATION_FORCE_DELETION_PROPERTY_NAME));
-    }
-    if (StringUtils.isNotBlank(PropertyManager.getProperty(WIKI_RDBMS_MIGRATION_FORCE_MIGRATION_PROPERTY_NAME))) {
-      this.isForceRunMigration = Boolean.valueOf(PropertyManager.getProperty(WIKI_RDBMS_MIGRATION_FORCE_MIGRATION_PROPERTY_NAME));
-    }
   }
 
   public ExecutorService getExecutorService() {
@@ -145,7 +117,7 @@ public class MigrationService implements Startable {
       Identity userIdentity = new Identity(IdentityConstants.SYSTEM);
       ConversationState.setCurrent(new ConversationState(userIdentity));
 
-      initMigrationSetting();
+      settingService.initMigrationSetting();
 
       if (WikiMigrationContext.isMigrationDone()) {
         //TODO print all wiki/pages in error
@@ -167,10 +139,10 @@ public class MigrationService implements Startable {
 
         long endTime = System.currentTimeMillis();
 
-        updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_KEY, true);
+        settingService.updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_KEY, true);
         LOG.info("=== Wiki data migration from JCR to RDBMS done in " + (endTime - startTime) + " ms");
 
-        Integer wikiErrorNumber = getWikiErrorsNumber();
+        Integer wikiErrorNumber = settingService.getWikiErrorsNumber();
 
         if (wikiErrorNumber == 0) {
           LOG.info("No error during migration");
@@ -186,7 +158,7 @@ public class MigrationService implements Startable {
 
         LOG.info("=== Start Wiki JCR data cleaning due to RDBMS migration");
 
-        if (!isForceJCRDeletion) LOG.info("For information, Wiki(s) with error during migration will not be deleted from JCR");
+        if (!settingService.isForceJCRDeletion()) LOG.info("For information, Wiki(s) with errors during migration will not be deleted from JCR");
 
         getExecutorService().submit(new Callable<Void>() {
           @Override
@@ -206,7 +178,7 @@ public class MigrationService implements Startable {
                 indexingService.reindexAll(WikiPageIndexingServiceConnector.TYPE);
                 LOG.info("Start reindexation of all wiki pages attachments");
                 indexingService.reindexAll(AttachmentIndexingServiceConnector.TYPE);
-                updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_REINDEX_KEY, true);
+                settingService.updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_REINDEX_KEY, true);
               }
 
               // get Error migration list
@@ -217,17 +189,17 @@ public class MigrationService implements Startable {
               if (!WikiMigrationContext.isSpaceWikiCleanupDone()) deleteWikisOfType(PortalConfig.GROUP_TYPE);
               if (!WikiMigrationContext.isUserWikiCleanupDone()) deleteUsersWikis();
               if (!WikiMigrationContext.isEmoticonCleanupDone()) deleteEmotionIcons();
-              Integer errorNumber = getWikiErrorsNumber();
-              if (errorNumber > 0 && !isForceJCRDeletion) {
+              Integer errorNumber = settingService.getWikiErrorsNumber();
+              if (errorNumber > 0 && !settingService.isForceJCRDeletion()) {
                 LOG.warn(getErrorReport());
               } else {
                 deleteWikiRootNode();
-                removeSettingValue();
+                settingService.removeSettingValue();
               }
 
               long endTime = System.currentTimeMillis();
 
-              updateSettingValue(WikiMigrationContext.WIKI_RDBMS_DELETION_KEY, true);
+              settingService.updateSettingValue(WikiMigrationContext.WIKI_RDBMS_DELETION_KEY, true);
               LOG.info("=== Wiki JCR data cleaning due to RDBMS migration done in " + (endTime - startTime) + " ms");
 
             } catch (Exception e) {
@@ -258,8 +230,8 @@ public class MigrationService implements Startable {
 
   private String getErrorReport() {
 
-    String[] wikiErrors = getWikiErrorsSetting().split(";");
-    String[] pageErrors = getPageErrorsSetting().split(";");
+    String[] wikiErrors = settingService.getWikiErrorsSetting().split(";");
+    String[] pageErrors = settingService.getPageErrorsSetting().split(";");
 
     StringBuilder errorReport = new StringBuilder();
     errorReport.append("\n ============== Wiki Migration Error report ==============\n");
@@ -284,7 +256,7 @@ public class MigrationService implements Startable {
   }
 
   private void initWikiErrorsList() {
-    String wikiErrors = getWikiErrorsSetting();
+    String wikiErrors = settingService.getWikiErrorsSetting();
     if (wikiErrors != null) {
       this.wikiErrorsList = Arrays.asList(wikiErrors.split(";"));
     } else {
@@ -293,7 +265,7 @@ public class MigrationService implements Startable {
   }
 
   private void initPageErrorsList() {
-    String pageErrors = getPageErrorsSetting();
+    String pageErrors = settingService.getPageErrorsSetting();
     if (pageErrors != null) {
       this.pageErrorsList = Arrays.asList(pageErrors.split(";"));
     } else {
@@ -340,7 +312,7 @@ public class MigrationService implements Startable {
       } else {
         LOG.info("  No " + wikiType + " wikis to migrate");
       }
-      setWikiMigrationOfTypeDone(wikiType);
+      settingService.setWikiMigrationOfTypeDone(wikiType);
       LOG.info("    Migration of "+wikiType+" wikis done");
 
     } catch (Exception e) {
@@ -382,7 +354,7 @@ public class MigrationService implements Startable {
         }
         current += users.length;
       } while(users != null && users.length > 0);
-      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_USER_WIKI_KEY, true);
+      settingService.updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_USER_WIKI_KEY, true);
       LOG.info("    Migration of users wikis done");
     } catch (Exception e) {
       LOG.error("Cannot migrate users wikis - Cause : " + e.getMessage(), e);
@@ -431,13 +403,13 @@ public class MigrationService implements Startable {
     } catch(Exception e) {
       LOG.error("Cannot migrate wiki " + jcrWiki.getType() + ":" + jcrWiki.getOwner()
           + " - Cause : " + e.getMessage(), e);
-      addWikiErrorToSetting(jcrWiki);
+      settingService.addWikiErrorToSetting(jcrWiki);
     } finally {
       RequestLifeCycle.end();
       RequestLifeCycle.begin(currentContainer);
     }
     if (!isWikiMigrationSuccess) {
-      addWikiErrorToSetting(jcrWiki);
+      settingService.addWikiErrorToSetting(jcrWiki);
     }
   }
 
@@ -482,7 +454,7 @@ public class MigrationService implements Startable {
         }
         current += users.length;
       } while(users != null && users.length > 0);
-      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_DRAFT_PAGE_KEY, true);
+      settingService.updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_DRAFT_PAGE_KEY, true);
       LOG.info("  Migration of draft pages done");
     } catch (Exception e) {
       LOG.error("Cannot migrate draft pages - Cause : " + e.getMessage(), e);
@@ -495,8 +467,8 @@ public class MigrationService implements Startable {
       initPageErrorsList();
       // RELATED PAGES
       LOG.info("  Start migration of related pages ...");
-      for(String pageWithRelatedPagesString : getPagesWithRelatedPages()) {
-        Page pageWithRelatedPages = getPageFromString(pageWithRelatedPagesString);
+      for(String pageWithRelatedPagesString : settingService.getPagesWithRelatedPages()) {
+        Page pageWithRelatedPages = settingService.stringToPage(pageWithRelatedPagesString);
         LOG.info("    Related pages of page " + pageWithRelatedPages.getName());
         for(Page relatedPage : jcrDataStorage.getRelatedPagesOfPage(pageWithRelatedPages)) {
           try {
@@ -512,29 +484,11 @@ public class MigrationService implements Startable {
           }
         }
       }
-      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_RELATED_PAGE_KEY, true);
+      settingService.updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_RELATED_PAGE_KEY, true);
       LOG.info("  Related pages migrated");
     } catch (Exception e) {
       LOG.error("Cannot migrate related pages - Cause : " + e.getMessage(), e);
     }
-  }
-
-  private Page getPageFromString(String pageWithRelatedPages) {
-    String[] pageAttribute = pageWithRelatedPages.split(":");
-    Page page = new Page();
-    page.setWikiType(pageAttribute[0]);
-    page.setWikiOwner(pageAttribute[1]);
-    page.setId(pageAttribute[2]);
-    page.setName(pageAttribute[3]);
-    return page;
-  }
-
-  private String getStringFromPage(Page page) {
-    return page.getWikiType()+":"+page.getWikiOwner()+":"+page.getId()+":"+page.getName();
-  }
-
-  private String[] getPagesWithRelatedPages() {
-    return getRelatedPagesSetting().split(";");
   }
 
   private void deleteWikisOfType(String wikiType) {
@@ -550,7 +504,7 @@ public class MigrationService implements Startable {
       for(WikiImpl wiki : allWikis) {
         deleteWiki(wiki);
       }
-      setWikiCleanupOfTypeDone(wikiType);
+      settingService.setWikiCleanupOfTypeDone(wikiType);
       LOG.info("  Deletion of wikis of type " + wikiType + " done");
     } catch (Exception e) {
       LOG.error("Cannot delete wikis of type " + wikiType + " - Cause : " + e.getMessage(), e);
@@ -593,7 +547,7 @@ public class MigrationService implements Startable {
         }
         current += users.length;
       } while(users != null && users.length > 0);
-      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_USER_WIKI_KEY, true);
+      settingService.updateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_USER_WIKI_KEY, true);
       LOG.info("    Deletion of users wikis done");
     } catch (Exception e) {
       LOG.error("Cannot Delete users wikis - Cause : " + e.getMessage(), e);
@@ -603,7 +557,7 @@ public class MigrationService implements Startable {
   private void deleteWiki(WikiImpl wiki) {
 
     //Do not remove wiki with error during migration
-    if (!wikiErrorsList.contains(getWikiName(wiki.getType(),wiki.getOwner())) || isForceJCRDeletion) {
+    if (!wikiErrorsList.contains(settingService.wikiToString(wiki)) || settingService.isForceJCRDeletion()) {
 
       boolean created = mowService.startSynchronization();
 
@@ -641,7 +595,7 @@ public class MigrationService implements Startable {
       if(emotionIconsPage != null) {
         emotionIconsPage.remove();
       }
-      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_EMOTICON_KEY, true);
+      settingService.updateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_EMOTICON_KEY, true);
       LOG.info("  Deletion of emotion icons done");
     } catch(Exception e) {
       LOG.error("Cannot delete emotion icons - Cause : " + e.getMessage(), e);
@@ -708,7 +662,7 @@ public class MigrationService implements Startable {
           pageCreated = false;
           isMigrationSuccess = false;
           //Stamp page as migration error
-          addPageErrorToSetting(childrenPage);
+          settingService.addPageErrorToSetting(childrenPage);
         }
 
         if(pageCreated) {
@@ -716,14 +670,14 @@ public class MigrationService implements Startable {
             // check if the page has related pages, and keep it if so
             List<Page> relatedPages = jcrDataStorage.getRelatedPagesOfPage(childrenPage);
             if (relatedPages != null && !relatedPages.isEmpty()) {
-              addRelatedPagesToSetting(childrenPage);
+              settingService.addRelatedPagesToSetting(childrenPage);
             }
           } catch(Exception e) {
             LOG.error("Cannot get related pages of page " + jpaWiki.getType() + ":" + jpaWiki.getOwner() + ":" + childrenPage.getName()
                 + " - Cause : " + e.getMessage(), e);
             isMigrationSuccess = false;
             //Stamp page as migration error
-            addPageErrorToSetting(childrenPage);
+            settingService.addPageErrorToSetting(childrenPage);
           }
 
           Boolean isChildrenSuccess = createChildrenPagesOf(jpaWiki, jcrWiki, childrenPage, level + 1, pageAlreadyMigrated);
@@ -849,233 +803,6 @@ public class MigrationService implements Startable {
     }
   }
 
-  private void initMigrationSetting() {
-
-    if (isForceRunMigration) {
-      initMigrationSettingToDefault();
-      return;
-    }
-
-    settingService = CommonsUtils.getService(SettingService.class);
-
-    //Init migration state
-    WikiMigrationContext.setMigrationDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_KEY));
-    WikiMigrationContext.setPortalWikiMigrationDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_PORTAL_WIKI_KEY));
-    WikiMigrationContext.setSpaceWikiMigrationDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_SPACE_WIKI_KEY));
-    WikiMigrationContext.setUserWikiMigrationDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_USER_WIKI_KEY));
-    WikiMigrationContext.setDraftPageMigrationDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_DRAFT_PAGE_KEY));
-    WikiMigrationContext.setRelatedPageMigrationDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_RELATED_PAGE_KEY));
-
-    //Init reindex state
-    WikiMigrationContext.setReindexDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_REINDEX_KEY));
-
-    //Init deletion state
-    WikiMigrationContext.setDeletionDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_DELETION_KEY));
-    WikiMigrationContext.setPortalWikiCleanupDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_PORTAL_WIKI_KEY));
-    WikiMigrationContext.setSpaceWikiCleanupDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_SPACE_WIKI_KEY));
-    WikiMigrationContext.setUserWikiCleanupDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_USER_WIKI_KEY));
-    WikiMigrationContext.setEmoticonCleanupDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_EMOTICON_KEY));
-  }
-
-  private void initMigrationSettingToDefault() {
-    settingService = CommonsUtils.getService(SettingService.class);
-
-    //Init migration state
-    WikiMigrationContext.setMigrationDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_KEY));
-    WikiMigrationContext.setPortalWikiMigrationDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_PORTAL_WIKI_KEY));
-    WikiMigrationContext.setSpaceWikiMigrationDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_SPACE_WIKI_KEY));
-    WikiMigrationContext.setUserWikiMigrationDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_USER_WIKI_KEY));
-    WikiMigrationContext.setDraftPageMigrationDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_DRAFT_PAGE_KEY));
-    WikiMigrationContext.setRelatedPageMigrationDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_RELATED_PAGE_KEY));
-
-    //Init reindex state
-    WikiMigrationContext.setReindexDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_REINDEX_KEY));
-
-    //Init deletion state
-    WikiMigrationContext.setDeletionDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_DELETION_KEY));
-    WikiMigrationContext.setPortalWikiCleanupDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_CLEANUP_PORTAL_WIKI_KEY));
-    WikiMigrationContext.setSpaceWikiCleanupDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_CLEANUP_SPACE_WIKI_KEY));
-    WikiMigrationContext.setUserWikiCleanupDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_CLEANUP_USER_WIKI_KEY));
-    WikiMigrationContext.setEmoticonCleanupDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_CLEANUP_EMOTICON_KEY));
-  }
-
-  private boolean getOrCreateSettingValue(String key) {
-    try {
-      if (settingService == null) LOG.info("settingService is null");
-      SettingValue<?> migrationValue =  settingService.get(Context.GLOBAL, Scope.APPLICATION.id(WikiMigrationContext.WIKI_MIGRATION_SETTING_GLOBAL_KEY), key);
-      if (migrationValue != null) {
-        return Boolean.parseBoolean(migrationValue.getValue().toString());
-      } else {
-        updateSettingValue(key, Boolean.FALSE);
-        return false;
-      }
-    } finally {
-      Scope.APPLICATION.id(null);
-    }
-  }
-
-  private boolean setSettingValueToDefault(String key) {
-    updateSettingValue(key, Boolean.FALSE);
-    return false;
-  }
-
-  private void updateSettingValue(String key, Boolean status) {
-    SettingServiceImpl settingServiceImpl = CommonsUtils.getService(SettingServiceImpl.class);
-    boolean created = settingServiceImpl.startSynchronization();
-    try {
-      settingService.set(Context.GLOBAL, Scope.APPLICATION.id(WikiMigrationContext.WIKI_MIGRATION_SETTING_GLOBAL_KEY), key, SettingValue.create(status));
-      try {
-        CommonsUtils.getService(ChromatticManager.class).getLifeCycle("setting").getContext().getSession().save();
-      } catch (Exception e) {
-        LOG.warn(e);
-      }
-    } finally {
-      Scope.APPLICATION.id(null);
-      settingServiceImpl.stopSynchronization(created);
-    }
-  }
-
-  private void removeSettingValue() {
-    SettingServiceImpl settingServiceImpl = CommonsUtils.getService(SettingServiceImpl.class);
-    boolean created = settingServiceImpl.startSynchronization();
-    try {
-      settingService.remove(Context.GLOBAL, Scope.APPLICATION.id(WikiMigrationContext.WIKI_MIGRATION_SETTING_GLOBAL_KEY));
-      try {
-        CommonsUtils.getService(ChromatticManager.class).getLifeCycle("setting").getContext().getSession().save();
-      } catch (Exception e) {
-        LOG.warn(e);
-      }
-    } finally {
-      Scope.APPLICATION.id(null);
-      settingServiceImpl.stopSynchronization(created);
-    }
-  }
-
-  private void addWikiErrorToSetting(Wiki wikiMigrationError) {
-    String wiki = getWikiName(wikiMigrationError.getType(), wikiMigrationError.getOwner());
-    addErrorToSetting(WIKI_RDBMS_MIGRATION_ERROR_WIKI_LIST_SETTING, wiki);
-  }
-
-  private void addPageErrorToSetting(Page pageMigrationError) {
-    String page = getStringFromPage(pageMigrationError);
-    addErrorToSetting(WIKI_RDBMS_MIGRATION_ERROR_PAGE_LIST_SETTING, page);
-  }
-
-  private void addErrorToSetting(String settingErrorKey, String settingErrorValue) {
-    SettingServiceImpl settingServiceImpl = CommonsUtils.getService(SettingServiceImpl.class);
-    boolean created = settingServiceImpl.startSynchronization();
-    try {
-      String migrationErrors = getErrorsSetting(settingErrorKey);
-      //Add the error to the migrationErrors String list
-      if (migrationErrors == null) {
-        migrationErrors = settingErrorValue;
-      } else {
-        migrationErrors += ";"+settingErrorValue;
-      }
-      SettingValue<String> errorsSetting = new SettingValue<>(migrationErrors);
-      settingService.set(Context.GLOBAL, Scope.APPLICATION.id(WikiMigrationContext.WIKI_MIGRATION_SETTING_GLOBAL_KEY), settingErrorKey, errorsSetting);
-      try {
-        CommonsUtils.getService(ChromatticManager.class).getLifeCycle("setting").getContext().getSession().save();
-      } catch (Exception e) {
-        LOG.warn(e);
-      }
-    } finally {
-      Scope.APPLICATION.id(null);
-      settingServiceImpl.stopSynchronization(created);
-    }
-  }
-
-  private String getWikiName(String type, String owner) {
-    return type+":"+owner;
-  }
-
-  private String getWikiErrorsSetting() {
-    return getErrorsSetting(WIKI_RDBMS_MIGRATION_ERROR_WIKI_LIST_SETTING);
-  }
-
-  private String getPageErrorsSetting() {
-    return getErrorsSetting(WIKI_RDBMS_MIGRATION_ERROR_PAGE_LIST_SETTING);
-  }
-
-  private String getErrorsSetting(String settingErrorKey) {
-
-    String migrationErrors = null;
-
-    SettingServiceImpl settingServiceImpl = CommonsUtils.getService(SettingServiceImpl.class);
-    boolean created = settingServiceImpl.startSynchronization();
-
-    try {
-      SettingValue settingValue = settingService.get(
-          Context.GLOBAL,
-          Scope.APPLICATION.id(WikiMigrationContext.WIKI_MIGRATION_SETTING_GLOBAL_KEY),
-          settingErrorKey);
-      if (settingValue != null) {
-        migrationErrors = (String) settingValue.getValue();
-      }
-    } finally {
-      Scope.APPLICATION.id(null);
-      settingServiceImpl.stopSynchronization(created);
-    }
-
-    return migrationErrors;
-  }
-
-  private void addRelatedPagesToSetting(Page relatedPage) {
-    SettingServiceImpl settingServiceImpl = CommonsUtils.getService(SettingServiceImpl.class);
-    boolean created = settingServiceImpl.startSynchronization();
-    try {
-      SettingValue<String> relatedPageSetting = new SettingValue<>(getStringFromPage(relatedPage));
-      settingService.set(Context.GLOBAL, Scope.APPLICATION.id(WikiMigrationContext.WIKI_MIGRATION_SETTING_GLOBAL_KEY), WIKI_RDBMS_MIGRATION_RELATED_PAGE_LIST_SETTING, relatedPageSetting);
-      try {
-        CommonsUtils.getService(ChromatticManager.class).getLifeCycle("setting").getContext().getSession().save();
-      } catch (Exception e) {
-        LOG.warn(e);
-      }
-    } finally {
-      Scope.APPLICATION.id(null);
-      settingServiceImpl.stopSynchronization(created);
-    }
-  }
-
-  private String getRelatedPagesSetting() {
-
-    String relatedPage = null;
-
-    SettingServiceImpl settingServiceImpl = CommonsUtils.getService(SettingServiceImpl.class);
-    boolean created = settingServiceImpl.startSynchronization();
-
-    try {
-      SettingValue settingValue = settingService.get(
-          Context.GLOBAL,
-          Scope.APPLICATION.id(WikiMigrationContext.WIKI_MIGRATION_SETTING_GLOBAL_KEY),
-          WIKI_RDBMS_MIGRATION_RELATED_PAGE_LIST_SETTING);
-      if (settingValue != null) {
-        relatedPage = (String) settingValue.getValue();
-      }
-    } finally {
-      Scope.APPLICATION.id(null);
-      settingServiceImpl.stopSynchronization(created);
-    }
-
-    return relatedPage;
-  }
-
-  private void setWikiMigrationOfTypeDone(String wikiType) {
-    if (wikiType.equals(PortalConfig.PORTAL_TYPE)) {
-      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_PORTAL_WIKI_KEY, true);
-    } else if (wikiType.equals(PortalConfig.GROUP_TYPE)) {
-      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_SPACE_WIKI_KEY, true);
-    }
-  }
-
-  private void setWikiCleanupOfTypeDone(String wikiType) {
-    if (wikiType.equals(PortalConfig.PORTAL_TYPE)) {
-      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_PORTAL_WIKI_KEY, true);
-    } else if (wikiType.equals(PortalConfig.GROUP_TYPE)) {
-      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_SPACE_WIKI_KEY, true);
-    }
-  }
-
   private WikiImpl fetchWikiImpl(String wikiType, String wikiOwner) throws WikiException {
     boolean created = this.mowService.startSynchronization();
 
@@ -1101,18 +828,6 @@ public class MigrationService implements Startable {
     }
 
     return userWikiContainer1;
-  }
-
-  private Integer getWikiErrorsNumber() {
-    String wikiErrors = getWikiErrorsSetting();
-    if (wikiErrors != null) return wikiErrors.split(";").length;
-    return 0;
-  }
-
-  private Integer getPageErrorsNumber() {
-    String pageErrors = getPageErrorsSetting();
-    if (pageErrors != null) return pageErrors.split(";").length;
-    return 0;
   }
 
 }
