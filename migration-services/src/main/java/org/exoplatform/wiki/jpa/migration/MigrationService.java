@@ -65,6 +65,7 @@ public class MigrationService implements Startable {
 
   private static final Log LOG = ExoLogger.getLogger(MigrationService.class);
 
+  //Service
   private JCRDataStorage jcrDataStorage;
   private JPADataStorage jpaDataStorage;
   private OrganizationService organizationService;
@@ -73,11 +74,11 @@ public class MigrationService implements Startable {
   private ExecutorService executorService;
   private WikiMigrationSettingService settingService;
 
-  private final CountDownLatch latch;
-
+  //List of migration error
   private List<String> wikiErrorsList = new ArrayList<>();
   private List<String> pageErrorsList = new ArrayList<>();
 
+  private final CountDownLatch latch;
   private ExoContainer currentContainer;
 
   public MigrationService(JCRDataStorage jcrDataStorage, JPADataStorage jpaDataStorage,
@@ -101,9 +102,14 @@ public class MigrationService implements Startable {
     this.executorService = executorService;
   }
 
+  public CountDownLatch getLatch() {
+    return latch;
+  }
+
   @Override
   public void start() {
 
+    //First check to see if the JCR still contains wiki data. If not, migration is skipped
     if (!hasDataToMigrate()) {
       LOG.info("No Wiki data to migrate from JCR to RDBMS");
       return;
@@ -117,20 +123,27 @@ public class MigrationService implements Startable {
       Identity userIdentity = new Identity(IdentityConstants.SYSTEM);
       ConversationState.setCurrent(new ConversationState(userIdentity));
 
+      //Get all the migration setting to get the status of wiki migration (what is already migrated)
       settingService.initMigrationSetting();
 
-      if (WikiMigrationContext.isMigrationDone()) {
-        //TODO print all wiki/pages in error
-        LOG.warn("Still Wiki data in JCR due to error during migration" +
+      //Second check to see if the migration has already been run completely
+      if (WikiMigrationContext.isMigrationDone() && !settingService.isForceRunMigration()) {
+
+        //If Wiki data are still in the JCR and the migration already run completely
+        // means that the migration encounter issues
+        LOG.warn("Still Wiki data in JCR due to error during migration. To finish properly the migration you can:" +
             "\n 1. Delete JCR data definitively: Set exo.wiki.migration.forceJCRDeletion to true" +
-            "\n 2. Rerun the migration: Set exo.wiki.migration.forceRunMigration to true");
+            "\n 2. Rerun the migration: Set exo.wiki.migration.forceRunMigration to true" +
+            "\n\n" + getErrorReport());
+
       } else {
 
+        //Let's start the migration
         LOG.info("=== Start Wiki data migration from JCR to RDBMS");
 
         long startTime = System.currentTimeMillis();
 
-        // migrate
+        // Start migration only for wiki type / pages that are not already been migrated
         if (!WikiMigrationContext.isPortalWikiMigrationDone()) migrateWikisOfType(PortalConfig.PORTAL_TYPE);
         if (!WikiMigrationContext.isSpaceWikiMigrationDone()) migrateWikisOfType(PortalConfig.GROUP_TYPE);
         if (!WikiMigrationContext.isUserWikiMigrationDone()) migrateUsersWikis();
@@ -139,7 +152,9 @@ public class MigrationService implements Startable {
 
         long endTime = System.currentTimeMillis();
 
-        settingService.updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_KEY, true);
+        //Stored in the settingService the termination of the migration
+        settingService.updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_MIGRATION_KEY, true);
+
         LOG.info("=== Wiki data migration from JCR to RDBMS done in " + (endTime - startTime) + " ms");
 
         Integer wikiErrorNumber = settingService.getWikiErrorsNumber();
@@ -152,14 +167,20 @@ public class MigrationService implements Startable {
 
       }
 
-      if (WikiMigrationContext.isDeletionDone()) {
+      if (WikiMigrationContext.isDeletionDone() && !settingService.isForceJCRDeletion()) {
         LOG.info("No Wiki data to delete from JCR");
       } else {
 
+        //Let's start the deletion of wiki data in the JCR
         LOG.info("=== Start Wiki JCR data cleaning due to RDBMS migration");
 
-        if (!settingService.isForceJCRDeletion()) LOG.info("For information, Wiki(s) with errors during migration will not be deleted from JCR");
+        if (!settingService.isForceJCRDeletion()) {
+          LOG.info("For information, Wiki(s) with errors during migration will not be deleted from JCR");
+        } else {
+          LOG.info("For information, all wiki(s) will be deleted from JCR (even Wiki(s) with errors during migration)");
+        }
 
+        //Deletion of wiki data in JCR is done as a background task
         getExecutorService().submit(new Callable<Void>() {
           @Override
           public Void call() throws Exception {
@@ -172,19 +193,20 @@ public class MigrationService implements Startable {
               Identity userIdentity = new Identity(IdentityConstants.SYSTEM);
               ConversationState.setCurrent(new ConversationState(userIdentity));
 
-              // indexation
+              // start reindexation of wiki data if not already done
               if (!WikiMigrationContext.isReindexDone()) {
                 LOG.info("Start reindexation of all wiki pages");
                 indexingService.reindexAll(WikiPageIndexingServiceConnector.TYPE);
                 LOG.info("Start reindexation of all wiki pages attachments");
                 indexingService.reindexAll(AttachmentIndexingServiceConnector.TYPE);
-                settingService.updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_REINDEX_KEY, true);
+                //Stored in the settingService the termination of the reindexation
+                settingService.updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_MIGRATION_REINDEX_KEY, true);
               }
 
-              // get Error migration list
+              // Init the Error migration list to do not delete wiki in error
               initWikiErrorsList();
 
-              // cleanup
+              // Start cleanup only for wiki type / pages that are not already been deleted
               if (!WikiMigrationContext.isPortalWikiCleanupDone()) deleteWikisOfType(PortalConfig.PORTAL_TYPE);
               if (!WikiMigrationContext.isSpaceWikiCleanupDone()) deleteWikisOfType(PortalConfig.GROUP_TYPE);
               if (!WikiMigrationContext.isUserWikiCleanupDone()) deleteUsersWikis();
@@ -193,13 +215,16 @@ public class MigrationService implements Startable {
               if (errorNumber > 0 && !settingService.isForceJCRDeletion()) {
                 LOG.warn(getErrorReport());
               } else {
+                //Wiki Root Node must be deleted only if all wiki has been previously deleted
                 deleteWikiRootNode();
+                //Same for all wiki migration settings
                 settingService.removeSettingValue();
               }
 
               long endTime = System.currentTimeMillis();
 
-              settingService.updateSettingValue(WikiMigrationContext.WIKI_RDBMS_DELETION_KEY, true);
+              //Stored in the settingService the termination of the deletion
+              settingService.updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_DELETION_KEY, true);
               LOG.info("=== Wiki JCR data cleaning due to RDBMS migration done in " + (endTime - startTime) + " ms");
 
             } catch (Exception e) {
@@ -228,6 +253,12 @@ public class MigrationService implements Startable {
 
   }
 
+  /**
+   * Build an error report of the migration
+   * It include a detail list of wiki and page in error
+   *
+   * @return an error report of the migration
+   */
   private String getErrorReport() {
 
     String[] wikiErrors = settingService.getWikiErrorsSetting().split(";");
@@ -247,7 +278,11 @@ public class MigrationService implements Startable {
     }
     errorReport.append("\n\n ### Page errors list:\n");
     for (String pageError: pageErrors) {
-      errorReport.append("\n Page Name  : "+pageError);
+      Page page = settingService.stringToPage(pageError);
+      errorReport.append("\n Wiki Type  : "+page.getWikiType());
+      errorReport.append("\n Wiki Owner  : "+page.getWikiOwner());
+      errorReport.append("\n Page Id  : "+page.getId());
+      errorReport.append("\n Page Name  : "+page.getName());
       errorReport.append("\n ---------------------------------------------------------");
     }
     errorReport.append("\n\n =======================================================\n");
@@ -255,28 +290,11 @@ public class MigrationService implements Startable {
     return errorReport.toString();
   }
 
-  private void initWikiErrorsList() {
-    String wikiErrors = settingService.getWikiErrorsSetting();
-    if (wikiErrors != null) {
-      this.wikiErrorsList = Arrays.asList(wikiErrors.split(";"));
-    } else {
-      this.wikiErrorsList = new ArrayList<>();
-    }
-  }
-
-  private void initPageErrorsList() {
-    String pageErrors = settingService.getPageErrorsSetting();
-    if (pageErrors != null) {
-      this.pageErrorsList = Arrays.asList(pageErrors.split(";"));
-    } else {
-      this.pageErrorsList = new ArrayList<>();
-    }
-  }
-
-  public CountDownLatch getLatch() {
-    return latch;
-  }
-
+  /**
+   * Check if the JCR still contains some wiki data
+   *
+   * @return true if the JCR still contains wiki data, false if not
+   */
   private boolean hasDataToMigrate() {
     boolean hasDataToMigrate = true;
 
@@ -294,6 +312,11 @@ public class MigrationService implements Startable {
     return hasDataToMigrate;
   }
 
+  /**
+   * Manage the migration of Portal wikis and Group wiki
+   *
+   * @param wikiType type of wiki to migrate (portal or group)
+   */
   private void migrateWikisOfType(String wikiType) {
     try {
 
@@ -320,6 +343,10 @@ public class MigrationService implements Startable {
     }
   }
 
+  /**
+   * Manage the migration of User wikis
+   *
+   */
   private void migrateUsersWikis() {
     int pageSize = 20;
     int current = 0;
@@ -354,13 +381,18 @@ public class MigrationService implements Startable {
         }
         current += users.length;
       } while(users != null && users.length > 0);
-      settingService.updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_USER_WIKI_KEY, true);
+      settingService.updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_MIGRATION_USER_WIKI_KEY, true);
       LOG.info("    Migration of users wikis done");
     } catch (Exception e) {
       LOG.error("Cannot migrate users wikis - Cause : " + e.getMessage(), e);
     }
   }
 
+  /**
+   * Manage the migration of a wiki from JCR to RDBMS and catch the potential errors
+   *
+   * @param jcrWiki wiki to migrate
+   */
   private void migrateWiki(Wiki jcrWiki) {
     Boolean isWikiMigrationSuccess = true;
     Boolean isWikiMigrationStarted = false;
@@ -413,6 +445,9 @@ public class MigrationService implements Startable {
     }
   }
 
+  /**
+   * Manage the migration of a draft page from JCR to RDBMS and catch the potential errors
+   */
   private void migrateDraftPages() {
     int pageSize = 20;
     int current = 0;
@@ -463,13 +498,16 @@ public class MigrationService implements Startable {
         }
         current += users.length;
       } while(users != null && users.length > 0);
-      settingService.updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_DRAFT_PAGE_KEY, true);
+      settingService.updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_MIGRATION_DRAFT_PAGE_KEY, true);
       LOG.info("  Migration of draft pages done");
     } catch (Exception e) {
       LOG.error("Cannot migrate draft pages - Cause : " + e.getMessage(), e);
     }
   }
 
+  /**
+   * Manage the migration of a related page from JCR to RDBMS and catch the potential error
+   */
   private void migrateRelatedPages() {
     try {
       //Get page in error that cannot be linked
@@ -493,13 +531,18 @@ public class MigrationService implements Startable {
           }
         }
       }
-      settingService.updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_RELATED_PAGE_KEY, true);
+      settingService.updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_MIGRATION_RELATED_PAGE_KEY, true);
       LOG.info("  Related pages migrated");
     } catch (Exception e) {
       LOG.error("Cannot migrate related pages - Cause : " + e.getMessage(), e);
     }
   }
 
+  /**
+   * Manage the deletion of portal and group wikis in the JCR
+   *
+   * @param wikiType type of wiki to delete
+   */
   private void deleteWikisOfType(String wikiType) {
     LOG.info("  Start deletion of wikis of type " + wikiType);
 
@@ -522,6 +565,10 @@ public class MigrationService implements Startable {
     }
   }
 
+  /**
+   * Manage the delete of user wikis in the JCR
+   *
+   */
   private void deleteUsersWikis() {
     int pageSize = 20;
     int current = 0;
@@ -556,13 +603,18 @@ public class MigrationService implements Startable {
         }
         current += users.length;
       } while(users != null && users.length > 0);
-      settingService.updateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_USER_WIKI_KEY, true);
+      settingService.updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_CLEANUP_USER_WIKI_KEY, true);
       LOG.info("    Deletion of users wikis done");
     } catch (Exception e) {
       LOG.error("Cannot Delete users wikis - Cause : " + e.getMessage(), e);
     }
   }
 
+  /**
+   * Manage the deletion of a wiki in the JCR and catch the potential errors
+   *
+   * @param wiki wiki to delete
+   */
   private void deleteWiki(WikiImpl wiki) {
 
     //Do not remove wiki with error during migration
@@ -592,6 +644,10 @@ public class MigrationService implements Startable {
 
   }
 
+  /**
+   * Manage the deletion of emoticon in the JCR and catch the potential errors
+   *
+   */
   private void deleteEmotionIcons() {
     LOG.info("  Start deletion of emotion icons ...");
 
@@ -604,7 +660,7 @@ public class MigrationService implements Startable {
       if(emotionIconsPage != null) {
         emotionIconsPage.remove();
       }
-      settingService.updateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_EMOTICON_KEY, true);
+      settingService.updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_CLEANUP_EMOTICON_KEY, true);
       LOG.info("  Deletion of emotion icons done");
     } catch(Exception e) {
       LOG.error("Cannot delete emotion icons - Cause : " + e.getMessage(), e);
@@ -613,6 +669,9 @@ public class MigrationService implements Startable {
     }
   }
 
+  /**
+   * Manage the deletion of a wiki root node in the JCR
+   */
   private void deleteWikiRootNode() {
     LOG.info("  Start deletion of root wiki data node ...");
 
@@ -637,12 +696,19 @@ public class MigrationService implements Startable {
     }
   }
 
-
-  @Override
-  public void stop() {
-
-  }
-
+  /**
+   * Recursive function that manage the migration of all pages in a wiki from JCR to RDBMS and catch the potential errors
+   *
+   * @param jpaWiki wiki in RDBMS
+   * @param jcrWiki wiki in JCR
+   * @param jcrPage page to migrate
+   * @param level hierarchical deep of the wiki (1 is the wikihome)
+   * @param isParentAlreadyMigrated boolean to know if the parent of page has been already migrated in a previous migration.
+   *                                if migrated in previous relation, we need to check if the page has already been
+   *                                migrated too in order to do not migrate it again.
+   * @return true if the migration going well, false if not
+   * @throws WikiException
+   */
   private Boolean createChildrenPagesOf(Wiki jpaWiki, Wiki jcrWiki, Page jcrPage, int level, Boolean isParentAlreadyMigrated) throws WikiException {
     Boolean isMigrationSuccess = true;
     List<Page> childrenPages = new ArrayList<>();
@@ -698,10 +764,22 @@ public class MigrationService implements Startable {
     return isMigrationSuccess;
   }
 
+  /**
+   * Create the page in the RDBMS
+   *
+   * @param wiki wiki related to this page in the RDBMS
+   * @param jcrParentPage the parent page of the page to migrate in the JCR
+   * @param jcrPage the page to migrate in the JCR
+   * @param checkPageMigrated boolean to know if the parent of page has been already  migrated in a previous migration
+   *                          if migrated in previous relation, we need to check if the page has already been
+   *                          migrated too in order to do not migrate it again.
+   * @return
+   * @throws WikiException
+   */
   @ExoTransactional
   private Boolean createPage(Wiki wiki, Page jcrParentPage, Page jcrPage, Boolean checkPageMigrated) throws WikiException {
 
-    //If this parent page already migrated, check first it this page has already been migrated
+    //If this parent page already migrated in a previous migration, check first it this page has already been migrated
     if (checkPageMigrated) {
       Page page = jpaDataStorage.getPageOfWikiByName(jcrPage.getWikiType(), jcrPage.getOwner(), jcrPage.getName());
       if (page != null) {
@@ -799,6 +877,15 @@ public class MigrationService implements Startable {
     return false;
   }
 
+  /**
+   * Create the template in the RDBMS
+   *
+   * @param jcrWiki wiki with template to migrate
+   * @param isWikiMigrationStarted boolean to know if the wiki has been already migrated in a previous migration
+   *                               if migrated in previous relation, we need to check if the template has already been
+   *                               migrated too in order to do not migrate it again.
+   * @throws WikiException
+   */
   private void createTemplates(Wiki jcrWiki, Boolean isWikiMigrationStarted) throws WikiException {
     Map<String, Template> jcrWikiTemplates = jcrDataStorage.getTemplates(new WikiPageParams(jcrWiki.getType(), jcrWiki.getOwner(), jcrWiki.getId()));
     if(jcrWikiTemplates != null) {
@@ -813,6 +900,35 @@ public class MigrationService implements Startable {
         LOG.info("      Template " + jcrTemplate.getName() + " migrated.");
         jpaDataStorage.createTemplatePage(jcrWiki, jcrTemplate);
       }
+    }
+  }
+
+  @Override
+  public void stop() {
+
+  }
+
+  /**
+   * Get the wiki with migration error from the settingService and put them in the wikiErrorsList
+   */
+  private void initWikiErrorsList() {
+    String wikiErrors = settingService.getWikiErrorsSetting();
+    if (wikiErrors != null) {
+      this.wikiErrorsList = Arrays.asList(wikiErrors.split(";"));
+    } else {
+      this.wikiErrorsList = new ArrayList<>();
+    }
+  }
+
+  /**
+   * Get the page with migration error from the settingService and put them in the pageErrorsList
+   */
+  private void initPageErrorsList() {
+    String pageErrors = settingService.getPageErrorsSetting();
+    if (pageErrors != null) {
+      this.pageErrorsList = Arrays.asList(pageErrors.split(";"));
+    } else {
+      this.pageErrorsList = new ArrayList<>();
     }
   }
 
