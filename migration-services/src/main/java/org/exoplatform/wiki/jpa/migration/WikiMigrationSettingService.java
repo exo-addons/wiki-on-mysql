@@ -50,6 +50,9 @@ public class WikiMigrationSettingService {
   private boolean forceJCRDeletion = false;
   private boolean forceRunMigration = false;
 
+  private final static String INNER_OBJECT_SPLIT = ":";
+  private final static String OUTER_OBJECT_SPLIT = ";";
+
   public WikiMigrationSettingService(SettingService settingService) {
 
     //Init Service
@@ -64,6 +67,11 @@ public class WikiMigrationSettingService {
     }
   }
 
+  /**
+   * Get value (an eXo Property) that force the deletion of wiki and page even if they encounter error during migration
+   *
+   * @return
+   */
   public boolean isForceJCRDeletion() {
     return forceJCRDeletion;
   }
@@ -72,6 +80,11 @@ public class WikiMigrationSettingService {
     this.forceJCRDeletion = forceJCRDeletion;
   }
 
+  /**
+   * Get value (an eXo Property) that force the migration to restart from the beginning
+   *
+   * @return
+   */
   public boolean isForceRunMigration() {
     return forceRunMigration;
   }
@@ -80,6 +93,15 @@ public class WikiMigrationSettingService {
     this.forceRunMigration = forceRunMigration;
   }
 
+  /**
+   * Use the settingService to get all wiki migration setting as PLF startup.
+   *
+   * The settings allow to start the migration where it has been stopped before
+   * and do not re start operation already finished.
+   *
+   * If the setting doesn't exist yet (first PLF start after installation of the add-on)
+   * it is configure as false by default
+   */
   public void initMigrationSetting() {
 
     if (forceRunMigration) {
@@ -90,54 +112,65 @@ public class WikiMigrationSettingService {
     settingService = CommonsUtils.getService(SettingService.class);
 
     //Init migration state
-    WikiMigrationContext.setMigrationDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_KEY));
-    WikiMigrationContext.setPortalWikiMigrationDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_PORTAL_WIKI_KEY));
-    WikiMigrationContext.setSpaceWikiMigrationDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_SPACE_WIKI_KEY));
-    WikiMigrationContext.setUserWikiMigrationDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_USER_WIKI_KEY));
-    WikiMigrationContext.setDraftPageMigrationDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_DRAFT_PAGE_KEY));
-    WikiMigrationContext.setRelatedPageMigrationDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_RELATED_PAGE_KEY));
+    WikiMigrationContext.setMigrationDone(getOrCreateOperationState(WikiMigrationContext.WIKI_RDBMS_MIGRATION_KEY));
+    WikiMigrationContext.setPortalWikiMigrationDone(getOrCreateOperationState(WikiMigrationContext.WIKI_RDBMS_MIGRATION_PORTAL_WIKI_KEY));
+    WikiMigrationContext.setSpaceWikiMigrationDone(getOrCreateOperationState(WikiMigrationContext.WIKI_RDBMS_MIGRATION_SPACE_WIKI_KEY));
+    WikiMigrationContext.setUserWikiMigrationDone(getOrCreateOperationState(WikiMigrationContext.WIKI_RDBMS_MIGRATION_USER_WIKI_KEY));
+    WikiMigrationContext.setDraftPageMigrationDone(getOrCreateOperationState(WikiMigrationContext.WIKI_RDBMS_MIGRATION_DRAFT_PAGE_KEY));
+    WikiMigrationContext.setRelatedPageMigrationDone(getOrCreateOperationState(WikiMigrationContext.WIKI_RDBMS_MIGRATION_RELATED_PAGE_KEY));
 
     //Init reindex state
-    WikiMigrationContext.setReindexDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_REINDEX_KEY));
+    WikiMigrationContext.setReindexDone(getOrCreateOperationState(WikiMigrationContext.WIKI_RDBMS_MIGRATION_REINDEX_KEY));
 
     //Init deletion state
-    WikiMigrationContext.setDeletionDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_DELETION_KEY));
-    WikiMigrationContext.setPortalWikiCleanupDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_PORTAL_WIKI_KEY));
-    WikiMigrationContext.setSpaceWikiCleanupDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_SPACE_WIKI_KEY));
-    WikiMigrationContext.setUserWikiCleanupDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_USER_WIKI_KEY));
-    WikiMigrationContext.setEmoticonCleanupDone(getOrCreateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_EMOTICON_KEY));
+    WikiMigrationContext.setDeletionDone(getOrCreateOperationState(WikiMigrationContext.WIKI_RDBMS_DELETION_KEY));
+    WikiMigrationContext.setPortalWikiCleanupDone(getOrCreateOperationState(WikiMigrationContext.WIKI_RDBMS_CLEANUP_PORTAL_WIKI_KEY));
+    WikiMigrationContext.setSpaceWikiCleanupDone(getOrCreateOperationState(WikiMigrationContext.WIKI_RDBMS_CLEANUP_SPACE_WIKI_KEY));
+    WikiMigrationContext.setUserWikiCleanupDone(getOrCreateOperationState(WikiMigrationContext.WIKI_RDBMS_CLEANUP_USER_WIKI_KEY));
+    WikiMigrationContext.setEmoticonCleanupDone(getOrCreateOperationState(WikiMigrationContext.WIKI_RDBMS_CLEANUP_EMOTICON_KEY));
   }
 
+  /**
+   * Set all setting value to their default value (false) whatever their current value.
+   *
+   * Use to force a migration to be restart from the beginning
+   */
   private void initMigrationSettingToDefault() {
     settingService = CommonsUtils.getService(SettingService.class);
 
     //Init migration state
-    WikiMigrationContext.setMigrationDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_KEY));
-    WikiMigrationContext.setPortalWikiMigrationDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_PORTAL_WIKI_KEY));
-    WikiMigrationContext.setSpaceWikiMigrationDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_SPACE_WIKI_KEY));
-    WikiMigrationContext.setUserWikiMigrationDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_USER_WIKI_KEY));
-    WikiMigrationContext.setDraftPageMigrationDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_DRAFT_PAGE_KEY));
-    WikiMigrationContext.setRelatedPageMigrationDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_RELATED_PAGE_KEY));
+    WikiMigrationContext.setMigrationDone(setOperationStatusToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_KEY));
+    WikiMigrationContext.setPortalWikiMigrationDone(setOperationStatusToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_PORTAL_WIKI_KEY));
+    WikiMigrationContext.setSpaceWikiMigrationDone(setOperationStatusToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_SPACE_WIKI_KEY));
+    WikiMigrationContext.setUserWikiMigrationDone(setOperationStatusToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_USER_WIKI_KEY));
+    WikiMigrationContext.setDraftPageMigrationDone(setOperationStatusToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_DRAFT_PAGE_KEY));
+    WikiMigrationContext.setRelatedPageMigrationDone(setOperationStatusToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_RELATED_PAGE_KEY));
 
     //Init reindex state
-    WikiMigrationContext.setReindexDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_REINDEX_KEY));
+    WikiMigrationContext.setReindexDone(setOperationStatusToDefault(WikiMigrationContext.WIKI_RDBMS_MIGRATION_REINDEX_KEY));
 
     //Init deletion state
-    WikiMigrationContext.setDeletionDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_DELETION_KEY));
-    WikiMigrationContext.setPortalWikiCleanupDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_CLEANUP_PORTAL_WIKI_KEY));
-    WikiMigrationContext.setSpaceWikiCleanupDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_CLEANUP_SPACE_WIKI_KEY));
-    WikiMigrationContext.setUserWikiCleanupDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_CLEANUP_USER_WIKI_KEY));
-    WikiMigrationContext.setEmoticonCleanupDone(setSettingValueToDefault(WikiMigrationContext.WIKI_RDBMS_CLEANUP_EMOTICON_KEY));
+    WikiMigrationContext.setDeletionDone(setOperationStatusToDefault(WikiMigrationContext.WIKI_RDBMS_DELETION_KEY));
+    WikiMigrationContext.setPortalWikiCleanupDone(setOperationStatusToDefault(WikiMigrationContext.WIKI_RDBMS_CLEANUP_PORTAL_WIKI_KEY));
+    WikiMigrationContext.setSpaceWikiCleanupDone(setOperationStatusToDefault(WikiMigrationContext.WIKI_RDBMS_CLEANUP_SPACE_WIKI_KEY));
+    WikiMigrationContext.setUserWikiCleanupDone(setOperationStatusToDefault(WikiMigrationContext.WIKI_RDBMS_CLEANUP_USER_WIKI_KEY));
+    WikiMigrationContext.setEmoticonCleanupDone(setOperationStatusToDefault(WikiMigrationContext.WIKI_RDBMS_CLEANUP_EMOTICON_KEY));
   }
 
-  public boolean getOrCreateSettingValue(String key) {
+  /**
+   * Call settingService to get the state of an operation (Migration of User wiki for instance)
+   *
+   * @param operation operation
+   * @return true if the operation already done, false if not
+   */
+  public boolean getOrCreateOperationState(String operation) {
     try {
       if (settingService == null) LOG.info("settingService is null");
-      SettingValue<?> migrationValue =  settingService.get(Context.GLOBAL, Scope.APPLICATION.id(WikiMigrationContext.WIKI_MIGRATION_SETTING_GLOBAL_KEY), key);
+      SettingValue<?> migrationValue =  settingService.get(Context.GLOBAL, Scope.APPLICATION.id(WikiMigrationContext.WIKI_MIGRATION_SETTING_GLOBAL_KEY), operation);
       if (migrationValue != null) {
         return Boolean.parseBoolean(migrationValue.getValue().toString());
       } else {
-        updateSettingValue(key, Boolean.FALSE);
+        updateOperationStatus(operation, Boolean.FALSE);
         return false;
       }
     } finally {
@@ -145,12 +178,40 @@ public class WikiMigrationSettingService {
     }
   }
 
-  public boolean setSettingValueToDefault(String key) {
-    updateSettingValue(key, Boolean.FALSE);
+  /**
+   * Set the value of the operation state to default (false)
+   *
+   * @param operation
+   * @return the default value of the operation state
+   */
+  public boolean setOperationStatusToDefault(String operation) {
+    updateOperationStatus(operation, Boolean.FALSE);
     return false;
   }
 
-  public void updateSettingValue(String key, Boolean status) {
+  public void setWikiMigrationOfTypeDone(String wikiType) {
+    if (wikiType.equals(PortalConfig.PORTAL_TYPE)) {
+      updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_MIGRATION_PORTAL_WIKI_KEY, true);
+    } else if (wikiType.equals(PortalConfig.GROUP_TYPE)) {
+      updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_MIGRATION_SPACE_WIKI_KEY, true);
+    }
+  }
+
+  public void setWikiCleanupOfTypeDone(String wikiType) {
+    if (wikiType.equals(PortalConfig.PORTAL_TYPE)) {
+      updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_CLEANUP_PORTAL_WIKI_KEY, true);
+    } else if (wikiType.equals(PortalConfig.GROUP_TYPE)) {
+      updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_CLEANUP_SPACE_WIKI_KEY, true);
+    }
+  }
+
+  /**
+   * Update in the settingService the status of an operation
+   *
+   * @param key operation status
+   * @param status
+   */
+  public void updateOperationStatus(String key, Boolean status) {
     SettingServiceImpl settingServiceImpl = CommonsUtils.getService(SettingServiceImpl.class);
     boolean created = settingServiceImpl.startSynchronization();
     try {
@@ -166,6 +227,9 @@ public class WikiMigrationSettingService {
     }
   }
 
+  /**
+   * Remove from the SettingService all settings related to the wiki migration
+   */
   public void removeSettingValue() {
     SettingServiceImpl settingServiceImpl = CommonsUtils.getService(SettingServiceImpl.class);
     boolean created = settingServiceImpl.startSynchronization();
@@ -182,11 +246,25 @@ public class WikiMigrationSettingService {
     }
   }
 
+  /**
+   * Add a wiki to the "wiki errors" list stored in SettingService
+   * The list is stored as a unique string where all wiki are separated by comma
+   * See wikiToString() to check the format of a wiki in the string list
+   *
+   * @param wikiMigrationError the wiki in error during migration
+   */
   public void addWikiErrorToSetting(Wiki wikiMigrationError) {
     String wiki = wikiToString(wikiMigrationError);
     addErrorToSetting(WikiMigrationContext.WIKI_RDBMS_MIGRATION_ERROR_WIKI_LIST_SETTING, wiki);
   }
 
+  /**
+   * Add a page to the "page errors" list stored in SettingService
+   * The list is stored as a unique string where all page are separated by comma
+   * See pageToString() to check the format of a page in the string list
+   *
+   * @param pageMigrationError the page in error during migration
+   */
   public void addPageErrorToSetting(Page pageMigrationError) {
     String page = pageToString(pageMigrationError);
     addErrorToSetting(WikiMigrationContext.WIKI_RDBMS_MIGRATION_ERROR_PAGE_LIST_SETTING, page);
@@ -201,7 +279,7 @@ public class WikiMigrationSettingService {
       if (migrationErrors == null) {
         migrationErrors = settingErrorValue;
       } else {
-        migrationErrors += ";"+settingErrorValue;
+        migrationErrors += OUTER_OBJECT_SPLIT+settingErrorValue;
       }
       SettingValue<String> errorsSetting = new SettingValue<>(migrationErrors);
       settingService.set(Context.GLOBAL, Scope.APPLICATION.id(WikiMigrationContext.WIKI_MIGRATION_SETTING_GLOBAL_KEY), settingErrorKey, errorsSetting);
@@ -216,10 +294,22 @@ public class WikiMigrationSettingService {
     }
   }
 
+  /**
+   * Get the "wiki error" list (a unique string with wiki separated by comma)
+   * See wikiToString() to check the format of a wiki in the string list
+   *
+   * @return a unique string containing all wiki in error separated by a comma
+   */
   public String getWikiErrorsSetting() {
     return getErrorsSetting(WikiMigrationContext.WIKI_RDBMS_MIGRATION_ERROR_WIKI_LIST_SETTING);
   }
 
+  /**
+   * Get the "page error" list (a unique string with wiki separated by comma)
+   * See pageToString() to check the format of a page in the string list
+   *
+   * @return a unique string containing all page in error separated by a comma
+   */
   public String getPageErrorsSetting() {
     return getErrorsSetting(WikiMigrationContext.WIKI_RDBMS_MIGRATION_ERROR_PAGE_LIST_SETTING);
   }
@@ -247,6 +337,13 @@ public class WikiMigrationSettingService {
     return migrationErrors;
   }
 
+  /**
+   * Add a page to the list of "page with related pages" stored in SettingService
+   * The list is stored as a unique string where all page are separated by comma
+   * See pageToString() to check the format of a page in the string list
+   *
+   * @param relatedPage
+   */
   public void addRelatedPagesToSetting(Page relatedPage) {
     SettingServiceImpl settingServiceImpl = CommonsUtils.getService(SettingServiceImpl.class);
     boolean created = settingServiceImpl.startSynchronization();
@@ -264,6 +361,13 @@ public class WikiMigrationSettingService {
     }
   }
 
+  /**
+   * Get the "page with related pages" list (a unique string with wiki separated by comma)
+   * The migration of link between page is done at the end of migration and use this list
+   * See pageToString() to check the format of a page in the string list
+   *
+   * @return a unique string containing all page in error separated by a comma
+   */
   public String getRelatedPagesSetting() {
 
     String relatedPage = null;
@@ -287,44 +391,64 @@ public class WikiMigrationSettingService {
     return relatedPage;
   }
 
-  public void setWikiMigrationOfTypeDone(String wikiType) {
-    if (wikiType.equals(PortalConfig.PORTAL_TYPE)) {
-      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_PORTAL_WIKI_KEY, true);
-    } else if (wikiType.equals(PortalConfig.GROUP_TYPE)) {
-      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_SPACE_WIKI_KEY, true);
-    }
+  /**
+   * Get the "page with related pages" list in a String Array format
+   *
+   * @return an array of String representing a page
+   */
+  public String[] getPagesWithRelatedPages() {
+    String pageWithRelatedPages = getRelatedPagesSetting();
+    if (pageWithRelatedPages != null) return pageWithRelatedPages.split(OUTER_OBJECT_SPLIT);
+    return null;
   }
 
-  public void setWikiCleanupOfTypeDone(String wikiType) {
-    if (wikiType.equals(PortalConfig.PORTAL_TYPE)) {
-      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_PORTAL_WIKI_KEY, true);
-    } else if (wikiType.equals(PortalConfig.GROUP_TYPE)) {
-      updateSettingValue(WikiMigrationContext.WIKI_RDBMS_CLEANUP_SPACE_WIKI_KEY, true);
-    }
-  }
-
+  /**
+   *
+   * @return the number of wiki in error during the migration
+   */
   public Integer getWikiErrorsNumber() {
     String wikiErrors = getWikiErrorsSetting();
-    if (wikiErrors != null) return wikiErrors.split(";").length;
+    if (wikiErrors != null) return wikiErrors.split(OUTER_OBJECT_SPLIT).length;
     return 0;
   }
 
+  /**
+   *
+   * @return the number of pages in error during the migration
+   */
   public Integer getPageErrorsNumber() {
     String pageErrors = getPageErrorsSetting();
-    if (pageErrors != null) return pageErrors.split(";").length;
+    if (pageErrors != null) return pageErrors.split(OUTER_OBJECT_SPLIT).length;
     return 0;
   }
 
+  /**
+   * Transform a wiki to string to store it to the "wiki error" String list
+   *
+   * @param wiki wiki to transform to string format
+   * @return wiki in String format: WikiType:WikiOwner
+   */
   public String wikiToString(Wiki wiki) {
-    return wiki.getType()+":"+wiki.getOwner();
+    return wiki.getType()+INNER_OBJECT_SPLIT+wiki.getOwner();
   }
 
+  /**
+   * Transform a wikiImpl to string to store it to the "wiki error" String list
+   *
+   * @param wiki wiki to transform to string format
+   * @return wiki in String format: WikiType:WikiOwner
+   */
   public String wikiToString(WikiImpl wiki) {
-    return wiki.getType()+":"+wiki.getOwner();
+    return wiki.getType()+INNER_OBJECT_SPLIT+wiki.getOwner();
   }
 
-  public Page stringToPage(String pageWithRelatedPages) {
-    String[] pageAttribute = pageWithRelatedPages.split(":");
+  /**
+   *
+   * @param pageString String to transform Page object
+   * @return
+   */
+  public Page stringToPage(String pageString) {
+    String[] pageAttribute = pageString.split(INNER_OBJECT_SPLIT);
     Page page = new Page();
     page.setWikiType(pageAttribute[0]);
     page.setWikiOwner(pageAttribute[1]);
@@ -333,16 +457,15 @@ public class WikiMigrationSettingService {
     return page;
   }
 
+  /**
+   * Transform a page to string to store it to the "page error" or "page with related page" String list
+   *
+   * @param page page to transform to string format
+   * @return page in String format: WikiType:WikiOwner:PageId:PageName
+   */
   public String pageToString(Page page) {
-    return page.getWikiType()+":"+page.getWikiOwner()+":"+page.getId()+":"+page.getName();
+    return page.getWikiType()+INNER_OBJECT_SPLIT+page.getWikiOwner()+INNER_OBJECT_SPLIT+page.getId()+INNER_OBJECT_SPLIT+page.getName();
   }
-
-  public String[] getPagesWithRelatedPages() {
-    String pageWithRelatedPages = getRelatedPagesSetting();
-    if (pageWithRelatedPages != null) return pageWithRelatedPages.split(";");
-    return null;
-  }
-
 
 }
 
