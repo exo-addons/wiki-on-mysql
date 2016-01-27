@@ -348,7 +348,14 @@ public class WikiMigrationSettingService {
     SettingServiceImpl settingServiceImpl = CommonsUtils.getService(SettingServiceImpl.class);
     boolean created = settingServiceImpl.startSynchronization();
     try {
-      SettingValue<String> relatedPageSetting = new SettingValue<>(pageToString(relatedPage));
+      String relatedPages = getRelatedPagesSetting();
+      //Add the page to the relatedPages String list
+      if (relatedPages == null) {
+        relatedPages = pageToString(relatedPage);
+      } else {
+        relatedPages += OUTER_OBJECT_SPLIT+pageToString(relatedPage);
+      }
+      SettingValue<String> relatedPageSetting = new SettingValue<>(relatedPages);
       settingService.set(Context.GLOBAL, Scope.APPLICATION.id(WikiMigrationContext.WIKI_MIGRATION_SETTING_GLOBAL_KEY), WikiMigrationContext.WIKI_RDBMS_MIGRATION_RELATED_PAGE_LIST_SETTING, relatedPageSetting);
       try {
         CommonsUtils.getService(ChromatticManager.class).getLifeCycle("setting").getContext().getSession().save();
@@ -467,5 +474,28 @@ public class WikiMigrationSettingService {
     return page.getWikiType()+INNER_OBJECT_SPLIT+page.getWikiOwner()+INNER_OBJECT_SPLIT+page.getId()+INNER_OBJECT_SPLIT+page.getName();
   }
 
+  /**
+   * Set the list of "page with related pages" stored in SettingService
+   * The list is stored as a unique string where all page are separated by comma
+   * See pageToString() to check the format of a page in the string list
+   *
+   * @param pagesWithRelatedPagesString the list of "page with related pages"
+   */
+  public void setRelatedPagesToSetting(String pagesWithRelatedPagesString) {
+    SettingServiceImpl settingServiceImpl = CommonsUtils.getService(SettingServiceImpl.class);
+    boolean created = settingServiceImpl.startSynchronization();
+    try {
+      SettingValue<String> relatedPageSetting = new SettingValue<>(pagesWithRelatedPagesString);
+      settingService.set(Context.GLOBAL, Scope.APPLICATION.id(WikiMigrationContext.WIKI_MIGRATION_SETTING_GLOBAL_KEY), WikiMigrationContext.WIKI_RDBMS_MIGRATION_RELATED_PAGE_LIST_SETTING, relatedPageSetting);
+      try {
+        CommonsUtils.getService(ChromatticManager.class).getLifeCycle("setting").getContext().getSession().save();
+      } catch (Exception e) {
+        LOG.warn(e);
+      }
+    } finally {
+      Scope.APPLICATION.id(null);
+      settingServiceImpl.stopSynchronization(created);
+    }
+  }
 }
 

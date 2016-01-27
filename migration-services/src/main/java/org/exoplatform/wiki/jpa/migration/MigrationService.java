@@ -75,8 +75,8 @@ public class MigrationService implements Startable {
   private WikiMigrationSettingService settingService;
 
   //List of migration error
-  private List<String> wikiErrorsList = new ArrayList<>();
-  private List<String> pageErrorsList = new ArrayList<>();
+  private Set<String> wikiErrorsList = new HashSet<>();
+  private Set<String> pageErrorsList = new HashSet<>();
 
   private final CountDownLatch latch;
   private ExoContainer currentContainer;
@@ -127,7 +127,7 @@ public class MigrationService implements Startable {
       settingService.initMigrationSetting();
 
       //Second check to see if the migration has already been run completely
-      if (WikiMigrationContext.isMigrationDone() && !settingService.isForceRunMigration()) {
+      if (WikiMigrationContext.isMigrationDone() && !settingService.isForceRunMigration() && !settingService.isForceJCRDeletion()) {
 
         //If Wiki data are still in the JCR and the migration already run completely
         // means that the migration encounter issues
@@ -207,10 +207,10 @@ public class MigrationService implements Startable {
               initWikiErrorsList();
 
               // Start cleanup only for wiki type / pages that are not already been deleted
-              if (!WikiMigrationContext.isPortalWikiCleanupDone()) deleteWikisOfType(PortalConfig.PORTAL_TYPE);
-              if (!WikiMigrationContext.isSpaceWikiCleanupDone()) deleteWikisOfType(PortalConfig.GROUP_TYPE);
-              if (!WikiMigrationContext.isUserWikiCleanupDone()) deleteUsersWikis();
-              if (!WikiMigrationContext.isEmoticonCleanupDone()) deleteEmotionIcons();
+              if (!WikiMigrationContext.isPortalWikiCleanupDone() || settingService.isForceJCRDeletion()) deleteWikisOfType(PortalConfig.PORTAL_TYPE);
+              if (!WikiMigrationContext.isSpaceWikiCleanupDone() || settingService.isForceJCRDeletion()) deleteWikisOfType(PortalConfig.GROUP_TYPE);
+              if (!WikiMigrationContext.isUserWikiCleanupDone() || settingService.isForceJCRDeletion()) deleteUsersWikis();
+              if (!WikiMigrationContext.isEmoticonCleanupDone() || settingService.isForceJCRDeletion()) deleteEmotionIcons();
               Integer errorNumber = settingService.getWikiErrorsNumber();
               if (errorNumber > 0 && !settingService.isForceJCRDeletion()) {
                 LOG.warn(getErrorReport());
@@ -261,14 +261,14 @@ public class MigrationService implements Startable {
    */
   private String getErrorReport() {
 
-    String[] wikiErrors = settingService.getWikiErrorsSetting().split(";");
-    String[] pageErrors = settingService.getPageErrorsSetting().split(";");
+    Set<String> wikiErrors = getWikiErrorsSet();
+    Set<String> pageErrors = getPageErrorsSet();
 
     StringBuilder errorReport = new StringBuilder();
     errorReport.append("\n ============== Wiki Migration Error report ==============\n");
     errorReport.append("\n ### Summary \n");
-    errorReport.append("\n Number of wiki error: "+wikiErrors.length);
-    errorReport.append("\n Number of page error: "+pageErrors.length);
+    errorReport.append("\n Number of wiki error: "+wikiErrors.size());
+    errorReport.append("\n Number of page error: "+pageErrors.size());
     errorReport.append("\n\n ### Wiki errors list:\n");
     for (String wikiError: wikiErrors) {
       String[] wikiAttribute = wikiError.split(":", 2);
@@ -465,6 +465,9 @@ public class MigrationService implements Startable {
           try {
             List<DraftPage> draftPages = jcrDataStorage.getDraftPagesOfUser(user.getUserName());
             for (DraftPage jcrDraftPage : draftPages) {
+              //Check if draftPage already migrate
+              if (jpaDataStorage.getDraft(jcrDraftPage.getName(), user.getUserName()) == null) {
+
               String targetPageId = jcrDraftPage.getTargetPageId();
               if(targetPageId != null) {
                 LOG.info("    Draft page " + jcrDraftPage.getName() + " of user " + user.getUserName());
@@ -475,10 +478,10 @@ public class MigrationService implements Startable {
                     Page jpaPageOfDraft = jpaDataStorage.getPageOfWikiByName(jcrPageOfDraft.getWikiType(), jcrPageOfDraft.getWikiOwner(), jcrPageOfDraft.getName());
                     if(jpaPageOfDraft != null) {
                       jcrDraftPage.setTargetPageId(jpaPageOfDraft.getId());
+                      jpaDataStorage.createDraftPageForUser(jcrDraftPage, user.getUserName());
                     } else {
-                      LOG.warn("Target page " + jcrPageOfDraft.getName() + " of draft page " + jcrDraftPage.getName() + " does not exist in JPA database");
+                      LOG.warn("Target page " + jcrPageOfDraft.getName() + " of draft page " + jcrDraftPage.getName() + " does not exist in JPA database. Consequently the draft page is not migrated.");
                     }
-                    jpaDataStorage.createDraftPageForUser(jcrDraftPage, user.getUserName());
                   } else {
                     LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
                         + " - Cause : target page " + jcrDraftPage.getTargetPageId() + " does not exist");
@@ -491,6 +494,7 @@ public class MigrationService implements Startable {
                 LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
                     + " - Cause : target page id is null");
               }
+            }
             }
           } catch (Exception e) {
             LOG.error("Cannot migrate draft pages of user " + user.getUserName() + " - Cause : " + e.getMessage(), e);
@@ -514,20 +518,33 @@ public class MigrationService implements Startable {
       initPageErrorsList();
       // RELATED PAGES
       LOG.info("  Start migration of related pages ...");
-      for(String pageWithRelatedPagesString : settingService.getPagesWithRelatedPages()) {
+      Set<String> pagesWithRelatedPagesSet = getPageWithRelatedPageSet();
+      for(String pageWithRelatedPagesString : pagesWithRelatedPagesSet) {
         Page pageWithRelatedPages = settingService.stringToPage(pageWithRelatedPagesString);
         LOG.info("    Related pages of page " + pageWithRelatedPages.getName());
         for(Page relatedPage : jcrDataStorage.getRelatedPagesOfPage(pageWithRelatedPages)) {
           try {
-            LOG.info("related page to migrate "+relatedPage.getId());
             if (pageErrorsList.contains(relatedPage.getId())) {
               LOG.info("      Cannot link related page " + relatedPage.getName() + " to " + pageWithRelatedPages.getName() + " - Cause: " + relatedPage.getName() + " encounter issues during migration and has not been migrated");
             } else {
               LOG.info("      Add related page " + relatedPage.getName());
               jpaDataStorage.addRelatedPage(pageWithRelatedPages, relatedPage);
+              //Remove the migrated page from the list of "pages with related pages" to migrate
+              pagesWithRelatedPagesSet.remove(pageWithRelatedPagesString);
             }
           } catch(Exception e) {
             LOG.error("Cannot migrate related page " + relatedPage.getName() + " - Cause : " + e.getMessage(), e);
+          } finally {
+            if (pagesWithRelatedPagesSet != null && pagesWithRelatedPagesSet.size() > 0) {
+              //Refresh the "pages with related pages" to remove already migrated pages
+              String pagesWithRelatedPagesString = null;
+              for (String pagesNotMigrated : pagesWithRelatedPagesSet) {
+                pagesWithRelatedPagesString += pagesNotMigrated + ";";
+              }
+              settingService.setRelatedPagesToSetting(pagesWithRelatedPagesString.substring(0, pagesWithRelatedPagesString.length() - 1));
+            } else {
+              settingService.setRelatedPagesToSetting(null);
+            }
           }
         }
       }
@@ -591,7 +608,6 @@ public class MigrationService implements Startable {
 
             // if it exists, migrate it
             if(jcrWiki != null) {
-              LOG.info("    Deletion of the wiki of the user " + user.getUserName());
               deleteWiki(jcrWiki);
             } else {
               LOG.info("    No wiki for user " + user.getUserName());
@@ -729,6 +745,7 @@ public class MigrationService implements Startable {
           LOG.info(String.format("    %1$" + ((level) * 2) + "s Page %2$s", " ", childrenPage.getName()));
           RequestLifeCycle.end();
           RequestLifeCycle.begin(currentContainer);
+          if (childrenPage.getName().equals("Another_personnal_thib_child")) throw  new Exception("Don't migrate this page !");
           pageAlreadyMigrated = createPage(jpaWiki, jcrPage, childrenPage, isParentAlreadyMigrated);
           pageCreated = true;
         } catch(Exception e) {
@@ -912,24 +929,41 @@ public class MigrationService implements Startable {
    * Get the wiki with migration error from the settingService and put them in the wikiErrorsList
    */
   private void initWikiErrorsList() {
+    this.wikiErrorsList = getWikiErrorsSet();
+  }
+
+  private Set<String> getWikiErrorsSet() {
     String wikiErrors = settingService.getWikiErrorsSetting();
+    Set<String> wikiErrorsSet = new HashSet<>();
     if (wikiErrors != null) {
-      this.wikiErrorsList = Arrays.asList(wikiErrors.split(";"));
-    } else {
-      this.wikiErrorsList = new ArrayList<>();
+      wikiErrorsSet = new HashSet<String>(Arrays.asList(wikiErrors.split(";")));
     }
+    return wikiErrorsSet;
   }
 
   /**
    * Get the page with migration error from the settingService and put them in the pageErrorsList
    */
   private void initPageErrorsList() {
+    this.pageErrorsList = getPageErrorsSet();
+  }
+
+  private Set<String> getPageErrorsSet() {
     String pageErrors = settingService.getPageErrorsSetting();
+    Set<String> pageErrorsSet = new HashSet<>();
     if (pageErrors != null) {
-      this.pageErrorsList = Arrays.asList(pageErrors.split(";"));
-    } else {
-      this.pageErrorsList = new ArrayList<>();
+      pageErrorsSet = new HashSet<>(Arrays.asList(pageErrors.split(";")));
     }
+    return pageErrorsSet;
+  }
+
+  private Set<String> getPageWithRelatedPageSet() {
+    String pagesWithRelatedPage = settingService.getRelatedPagesSetting();
+    Set<String> pagesWithRelatedPageSet = new HashSet<>();
+    if (pagesWithRelatedPage != null) {
+      pagesWithRelatedPageSet = new HashSet<>(Arrays.asList(pagesWithRelatedPage.split(";")));
+    }
+    return pagesWithRelatedPageSet;
   }
 
   private WikiImpl fetchWikiImpl(String wikiType, String wikiOwner) throws WikiException {
