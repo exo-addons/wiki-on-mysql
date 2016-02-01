@@ -320,7 +320,7 @@ public class MigrationService implements Startable {
   private void migrateWikisOfType(String wikiType) {
     try {
 
-      LOG.info("  Start migration of "+wikiType+" wikis");
+      LOG.info("  Start migration of " + wikiType + " wikis");
 
       // get all wikis
       List<Wiki> wikis = jcrDataStorage.getWikisByType(wikiType);
@@ -468,33 +468,33 @@ public class MigrationService implements Startable {
               //Check if draftPage already migrate
               if (jpaDataStorage.getDraft(jcrDraftPage.getName(), user.getUserName()) == null) {
 
-              String targetPageId = jcrDraftPage.getTargetPageId();
-              if(targetPageId != null) {
-                LOG.info("    Draft page " + jcrDraftPage.getName() + " of user " + user.getUserName());
-                try {
-                  // old target id (JCR uuid - String) must be converted to new target id (PK - long)
-                  Page jcrPageOfDraft = jcrDataStorage.getPageById(jcrDraftPage.getTargetPageId());
-                  if (jcrPageOfDraft != null) {
-                    Page jpaPageOfDraft = jpaDataStorage.getPageOfWikiByName(jcrPageOfDraft.getWikiType(), jcrPageOfDraft.getWikiOwner(), jcrPageOfDraft.getName());
-                    if(jpaPageOfDraft != null) {
-                      jcrDraftPage.setTargetPageId(jpaPageOfDraft.getId());
-                      jpaDataStorage.createDraftPageForUser(jcrDraftPage, user.getUserName());
+                String targetPageId = jcrDraftPage.getTargetPageId();
+                if (targetPageId != null) {
+                  LOG.info("    Draft page " + jcrDraftPage.getName() + " of user " + user.getUserName());
+                  try {
+                    // old target id (JCR uuid - String) must be converted to new target id (PK - long)
+                    Page jcrPageOfDraft = jcrDataStorage.getPageById(jcrDraftPage.getTargetPageId());
+                    if (jcrPageOfDraft != null) {
+                      Page jpaPageOfDraft = jpaDataStorage.getPageOfWikiByName(jcrPageOfDraft.getWikiType(), jcrPageOfDraft.getWikiOwner(), jcrPageOfDraft.getName());
+                      if (jpaPageOfDraft != null) {
+                        jcrDraftPage.setTargetPageId(jpaPageOfDraft.getId());
+                        jpaDataStorage.createDraftPageForUser(jcrDraftPage, user.getUserName());
+                      } else {
+                        LOG.warn("Target page " + jcrPageOfDraft.getName() + " of draft page " + jcrDraftPage.getName() + " does not exist in JPA database. Consequently the draft page is not migrated.");
+                      }
                     } else {
-                      LOG.warn("Target page " + jcrPageOfDraft.getName() + " of draft page " + jcrDraftPage.getName() + " does not exist in JPA database. Consequently the draft page is not migrated.");
+                      LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
+                          + " - Cause : target page " + jcrDraftPage.getTargetPageId() + " does not exist");
                     }
-                  } else {
+                  } catch (Exception e) {
                     LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
-                        + " - Cause : target page " + jcrDraftPage.getTargetPageId() + " does not exist");
+                        + " - Cause : " + e.getMessage(), e);
                   }
-                } catch (Exception e) {
+                } else {
                   LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
-                      + " - Cause : " + e.getMessage(), e);
+                      + " - Cause : target page id is null");
                 }
-              } else {
-                LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
-                    + " - Cause : target page id is null");
               }
-            }
             }
           } catch (Exception e) {
             LOG.error("Cannot migrate draft pages of user " + user.getUserName() + " - Cause : " + e.getMessage(), e);
@@ -521,31 +521,36 @@ public class MigrationService implements Startable {
       Set<String> pagesWithRelatedPagesSet = getPageWithRelatedPageSet();
       for(String pageWithRelatedPagesString : pagesWithRelatedPagesSet) {
         Page pageWithRelatedPages = settingService.stringToPage(pageWithRelatedPagesString);
-        LOG.info("    Related pages of page " + pageWithRelatedPages.getName());
-        for(Page relatedPage : jcrDataStorage.getRelatedPagesOfPage(pageWithRelatedPages)) {
-          try {
-            if (pageErrorsList.contains(relatedPage.getId())) {
-              LOG.info("      Cannot link related page " + relatedPage.getName() + " to " + pageWithRelatedPages.getName() + " - Cause: " + relatedPage.getName() + " encounter issues during migration and has not been migrated");
-            } else {
-              LOG.info("      Add related page " + relatedPage.getName());
-              jpaDataStorage.addRelatedPage(pageWithRelatedPages, relatedPage);
-              //Remove the migrated page from the list of "pages with related pages" to migrate
-              pagesWithRelatedPagesSet.remove(pageWithRelatedPagesString);
-            }
-          } catch(Exception e) {
-            LOG.error("Cannot migrate related page " + relatedPage.getName() + " - Cause : " + e.getMessage(), e);
-          } finally {
-            if (pagesWithRelatedPagesSet != null && pagesWithRelatedPagesSet.size() > 0) {
-              //Refresh the "pages with related pages" to remove already migrated pages
-              String pagesWithRelatedPagesString = null;
-              for (String pagesNotMigrated : pagesWithRelatedPagesSet) {
-                pagesWithRelatedPagesString += pagesNotMigrated + ";";
+        try {
+          LOG.info("    Related pages of page " + pageWithRelatedPages.getName());
+          List<Page> relatedPages = jcrDataStorage.getRelatedPagesOfPage(pageWithRelatedPages);
+          for (Page relatedPage : relatedPages) {
+            try {
+              if (pageErrorsList.contains(relatedPage.getId())) {
+                LOG.info("      Cannot link related page " + relatedPage.getName() + " to " + pageWithRelatedPages.getName() + " - Cause: " + relatedPage.getName() + " encounter issues during migration and has not been migrated");
+              } else {
+                LOG.info("      Add related page. Name|id|wikiType|wikiOwner: " + relatedPage.getName() + "|" + relatedPage.getId() + "|" + relatedPage.getWikiType() + "|" + relatedPage.getWikiOwner());
+                jpaDataStorage.addRelatedPage(pageWithRelatedPages, relatedPage);
+                //Remove the migrated page from the list of "pages with related pages" to migrate
+                pagesWithRelatedPagesSet.remove(pageWithRelatedPagesString);
               }
-              settingService.setRelatedPagesToSetting(pagesWithRelatedPagesString.substring(0, pagesWithRelatedPagesString.length() - 1));
-            } else {
-              settingService.setRelatedPagesToSetting(null);
+            } catch (Exception e) {
+              LOG.error("Cannot migrate related page " + relatedPage.getName() + " - Cause : " + e.getMessage(), e);
+            } finally {
+              if (pagesWithRelatedPagesSet != null && pagesWithRelatedPagesSet.size() > 0) {
+                //Refresh the "pages with related pages" to remove already migrated pages
+                String pagesWithRelatedPagesString = null;
+                for (String pagesNotMigrated : pagesWithRelatedPagesSet) {
+                  pagesWithRelatedPagesString += pagesNotMigrated + ";";
+                }
+                settingService.setRelatedPagesToSetting(pagesWithRelatedPagesString.substring(0, pagesWithRelatedPagesString.length() - 1));
+              } else {
+                settingService.setRelatedPagesToSetting(null);
+              }
             }
           }
+        } catch (Exception e) {
+          LOG.error("Cannot migrate related pages of " + pageWithRelatedPages.getName() + " - Cause : " + e.getMessage(), e);
         }
       }
       settingService.updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_MIGRATION_RELATED_PAGE_KEY, true);
@@ -745,7 +750,6 @@ public class MigrationService implements Startable {
           LOG.info(String.format("    %1$" + ((level) * 2) + "s Page %2$s", " ", childrenPage.getName()));
           RequestLifeCycle.end();
           RequestLifeCycle.begin(currentContainer);
-          if (childrenPage.getName().equals("Another_personnal_thib_child")) throw  new Exception("Don't migrate this page !");
           pageAlreadyMigrated = createPage(jpaWiki, jcrPage, childrenPage, isParentAlreadyMigrated);
           pageCreated = true;
         } catch(Exception e) {
