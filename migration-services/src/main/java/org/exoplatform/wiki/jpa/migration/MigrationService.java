@@ -424,8 +424,10 @@ public class MigrationService implements Startable {
       WikiContainer<WikiImpl> wikiContainer = wStore.getWikiContainer(WikiType.valueOf(wikiType.toUpperCase()));
       Collection<WikiImpl> allWikis = wikiContainer.getAllWikis();
       for(WikiImpl wiki : allWikis) {
+        String owner = wiki.getOwner();
+        String type = wiki.getType();
         try {
-          LOG.info("    Delete wiki " + wiki.getType() + ":" + wiki.getOwner());
+          LOG.info("    Delete wiki " + type + ":" + owner);
           String wikiPath = wiki.getPath();
           if (wikiPath.startsWith("/")) {
             wikiPath = wikiPath.substring(1);
@@ -434,7 +436,7 @@ public class MigrationService implements Startable {
           wikiNode.remove();
           session.save();
         } catch(Exception e) {
-          LOG.error("Cannot delete wiki " + wiki.getType() + ":" + wiki.getOwner() + " - Cause : " + e.getMessage(), e);
+          LOG.error("Cannot delete wiki " + type + ":" + owner + " - Cause : " + e.getMessage(), e);
         }
       }
       setWikiCleanupOfTypeDone(wikiType);
