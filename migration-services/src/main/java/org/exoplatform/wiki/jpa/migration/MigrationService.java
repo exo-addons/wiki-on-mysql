@@ -358,22 +358,27 @@ public class MigrationService implements Startable {
           try {
             List<DraftPage> draftPages = jcrDataStorage.getDraftPagesOfUser(user.getUserName());
             for (DraftPage jcrDraftPage : draftPages) {
-
-              LOG.info("    Draft page " + jcrDraftPage.getName() + " of user " + user.getUserName());
-              try {
-                // old target id (JCR uuid - String) must be converted to new target id (PK - long)
-                Page jcrPageOfDraft = jcrDataStorage.getPageById(jcrDraftPage.getTargetPageId());
-                if (jcrPageOfDraft != null) {
-                  Page jpaPageOfDraft = jpaDataStorage.getPageOfWikiByName(jcrPageOfDraft.getWikiType(), jcrPageOfDraft.getWikiOwner(), jcrPageOfDraft.getName());
-                  jcrDraftPage.setTargetPageId(jpaPageOfDraft.getId());
-                  jpaDataStorage.createDraftPageForUser(jcrDraftPage, user.getUserName());
-                } else {
+              String targetPageId = jcrDraftPage.getTargetPageId();
+              if(targetPageId != null) {
+                LOG.info("    Draft page " + jcrDraftPage.getName() + " of user " + user.getUserName());
+                try {
+                  // old target id (JCR uuid - String) must be converted to new target id (PK - long)
+                  Page jcrPageOfDraft = jcrDataStorage.getPageById(jcrDraftPage.getTargetPageId());
+                  if (jcrPageOfDraft != null) {
+                    Page jpaPageOfDraft = jpaDataStorage.getPageOfWikiByName(jcrPageOfDraft.getWikiType(), jcrPageOfDraft.getWikiOwner(), jcrPageOfDraft.getName());
+                    jcrDraftPage.setTargetPageId(jpaPageOfDraft.getId());
+                    jpaDataStorage.createDraftPageForUser(jcrDraftPage, user.getUserName());
+                  } else {
+                    LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
+                            + " - Cause : target page " + jcrDraftPage.getTargetPageId() + " does not exist");
+                  }
+                } catch (Exception e) {
                   LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
-                          + " - Cause : target page " + jcrDraftPage.getTargetPageId() + " does not exist");
+                          + " - Cause : " + e.getMessage(), e);
                 }
-              } catch (Exception e) {
+              } else {
                 LOG.error("Cannot migrate draft page " + jcrDraftPage.getName() + " of user " + user.getUserName()
-                        + " - Cause : " + e.getMessage(), e);
+                        + " - Cause : target page id is null");
               }
             }
           } catch (Exception e) {
