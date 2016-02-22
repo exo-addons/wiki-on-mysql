@@ -614,9 +614,13 @@ public class MigrationService implements Startable {
 
 
       // watchers
-      List<String> watchers = jcrDataStorage.getWatchersOfPage(jcrPage);
-      for (String watcher : watchers) {
-        jpaDataStorage.addWatcherToPage(watcher, jcrPage);
+      try {
+        List<String> watchers = jcrDataStorage.getWatchersOfPage(jcrPage);
+        for (String watcher : watchers) {
+          jpaDataStorage.addWatcherToPage(watcher, jcrPage);
+        }
+      } catch (Exception e) {
+        LOG.warn("Cannot get watchers of page " + jcrPage.getName() + ", keep trying to migrate it anyway - Cause : " + e.getMessage(), e);
       }
 
       // attachments
