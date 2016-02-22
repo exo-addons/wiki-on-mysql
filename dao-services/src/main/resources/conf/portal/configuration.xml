@@ -90,7 +90,7 @@
     <component-plugin>
       <name>ElasticSearchConnector</name>
       <set-method>addConnector</set-method>
-      <type>org.exoplatform.addons.es.search.ElasticSearchServiceConnector</type>
+      <type>org.exoplatform.wiki.jpa.search.WikiElasticUnifiedSearchServiceConnector</type>
       <description>Wiki ElasticSearch Connector</description>
       <init-params>
         <properties-param>
