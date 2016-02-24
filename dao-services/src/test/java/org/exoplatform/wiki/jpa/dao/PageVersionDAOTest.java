@@ -23,14 +23,10 @@ package org.exoplatform.wiki.jpa.dao;
 import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.jpa.entity.PageVersionEntity;
-import org.exoplatform.wiki.jpa.entity.PermissionEntity;
 import org.exoplatform.wiki.jpa.entity.WikiEntity;
-import org.exoplatform.wiki.mow.api.PermissionType;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
@@ -59,6 +55,7 @@ public class PageVersionDAOTest extends BaseWikiJPAIntegrationTest {
     page.setName("page1");
     page.setTitle("Page 1");
 
+    pageDAO.create(parentPage);
     pageDAO.create(page);
 
     PageVersionEntity pageVersion1 = new PageVersionEntity();
@@ -101,6 +98,7 @@ public class PageVersionDAOTest extends BaseWikiJPAIntegrationTest {
     page.setName("page1");
     page.setTitle("Page 1");
 
+    pageDAO.create(parentPage);
     pageDAO.create(page);
 
     PageVersionEntity pageVersion1 = new PageVersionEntity();

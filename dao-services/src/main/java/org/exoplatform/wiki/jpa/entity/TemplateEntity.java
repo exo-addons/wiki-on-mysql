@@ -48,7 +48,7 @@ public class TemplateEntity extends BasePageEntity {
   @Column(name = "DESCRIPTION")
   private String description;
 
-  @ManyToOne(cascade = CascadeType.PERSIST)
+  @ManyToOne
   @JoinColumn(name = "WIKI_ID")
   private WikiEntity wiki;
 

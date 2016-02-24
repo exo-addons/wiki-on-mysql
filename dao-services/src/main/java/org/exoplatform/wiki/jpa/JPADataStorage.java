@@ -232,6 +232,9 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public Page getPageOfWikiByName(String wikiType, String wikiOwner, String pageName) throws WikiException {
+    //getCurrentNewDraftWikiPage from org.exoplatform.wiki.commons.Utils can call this method with wikiType
+    // and wikiOwner null. This will cause an error in the pageDAO
+    if(wikiType == null || wikiOwner == null) return null;
     if(WIKI_TYPE_DRAFT.equals(wikiType)) {
       return convertDraftPageEntityToDraftPage(draftPageDAO.findLatestDraftPageByUserAndName(wikiOwner, pageName));
     } else {

@@ -49,11 +49,11 @@ public class PageEntity extends BasePageEntity {
   @GeneratedValue(strategy=GenerationType.AUTO, generator="SEQ_WIKI_PAGES_PAGE_ID")
   private long id;
 
-  @ManyToOne(cascade = CascadeType.PERSIST)
+  @ManyToOne
   @JoinColumn(name = "WIKI_ID")
   private WikiEntity wiki;
 
-  @ManyToOne(cascade = CascadeType.PERSIST)
+  @ManyToOne
   @JoinColumn(name = "PARENT_PAGE_ID")
   private PageEntity parentPage;
 
@@ -63,7 +63,7 @@ public class PageEntity extends BasePageEntity {
   @OneToMany(cascade = CascadeType.ALL, mappedBy = "page")
   private List<PageAttachmentEntity> attachments;
 
-  @ManyToMany(cascade = CascadeType.PERSIST)
+  @ManyToMany
   @JoinTable(name = "WIKI_PAGES_RELATED_PAGES",
     joinColumns = {@JoinColumn(name = "PAGE_ID")},
     inverseJoinColumns = {@JoinColumn(name = "RELATED_PAGE_ID")}
