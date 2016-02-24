@@ -30,7 +30,8 @@ import javax.persistence.*;
 @ExoEntity
 @Table(name = "WIKI_PAGE_ATTACHMENTS")
 @NamedQueries({
-    @NamedQuery(name = "pageAttachment.getAllIds", query = "SELECT a.id FROM WikiPageAttachmentEntity a ORDER BY a.id")
+    @NamedQuery(name = "pageAttachment.getAllIds", query = "SELECT a.id FROM WikiPageAttachmentEntity a ORDER BY a.id"),
+    @NamedQuery(name = "pageAttachment.getAllIdsByPageId", query = "SELECT a.id FROM WikiPageAttachmentEntity a WHERE a.page.id = :pageId")
 })
 public class PageAttachmentEntity extends AttachmentEntity {
 

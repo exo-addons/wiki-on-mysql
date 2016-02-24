@@ -34,4 +34,7 @@ public class PageAttachmentDAO extends WikiBaseDAO<PageAttachmentEntity,Long> {
     return getEntityManager().createNamedQuery("pageAttachment.getAllIds").setFirstResult(offset).setMaxResults(limit).getResultList();
   }
 
+  public List<Long> getAttachmentIdByPageId(String pageId) {
+    return getEntityManager().createNamedQuery("pageAttachment.getAllIdsByPageId").setParameter("pageId", pageId).getResultList();
+  }
 }
