@@ -31,6 +31,18 @@ import org.exoplatform.wiki.mow.api.WikiType;
  */
 public class PageDAO extends WikiBaseDAO<PageEntity, Long> {
 
+  public List<PageEntity> getPagesOfWiki(String wikiType, String wikiOwner) {
+
+    //We need to add the first "/" on the wiki owner if it's  wiki group
+    if (wikiType.toUpperCase().equals(WikiType.GROUP.name())) wikiOwner = validateWikiOwner(wikiOwner);
+
+    TypedQuery<PageEntity> query = getEntityManager().createNamedQuery("wikiPage.getPagesOfWiki", PageEntity.class)
+        .setParameter("type", wikiType)
+        .setParameter("owner", wikiOwner);
+
+    return query.getResultList();
+  }
+
   public PageEntity getPageOfWikiByName(String wikiType, String wikiOwner, String pageName) {
 
     //We need to add the first "/" on the wiki owner if it's  wiki group

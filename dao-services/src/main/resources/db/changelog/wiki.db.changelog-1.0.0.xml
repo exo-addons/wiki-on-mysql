@@ -189,7 +189,7 @@
         <constraints nullable="false" primaryKey="true" primaryKeyName="PK_WIKI_TEMPLATES_ID"/>
       </column>
       <column name="WIKI_ID" type="BIGINT">
-        <constraints nullable="false"/>
+        <constraints nullable="true"/>
       </column>
       <column name="AUTHOR" type="NVARCHAR(200)"/>
       <column name="NAME" type="NVARCHAR(550)">
@@ -321,7 +321,7 @@
   <changeSet author="wiki" id="1.0.0-16">
     <addForeignKeyConstraint baseColumnNames="WIKI_HOME" baseTableName="WIKI_WIKIS"
                              constraintName="FK_WIKI_WIKIS_PAGES_01" deferrable="false" initiallyDeferred="false"
-                             onDelete="NO ACTION" onUpdate="NO ACTION"
+                             onDelete="SET NULL" onUpdate="NO ACTION"
                              referencedColumnNames="PAGE_ID" referencedTableName="WIKI_PAGES"/>
   </changeSet>
 

@@ -40,7 +40,11 @@
       <artifactId>exo-es-search-service</artifactId>
       <version>${exo.es.search.version}</version>
     </dependency>
-
+    <dependency>
+      <groupId>org.exoplatform.core</groupId>
+      <artifactId>exo.core.component.organization.api</artifactId>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>org.exoplatform.commons</groupId>
       <artifactId>commons-api</artifactId>

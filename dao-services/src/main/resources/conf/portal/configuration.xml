@@ -159,4 +159,19 @@
     </component-plugin>
   </external-component-plugins>
 
+  <!-- Organization Listener -->
+  <external-component-plugins>
+    <target-component>org.exoplatform.services.organization.OrganizationService</target-component>
+    <component-plugin>
+      <name>WikiUserEventListener</name>
+      <set-method>addListenerPlugin</set-method>
+      <type>org.exoplatform.wiki.jpa.organization.WikiUserEventListener</type>
+    </component-plugin>
+    <component-plugin>
+      <name>WikiGroupEventListener</name>
+      <set-method>addListenerPlugin</set-method>
+      <type>org.exoplatform.wiki.jpa.organization.WikiGroupEventListener</type>
+    </component-plugin>
+  </external-component-plugins>
+
 </configuration>
