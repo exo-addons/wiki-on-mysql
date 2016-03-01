@@ -370,6 +370,9 @@ public class MigrationService implements Startable {
             // if it exists, migrate it
             if(jcrWiki != null) {
               LOG.info("    Migration of the wiki of the user " + user.getUserName());
+              if(jcrWiki.getOwner() == null) {
+                jcrWiki.setOwner(user.getUserName());
+              }
               migrateWiki(jcrWiki);
             } else {
               LOG.info("    No wiki for user " + user.getUserName());
