@@ -456,6 +456,10 @@ public class MigrationService implements Startable {
       ListAccess<User> allUsersListAccess = organizationService.getUserHandler().findAllUsers();
       int totalUsers = allUsersListAccess.getSize();
       User[] users;
+
+      RequestLifeCycle.end();
+      RequestLifeCycle.begin(currentContainer);
+
       do {
         if(current + pageSize > totalUsers) {
           pageSize = totalUsers - current;
@@ -501,6 +505,10 @@ public class MigrationService implements Startable {
           }
         }
         current += users.length;
+
+        RequestLifeCycle.end();
+        RequestLifeCycle.begin(currentContainer);
+
       } while(users != null && users.length > 0);
       settingService.updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_MIGRATION_DRAFT_PAGE_KEY, true);
       LOG.info("  Migration of draft pages done");
