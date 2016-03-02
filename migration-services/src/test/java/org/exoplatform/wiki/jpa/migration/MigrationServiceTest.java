@@ -153,6 +153,7 @@ public class MigrationServiceTest extends MigrationITSetup {
 
     // Related pages
     jcrDataStorage.addRelatedPage(page1, page2);
+    jcrDataStorage.addRelatedPage(page2, pageaChild);
 
     // Templates
     Template template1 = new Template();

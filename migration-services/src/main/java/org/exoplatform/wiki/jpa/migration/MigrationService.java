@@ -533,7 +533,9 @@ public class MigrationService implements Startable {
       // RELATED PAGES
       LOG.info("  Start migration of related pages ...");
       Set<String> pagesWithRelatedPagesSet = getPageWithRelatedPageSet();
-      for(String pageWithRelatedPagesString : pagesWithRelatedPagesSet) {
+      Iterator<String> itPagesWithRelatedPagesSet = pagesWithRelatedPagesSet.iterator();
+      while(itPagesWithRelatedPagesSet.hasNext()) {
+        String pageWithRelatedPagesString = itPagesWithRelatedPagesSet.next();
         Page pageWithRelatedPages = settingService.stringToPage(pageWithRelatedPagesString);
         try {
           LOG.info("    Related pages of page " + pageWithRelatedPages.getName());
@@ -546,14 +548,14 @@ public class MigrationService implements Startable {
                 LOG.info("      Add related page. Name|id|wikiType|wikiOwner: " + relatedPage.getName() + "|" + relatedPage.getId() + "|" + relatedPage.getWikiType() + "|" + relatedPage.getWikiOwner());
                 jpaDataStorage.addRelatedPage(pageWithRelatedPages, relatedPage);
                 //Remove the migrated page from the list of "pages with related pages" to migrate
-                pagesWithRelatedPagesSet.remove(pageWithRelatedPagesString);
+                itPagesWithRelatedPagesSet.remove();
               }
             } catch (Exception e) {
               LOG.error("Cannot migrate related page " + relatedPage.getName() + " - Cause : " + e.getMessage(), e);
             } finally {
               if (pagesWithRelatedPagesSet != null && pagesWithRelatedPagesSet.size() > 0) {
                 //Refresh the "pages with related pages" to remove already migrated pages
-                String pagesWithRelatedPagesString = null;
+                String pagesWithRelatedPagesString = "";
                 for (String pagesNotMigrated : pagesWithRelatedPagesSet) {
                   pagesWithRelatedPagesString += pagesNotMigrated + ";";
                 }
