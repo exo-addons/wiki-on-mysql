@@ -736,7 +736,9 @@ public class MigrationService implements Startable {
     LOG.info("  Start deletion of root wiki data node ...");
 
     Session session = null;
-    boolean created = mowService.startSynchronization();
+
+    RequestLifeCycle.end();
+    RequestLifeCycle.begin(currentContainer);
 
     try {
       session = mowService.getSession().getJCRSession();
@@ -749,10 +751,8 @@ public class MigrationService implements Startable {
     } catch (RepositoryException e) {
       LOG.error("Cannot delete root wiki data node - Cause : " + e.getMessage(), e);
     } finally {
-      /*if(session != null) {
-        session.logout();
-      }*/
-      mowService.stopSynchronization(created);
+      RequestLifeCycle.end();
+      RequestLifeCycle.begin(currentContainer);
     }
   }
 
