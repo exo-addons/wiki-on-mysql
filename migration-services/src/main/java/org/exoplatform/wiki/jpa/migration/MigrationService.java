@@ -711,7 +711,8 @@ public class MigrationService implements Startable {
   private void deleteEmotionIcons() {
     LOG.info("  Start deletion of emotion icons ...");
 
-    boolean created = mowService.startSynchronization();
+    RequestLifeCycle.end();
+    RequestLifeCycle.begin(currentContainer);
 
     try {
       WikiStoreImpl wStore = (WikiStoreImpl)this.mowService.getWikiStore();
@@ -725,7 +726,8 @@ public class MigrationService implements Startable {
     } catch(Exception e) {
       LOG.error("Cannot delete emotion icons - Cause : " + e.getMessage(), e);
     } finally {
-      mowService.stopSynchronization(created);
+      RequestLifeCycle.end();
+      RequestLifeCycle.begin(currentContainer);
     }
   }
 
