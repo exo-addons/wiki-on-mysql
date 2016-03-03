@@ -540,38 +540,56 @@ public class MigrationService implements Startable {
       while(itPagesWithRelatedPagesSet.hasNext()) {
         String pageWithRelatedPagesString = itPagesWithRelatedPagesSet.next();
         Page pageWithRelatedPages = settingService.stringToPage(pageWithRelatedPagesString);
-        try {
-          LOG.info("    Related pages of page " + pageWithRelatedPages.getName());
-          List<Page> relatedPages = jcrDataStorage.getRelatedPagesOfPage(pageWithRelatedPages);
-          for (Page relatedPage : relatedPages) {
-            try {
-              if (pageErrorsList.contains(relatedPage.getId())) {
-                LOG.info("      Cannot link related page " + relatedPage.getName() + " to " + pageWithRelatedPages.getName() + " - Cause: " + relatedPage.getName() + " encounter issues during migration and has not been migrated");
-              } else {
-                LOG.info("      Add related page. Name|id|wikiType|wikiOwner: " + relatedPage.getName() + "|" + relatedPage.getId() + "|" + relatedPage.getWikiType() + "|" + relatedPage.getWikiOwner());
-                jpaDataStorage.addRelatedPage(pageWithRelatedPages, relatedPage);
-                // remove relation in JCR to be able to remove the wiki (no more reference between wikis)
-                jcrDataStorage.removeRelatedPage(pageWithRelatedPages, relatedPage);
-                //Remove the migrated page from the list of "pages with related pages" to migrate
-                itPagesWithRelatedPagesSet.remove();
-              }
-            } catch (Exception e) {
-              LOG.error("Cannot migrate related page " + relatedPage.getName() + " - Cause : " + e.getMessage(), e);
-            } finally {
-              if (pagesWithRelatedPagesSet != null && pagesWithRelatedPagesSet.size() > 0) {
-                //Refresh the "pages with related pages" to remove already migrated pages
-                String pagesWithRelatedPagesString = "";
-                for (String pagesNotMigrated : pagesWithRelatedPagesSet) {
-                  pagesWithRelatedPagesString += pagesNotMigrated + ";";
+        // get real page, to check if it exists
+        pageWithRelatedPages = jcrDataStorage.getPageOfWikiByName(pageWithRelatedPages.getWikiType(),
+                pageWithRelatedPages.getWikiOwner(), pageWithRelatedPages.getName());
+        if(pageWithRelatedPages != null) {
+          try {
+            RequestLifeCycle.end();
+            RequestLifeCycle.begin(currentContainer);
+
+            LOG.info("    Related pages of page " + pageWithRelatedPages.getName());
+            List<Page> relatedPages = jcrDataStorage.getRelatedPagesOfPage(pageWithRelatedPages);
+            for (Page relatedPage : relatedPages) {
+              try {
+                if (pageErrorsList.contains(relatedPage.getId())) {
+                  LOG.info("      Cannot link related page " + relatedPage.getName() + " to " + pageWithRelatedPages.getName() + " - Cause: " + relatedPage.getName() + " encounter issues during migration and has not been migrated");
+                } else {
+                  LOG.info("      Add related page. Name|id|wikiType|wikiOwner: " + relatedPage.getName() + "|" + relatedPage.getId() + "|" + relatedPage.getWikiType() + "|" + relatedPage.getWikiOwner());
+                  jpaDataStorage.addRelatedPage(pageWithRelatedPages, relatedPage);
+                  // remove relation in JCR to be able to remove the wiki (no more reference between wikis)
+                  jcrDataStorage.removeRelatedPage(pageWithRelatedPages, relatedPage);
+                  //Remove the migrated page from the list of "pages with related pages" to migrate
+                  itPagesWithRelatedPagesSet.remove();
                 }
-                settingService.setRelatedPagesToSetting(pagesWithRelatedPagesString.substring(0, pagesWithRelatedPagesString.length() - 1));
-              } else {
-                settingService.setRelatedPagesToSetting(null);
+              } catch (Exception e) {
+                LOG.error("Cannot migrate related page " + relatedPage.getName() + " - Cause : " + e.getMessage(), e);
               }
             }
+          } catch (Exception e) {
+            LOG.error("Cannot migrate related pages of page " + pageWithRelatedPages.getWikiType()
+                    + ":" + pageWithRelatedPages.getWikiOwner() + ":" + pageWithRelatedPages.getName()
+                    + " - Cause : " + e.getMessage(), e);
+          } finally {
+            RequestLifeCycle.end();
+            RequestLifeCycle.begin(currentContainer);
           }
-        } catch (Exception e) {
-          LOG.error("Cannot migrate related pages of " + pageWithRelatedPages.getName() + " - Cause : " + e.getMessage(), e);
+        } else {
+          LOG.error("Cannot migrate related pages of page  " + pageWithRelatedPages.getWikiType()
+                  + ":" + pageWithRelatedPages.getWikiOwner() + ":" + pageWithRelatedPages.getName()
+                  + " because the page does not exist");
+          itPagesWithRelatedPagesSet.remove();
+        }
+
+        if (pagesWithRelatedPagesSet != null && pagesWithRelatedPagesSet.size() > 0) {
+          //Refresh the "pages with related pages" to remove already migrated pages
+          String pagesWithRelatedPagesString = "";
+          for (String pagesNotMigrated : pagesWithRelatedPagesSet) {
+            pagesWithRelatedPagesString += pagesNotMigrated + ";";
+          }
+          settingService.setRelatedPagesToSetting(pagesWithRelatedPagesString.substring(0, pagesWithRelatedPagesString.length() - 1));
+        } else {
+          settingService.setRelatedPagesToSetting(null);
         }
       }
       settingService.updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_MIGRATION_RELATED_PAGE_KEY, true);
