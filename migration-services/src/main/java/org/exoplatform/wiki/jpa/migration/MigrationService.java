@@ -550,6 +550,8 @@ public class MigrationService implements Startable {
               } else {
                 LOG.info("      Add related page. Name|id|wikiType|wikiOwner: " + relatedPage.getName() + "|" + relatedPage.getId() + "|" + relatedPage.getWikiType() + "|" + relatedPage.getWikiOwner());
                 jpaDataStorage.addRelatedPage(pageWithRelatedPages, relatedPage);
+                // remove relation in JCR to be able to remove the wiki (no more reference between wikis)
+                jcrDataStorage.removeRelatedPage(pageWithRelatedPages, relatedPage);
                 //Remove the migrated page from the list of "pages with related pages" to migrate
                 itPagesWithRelatedPagesSet.remove();
               }

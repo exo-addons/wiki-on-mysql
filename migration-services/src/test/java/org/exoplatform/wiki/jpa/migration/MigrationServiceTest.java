@@ -151,7 +151,7 @@ public class MigrationServiceTest extends MigrationITSetup {
     pageaChild.setPermissions(Arrays.asList(rootPagePermissionEntry, administratorsPagePermissionEntry));
     pageaChild = jcrDataStorage.createPage(portalWiki, pagea, pageaChild);
 
-    // Related pages
+    // Related pages between portal pages
     jcrDataStorage.addRelatedPage(page1, page2);
     jcrDataStorage.addRelatedPage(page2, pageaChild);
 
@@ -201,6 +201,9 @@ public class MigrationServiceTest extends MigrationITSetup {
     groupPageAttachment.setUpdatedDate(Calendar.getInstance());
     groupPageAttachment.setMimeType("text/plain");
     jcrDataStorage.addAttachmentToPage(groupPageAttachment, groupPage1);
+
+    // related page from group to portal wiki
+    jcrDataStorage.addRelatedPage(groupPage1, page1);
 
     // reset session
     startSessionAs(null);
