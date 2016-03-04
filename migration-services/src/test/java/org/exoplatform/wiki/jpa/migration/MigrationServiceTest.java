@@ -66,7 +66,6 @@ public class MigrationServiceTest extends MigrationITSetup {
     wikiHome.setContent("Wiki Home Page updated");
     jcrDataStorage.updatePage(wikiHome);
 
-
     PermissionEntry rootPagePermissionEntry = new PermissionEntry("root", null, IDType.USER, new Permission[]{
             new Permission(PermissionType.VIEWPAGE, true),
             new Permission(PermissionType.EDITPAGE, true)
@@ -113,17 +112,6 @@ public class MigrationServiceTest extends MigrationITSetup {
     attachment.setMimeType("text/plain");
     jcrDataStorage.addAttachmentToPage(attachment, page2);
 
-    // Draft Pages
-    DraftPage draftPage1 = new DraftPage();
-    draftPage1.setName("draftPage1");
-    draftPage1.setNewPage(false);
-    draftPage1.setContent("Draft Page 1 Content");
-    draftPage1.setTargetPageId(page1.getId());
-    Date createdDateDraftPage1 = Calendar.getInstance().getTime();
-    draftPage1.setCreatedDate(createdDateDraftPage1);
-    draftPage1.setUpdatedDate(createdDateDraftPage1);
-    jcrDataStorage.createDraftPageForUser(draftPage1, "john");
-
     Page pageA = new Page("PageA", "Page A");
     pageA.setAuthor("john");
     pageA.setContent("Page A Content");
@@ -150,6 +138,25 @@ public class MigrationServiceTest extends MigrationITSetup {
     pageaChild.setUpdatedDate(createdDateChildPagea);
     pageaChild.setPermissions(Arrays.asList(rootPagePermissionEntry, administratorsPagePermissionEntry));
     pageaChild = jcrDataStorage.createPage(portalWiki, pagea, pageaChild);
+
+    // Portal Wiki 2
+    Wiki portalWiki2 = new Wiki(PortalConfig.PORTAL_TYPE, "intranet2");
+    portalWiki2 = jcrDataStorage.createWiki(portalWiki2);
+    jcrDataStorage.updateWikiPermission(PortalConfig.PORTAL_TYPE, "intranet2", wikiPermissions);
+    Page wikiHome2 = portalWiki2.getWikiHome();
+    wikiHome2.setContent("Wiki Home Page updated");
+    jcrDataStorage.updatePage(wikiHome2);
+
+    // Draft Pages
+    DraftPage draftPage1 = new DraftPage();
+    draftPage1.setName("draftPage1");
+    draftPage1.setNewPage(false);
+    draftPage1.setContent("Draft Page 1 Content");
+    draftPage1.setTargetPageId(page1.getId());
+    Date createdDateDraftPage1 = Calendar.getInstance().getTime();
+    draftPage1.setCreatedDate(createdDateDraftPage1);
+    draftPage1.setUpdatedDate(createdDateDraftPage1);
+    jcrDataStorage.createDraftPageForUser(draftPage1, "john");
 
     // Related pages between portal pages
     jcrDataStorage.addRelatedPage(page1, page2);
@@ -222,7 +229,7 @@ public class MigrationServiceTest extends MigrationITSetup {
     // check wiki
     List<Wiki> portalWikis = jpaDataStorage.getWikisByType(PortalConfig.PORTAL_TYPE);
     assertNotNull(portalWikis);
-    assertEquals(1, portalWikis.size());
+    assertEquals(2, portalWikis.size());
     Wiki wikiIntranet = portalWikis.get(0);
     assertEquals(PortalConfig.PORTAL_TYPE, wikiIntranet.getType());
     assertEquals("intranet", wikiIntranet.getOwner());
