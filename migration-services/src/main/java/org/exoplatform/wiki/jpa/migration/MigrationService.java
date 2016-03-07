@@ -677,29 +677,30 @@ public class MigrationService implements Startable {
    */
   private void deleteWiki(WikiImpl wiki) {
 
-    //Do not remove wiki with error during migration
-    if (!wikiErrorsList.contains(settingService.wikiToString(wiki)) || settingService.isForceJCRDeletion()) {
+    boolean created = mowService.startSynchronization();
 
-      boolean created = mowService.startSynchronization();
+    String wikiOwner = wiki.getOwner();
+    String wikiType = wiki.getType();
 
-      try {
+    try {
+      //Do not remove wiki with error during migration
+      if (!wikiErrorsList.contains(settingService.wikiToString(wiki)) || settingService.isForceJCRDeletion()) {
         Session session = mowService.getSession().getJCRSession();
         String wikiPath = wiki.getPath();
         if (wikiPath.startsWith("/")) {
           wikiPath = wikiPath.substring(1);
         }
         Node wikiNode = session.getRootNode().getNode(wikiPath);
-        LOG.info("    Delete wiki " + wiki.getType() + ":" + wiki.getOwner());
+        LOG.info("    Delete wiki " + wikiType + ":" + wikiOwner);
         wikiNode.remove();
         session.save();
-      } catch (Exception e) {
-        LOG.error("Cannot delete wiki " + wiki.getType() + ":" + wiki.getOwner() + " - Cause : " + e.getMessage(), e);
-      } finally {
-        mowService.stopSynchronization(created);
+      } else {
+        LOG.info("    Not deleted Wiki " + wikiType + ":" + wikiOwner);
       }
-
-    } else {
-      LOG.info("    Not deleted Wiki " + wiki.getType() + ":" + wiki.getOwner());
+    } catch (Exception e) {
+      LOG.error("Cannot delete wiki " + wikiType + ":" + wikiOwner + " - Cause : " + e.getMessage(), e);
+    } finally {
+      mowService.stopSynchronization(created);
     }
 
   }
