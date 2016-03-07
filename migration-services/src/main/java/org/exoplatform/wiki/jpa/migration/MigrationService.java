@@ -607,9 +607,10 @@ public class MigrationService implements Startable {
   private void deleteWikisOfType(String wikiType) {
     LOG.info("  Start deletion of wikis of type " + wikiType);
 
-    boolean created = mowService.startSynchronization();
-
     try {
+      RequestLifeCycle.end();
+      RequestLifeCycle.begin(currentContainer);
+
       WikiStoreImpl wStore = (WikiStoreImpl) mowService.getWikiStore();
       wStore.setMOWService(mowService);
       WikiContainer<WikiImpl> wikiContainer = wStore.getWikiContainer(WikiType.valueOf(wikiType.toUpperCase()));
@@ -622,7 +623,8 @@ public class MigrationService implements Startable {
     } catch (Exception e) {
       LOG.error("Cannot delete wikis of type " + wikiType + " - Cause : " + e.getMessage(), e);
     } finally {
-      mowService.stopSynchronization(created);
+      RequestLifeCycle.end();
+      RequestLifeCycle.begin(currentContainer);
     }
   }
 
@@ -647,6 +649,9 @@ public class MigrationService implements Startable {
         users = allUsersListAccess.load(current, pageSize);
         for (User user : users) {
           try {
+            RequestLifeCycle.end();
+            RequestLifeCycle.begin(currentContainer);
+
             // get user wiki
             WikiImpl jcrWiki = fetchWikiImpl(PortalConfig.USER_TYPE, user.getUserName());
 
@@ -659,6 +664,9 @@ public class MigrationService implements Startable {
 
           } catch (Exception e) {
             LOG.error("Cannot delete wiki of user " + user.getUserName() + " - Cause " + e.getMessage(), e);
+          } finally {
+            RequestLifeCycle.end();
+            RequestLifeCycle.begin(currentContainer);
           }
         }
         current += users.length;
