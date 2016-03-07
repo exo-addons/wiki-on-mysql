@@ -397,7 +397,7 @@ public class MigrationService implements Startable {
    * @param jcrWiki wiki to migrate
    */
   private void migrateWiki(Wiki jcrWiki) {
-    Boolean isWikiMigrationSuccess = true;
+    Boolean isWikiMigrationSuccess = false;
     Boolean isWikiMigrationStarted = false;
     try {
       RequestLifeCycle.end();
