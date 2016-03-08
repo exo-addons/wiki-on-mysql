@@ -690,23 +690,32 @@ public class MigrationService implements Startable {
     String wikiOwner = wiki.getOwner();
     String wikiType = wiki.getType();
 
+    Session session = null;
     try {
       //Do not remove wiki with error during migration
       if (!wikiErrorsList.contains(settingService.wikiToString(wiki)) || settingService.isForceJCRDeletion()) {
-        Session session = mowService.getSession().getJCRSession();
+        session = mowService.getSession().getJCRSession();
         String wikiPath = wiki.getPath();
         if (wikiPath.startsWith("/")) {
           wikiPath = wikiPath.substring(1);
         }
         Node wikiNode = session.getRootNode().getNode(wikiPath);
         LOG.info("    Delete wiki " + wikiType + ":" + wikiOwner);
+        Node wikiNodeParent = wikiNode.getParent();
         wikiNode.remove();
-        session.save();
+        wikiNodeParent.save();
       } else {
         LOG.info("    Not deleted Wiki " + wikiType + ":" + wikiOwner);
       }
     } catch (Exception e) {
       LOG.error("Cannot delete wiki " + wikiType + ":" + wikiOwner + " - Cause : " + e.getMessage(), e);
+      if(session != null) {
+        try {
+          session.refresh(false);
+        } catch (RepositoryException re) {
+          LOG.error("Cannot refresh JCR session - Cause : " + re.getMessage(), re);
+        }
+      }
     } finally {
       mowService.stopSynchronization(created);
     }
