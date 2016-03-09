@@ -737,7 +737,12 @@ public class MigrationService implements Startable {
       wStore.setMOWService(mowService);
       PageImpl emotionIconsPage = wStore.getEmotionIconsContainer();
       if(emotionIconsPage != null) {
-        emotionIconsPage.remove();
+        // use JCR node directly to delete it, since it does not work via Chromattic
+        Node emotionIconJcrPageNode = emotionIconsPage.getJCRPageNode();
+        if(!emotionIconJcrPageNode.isCheckedOut()) {
+          emotionIconsPage.checkout();
+        }
+        emotionIconJcrPageNode.remove();
       }
       settingService.updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_CLEANUP_EMOTICON_KEY, true);
       LOG.info("  Deletion of emotion icons done");

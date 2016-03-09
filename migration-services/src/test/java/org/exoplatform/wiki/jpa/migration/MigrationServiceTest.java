@@ -1,5 +1,6 @@
 package org.exoplatform.wiki.jpa.migration;
 
+import org.apache.commons.io.IOUtils;
 import org.exoplatform.container.component.RequestLifeCycle;
 import org.exoplatform.portal.config.model.PortalConfig;
 import org.exoplatform.services.organization.Group;
@@ -7,11 +8,15 @@ import org.exoplatform.services.organization.GroupHandler;
 import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.UserHandler;
 import org.exoplatform.wiki.mow.api.*;
+import org.exoplatform.wiki.mow.core.api.WikiStoreImpl;
+import org.exoplatform.wiki.mow.core.api.wiki.PageImpl;
 import org.exoplatform.wiki.service.IDType;
 import org.exoplatform.wiki.service.WikiPageParams;
+import org.exoplatform.wiki.utils.JCRUtils;
 
 import javax.jcr.Node;
 import javax.jcr.Session;
+import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -211,6 +216,24 @@ public class MigrationServiceTest extends MigrationITSetup {
 
     // related page from group to portal wiki
     jcrDataStorage.addRelatedPage(groupPage1, page1);
+
+    // emotion icons
+    InputStream emotionIconInputStream = this.getClass().getClassLoader().getResourceAsStream("images/thumb_up.gif");
+    byte[] emotionIconImage = IOUtils.toByteArray(emotionIconInputStream);
+    EmotionIcon emotionIcon1 = new EmotionIcon();
+    emotionIcon1.setName("emotionIcon1");
+    emotionIcon1.setImage(emotionIconImage);
+    jcrDataStorage.createEmotionIcon(emotionIcon1);
+    EmotionIcon emotionIcon2 = new EmotionIcon();
+    emotionIcon2.setName("emotionIcon2");
+    emotionIcon2.setImage(emotionIconImage);
+    jcrDataStorage.createEmotionIcon(emotionIcon2);
+
+    // checkout the emotion icon JCR root node to simulate the community state
+    WikiStoreImpl wStore = (WikiStoreImpl) mowService.getWikiStore();
+    PageImpl emotionIconsPage = wStore.getEmotionIconsContainer();
+    emotionIconsPage.makeVersionable();
+    emotionIconsPage.checkout();
 
     // reset session
     startSessionAs(null);
