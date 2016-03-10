@@ -132,7 +132,6 @@ public class WikiElasticSearchServiceConnector extends ElasticSearchServiceConne
 
       //Result can be an attachment
       if (((JSONObject) jsonHit).get("_type").equals("wiki-attachment")) {
-        type = SearchResultType.ATTACHMENT;
         pageName = (String) hitSource.get("pageName");
         attachmentName = (String) hitSource.get("name");
       }

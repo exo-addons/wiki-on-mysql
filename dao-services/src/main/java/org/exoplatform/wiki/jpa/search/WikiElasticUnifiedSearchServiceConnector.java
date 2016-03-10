@@ -57,6 +57,7 @@ public class WikiElasticUnifiedSearchServiceConnector extends ElasticSearchServi
     fields.add("wikiType");
     fields.add("wikiOwner");
     fields.add("name");
+    fields.add("pageName");
 
     List<String> sourceFields = new ArrayList<>();
     for (String sourceField: fields) {
@@ -71,7 +72,13 @@ public class WikiElasticUnifiedSearchServiceConnector extends ElasticSearchServi
 
     String wikiType = (String) hitSource.get("wikiType");
     String wikiOwner = (String) hitSource.get("wikiOwner");
-    String pageName = (String) hitSource.get("name");
+
+    // if pageName exists, it is an attachment and pageName must be used for the page url
+    // otherwise, it is a page and the name must be used for the page url
+    String pageName = (String) hitSource.get("pageName");
+    if(StringUtils.isEmpty(pageName)) {
+      pageName = (String) hitSource.get("name");
+    }
 
     StringBuffer permalink = new StringBuffer();
     try {
