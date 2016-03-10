@@ -814,6 +814,8 @@ public class MigrationService implements Startable {
           LOG.info(String.format("    %1$" + ((level) * 2) + "s Page %2$s", " ", childrenPage.getName()));
           RequestLifeCycle.end();
           RequestLifeCycle.begin(currentContainer);
+          childrenPage.setWikiType(jpaWiki.getType());
+          childrenPage.setWikiOwner(jpaWiki.getOwner());
           pageAlreadyMigrated = createPage(jpaWiki, jcrPage, childrenPage, isParentAlreadyMigrated);
           pageCreated = true;
         } catch(Exception e) {
