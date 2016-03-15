@@ -185,7 +185,6 @@ public class MigrationService implements Startable {
           @Override
           public Void call() throws Exception {
             try {
-
               long startTime = System.currentTimeMillis();
 
               RequestLifeCycle.begin(currentContainer);
@@ -364,16 +363,35 @@ public class MigrationService implements Startable {
         users = allUsersListAccess.load(current, pageSize);
         for (User user : users) {
           try {
+            RequestLifeCycle.end();
+            RequestLifeCycle.begin(currentContainer);
+
             // get user wiki
             Wiki jcrWiki = jcrDataStorage.getWikiByTypeAndOwner(PortalConfig.USER_TYPE, user.getUserName());
 
-            // if it exists, migrate it
+            // if it exists...
             if(jcrWiki != null) {
               LOG.info("    Migration of the wiki of the user " + user.getUserName());
               if(jcrWiki.getOwner() == null) {
                 jcrWiki.setOwner(user.getUserName());
               }
-              migrateWiki(jcrWiki);
+
+              Page jcrWikiHome = jcrWiki.getWikiHome();
+
+              List<PageVersion> jcrWikiHomeVersions = jcrDataStorage.getVersionsOfPage(jcrWikiHome);
+              boolean wikiUpdated = (jcrWikiHomeVersions != null && jcrWikiHomeVersions.size() > 1);
+              if(!wikiUpdated) {
+                List<Page> jcrWikiHomeChildren = jcrDataStorage.getChildrenPageOf(jcrWikiHome);
+                wikiUpdated = (jcrWikiHomeChildren != null && jcrWikiHomeChildren.size() > 0);
+              }
+
+              // ... and has been modified, migrate it
+              if(wikiUpdated) {
+                LOG.info("    Migration of the wiki of the user " + user.getUserName());
+                migrateWiki(jcrWiki);
+              } else {
+                LOG.info("    No need to migrate wiki of the user " + user.getUserName() + " since it has not been modified");
+              }
             } else {
               LOG.info("    No wiki for user " + user.getUserName());
             }
@@ -384,6 +402,10 @@ public class MigrationService implements Startable {
         }
         current += users.length;
       } while(users != null && users.length > 0);
+
+      RequestLifeCycle.end();
+      RequestLifeCycle.begin(currentContainer);
+
       settingService.updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_MIGRATION_USER_WIKI_KEY, true);
       LOG.info("    Migration of users wikis done");
     } catch (Exception e) {

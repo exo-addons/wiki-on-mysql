@@ -76,7 +76,9 @@ public class MigrationServicePT extends MigrationITSetup {
     RequestLifeCycle.end();
   }
 
-  public void testWikiMigration() throws WikiException {
+  public void testWikiMigration() throws WikiException, InterruptedException {
     migrationService.start();
+
+    migrationService.getLatch().await();
   }
 }
