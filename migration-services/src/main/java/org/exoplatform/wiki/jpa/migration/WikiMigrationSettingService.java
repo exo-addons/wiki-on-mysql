@@ -270,6 +270,18 @@ public class WikiMigrationSettingService {
     addErrorToSetting(WikiMigrationContext.WIKI_RDBMS_MIGRATION_ERROR_PAGE_LIST_SETTING, page);
   }
 
+  /**
+   * Add a wiki to the "wiki deletion errors" list stored in SettingService
+   * The list is stored as a unique string where all wiki are separated by comma
+   * See wikiToString() to check the format of a wiki in the string list
+   *
+   * @param wikiDeletionError the wiki in error during deletion
+   */
+  public void addWikiDeletionErrorToSetting(Wiki wikiDeletionError) {
+    String wiki = wikiToString(wikiDeletionError);
+    addErrorToSetting(WikiMigrationContext.WIKI_RDBMS_DELETION_ERROR_WIKI_LIST_SETTING, wiki);
+  }
+
   private void addErrorToSetting(String settingErrorKey, String settingErrorValue) {
     SettingServiceImpl settingServiceImpl = CommonsUtils.getService(SettingServiceImpl.class);
     boolean created = settingServiceImpl.startSynchronization();
@@ -312,6 +324,16 @@ public class WikiMigrationSettingService {
    */
   public String getPageErrorsSetting() {
     return getErrorsSetting(WikiMigrationContext.WIKI_RDBMS_MIGRATION_ERROR_PAGE_LIST_SETTING);
+  }
+
+  /**
+   * Get the "wiki deletion error" list (a unique string with wiki separated by comma)
+   * See wikiToString() to check the format of a wiki in the string list
+   *
+   * @return a unique string containing all wiki in deletion error separated by a comma
+   */
+  public String getWikiDeletionErrorsSetting() {
+    return getErrorsSetting(WikiMigrationContext.WIKI_RDBMS_DELETION_ERROR_WIKI_LIST_SETTING);
   }
 
   private String getErrorsSetting(String settingErrorKey) {
@@ -413,10 +435,18 @@ public class WikiMigrationSettingService {
    *
    * @return the number of wiki in error during the migration
    */
-  public Integer getWikiErrorsNumber() {
-    String wikiErrors = getWikiErrorsSetting();
-    if (wikiErrors != null) return wikiErrors.split(OUTER_OBJECT_SPLIT).length;
-    return 0;
+  public Integer getWikiMigrationErrorsNumber() {
+    String wikiMigrationErrors = getWikiErrorsSetting();
+    return (wikiMigrationErrors != null ? wikiMigrationErrors.split(OUTER_OBJECT_SPLIT).length : 0);
+  }
+
+  /**
+   *
+   * @return the number of wiki in error during the deletion
+   */
+  public Integer getWikiDeletionErrorsNumber() {
+    String wikiDeletionErrors = getWikiDeletionErrorsSetting();
+    return (wikiDeletionErrors != null ? wikiDeletionErrors.split(OUTER_OBJECT_SPLIT).length : 0);
   }
 
   /**

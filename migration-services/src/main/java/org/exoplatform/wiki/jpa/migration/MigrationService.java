@@ -157,7 +157,7 @@ public class MigrationService implements Startable {
 
         LOG.info("=== Wiki data migration from JCR to RDBMS done in " + (endTime - startTime) + " ms");
 
-        Integer wikiErrorNumber = settingService.getWikiErrorsNumber();
+        Integer wikiErrorNumber = settingService.getWikiMigrationErrorsNumber() + settingService.getWikiDeletionErrorsNumber();
 
         if (wikiErrorNumber == 0) {
           LOG.info("No error during migration");
@@ -210,11 +210,14 @@ public class MigrationService implements Startable {
               if (!WikiMigrationContext.isSpaceWikiCleanupDone() || settingService.isForceJCRDeletion()) deleteWikisOfType(PortalConfig.GROUP_TYPE);
               if (!WikiMigrationContext.isUserWikiCleanupDone() || settingService.isForceJCRDeletion()) deleteUsersWikis();
               if (!WikiMigrationContext.isEmoticonCleanupDone() || settingService.isForceJCRDeletion()) deleteEmotionIcons();
-              Integer errorNumber = settingService.getWikiErrorsNumber();
-              if (errorNumber > 0 && !settingService.isForceJCRDeletion()) {
+
+              Integer migrationErrorsNumber = settingService.getWikiMigrationErrorsNumber();
+              Integer deletionErrorsNumber = settingService.getWikiDeletionErrorsNumber();
+              if (deletionErrorsNumber > 0 || (migrationErrorsNumber > 0 && !settingService.isForceJCRDeletion())) {
                 LOG.warn(getErrorReport());
               } else {
-                //Wiki Root Node must be deleted only if all wiki has been previously deleted
+                //Wiki Root Node must be deleted only if all wiki has been previously deleted,
+                // and all wiki have been successfully migrated OR force deletion is enabled
                 deleteWikiRootNode();
                 //Same for all wiki migration settings
                 settingService.removeSettingValue();
@@ -262,26 +265,35 @@ public class MigrationService implements Startable {
 
     Set<String> wikiErrors = getWikiErrorsSet();
     Set<String> pageErrors = getPageErrorsSet();
+    Set<String> wikiDeletionErrors = getWikiDeletionErrorsSet();
 
     StringBuilder errorReport = new StringBuilder();
     errorReport.append("\n ============== Wiki Migration Error report ==============\n");
     errorReport.append("\n ### Summary \n");
-    errorReport.append("\n Number of wiki error: "+wikiErrors.size());
-    errorReport.append("\n Number of page error: "+pageErrors.size());
-    errorReport.append("\n\n ### Wiki errors list:\n");
+    errorReport.append("\n Number of migration wiki error: "+wikiErrors.size());
+    errorReport.append("\n Number of migration page error: "+pageErrors.size());
+    errorReport.append("\n Number of deletion wiki error: "+wikiDeletionErrors.size());
+    errorReport.append("\n\n ### Wiki migration errors list:\n");
     for (String wikiError: wikiErrors) {
       String[] wikiAttribute = wikiError.split(":", 2);
       errorReport.append("\n Wiki Type  : "+wikiAttribute[0]);
       errorReport.append("\n Wiki Owner : "+wikiAttribute[1]);
       errorReport.append("\n ---------------------------------------------------------");
     }
-    errorReport.append("\n\n ### Page errors list:\n");
+    errorReport.append("\n\n ### Page migration errors list:\n");
     for (String pageError: pageErrors) {
       Page page = settingService.stringToPage(pageError);
       errorReport.append("\n Wiki Type  : "+page.getWikiType());
       errorReport.append("\n Wiki Owner  : "+page.getWikiOwner());
       errorReport.append("\n Page Id  : "+page.getId());
       errorReport.append("\n Page Name  : "+page.getName());
+      errorReport.append("\n ---------------------------------------------------------");
+    }
+    errorReport.append("\n\n ### Wiki deletion errors list:\n");
+    for (String wikiDeletionError: wikiDeletionErrors) {
+      String[] wikiAttribute = wikiDeletionError.split(":", 2);
+      errorReport.append("\n Wiki Type  : "+wikiAttribute[0]);
+      errorReport.append("\n Wiki Owner : "+wikiAttribute[1]);
       errorReport.append("\n ---------------------------------------------------------");
     }
     errorReport.append("\n\n =======================================================\n");
@@ -686,6 +698,7 @@ public class MigrationService implements Startable {
 
           } catch (Exception e) {
             LOG.error("Cannot delete wiki of user " + user.getUserName() + " - Cause " + e.getMessage(), e);
+            settingService.addWikiDeletionErrorToSetting(new Wiki(PortalConfig.USER_TYPE, user.getUserName()));
           } finally {
             RequestLifeCycle.end();
             RequestLifeCycle.begin(currentContainer);
@@ -731,6 +744,7 @@ public class MigrationService implements Startable {
       }
     } catch (Exception e) {
       LOG.error("Cannot delete wiki " + wikiType + ":" + wikiOwner + " - Cause : " + e.getMessage(), e);
+      settingService.addWikiDeletionErrorToSetting(new Wiki(wikiType, wikiOwner));
       if(session != null) {
         try {
           session.refresh(false);
@@ -1028,7 +1042,16 @@ public class MigrationService implements Startable {
     String wikiErrors = settingService.getWikiErrorsSetting();
     Set<String> wikiErrorsSet = new HashSet<>();
     if (wikiErrors != null) {
-      wikiErrorsSet = new HashSet<String>(Arrays.asList(wikiErrors.split(";")));
+      wikiErrorsSet = new HashSet<>(Arrays.asList(wikiErrors.split(";")));
+    }
+    return wikiErrorsSet;
+  }
+
+  private Set<String> getWikiDeletionErrorsSet() {
+    String wikiDeletionErrors = settingService.getWikiDeletionErrorsSetting();
+    Set<String> wikiErrorsSet = new HashSet<>();
+    if (wikiDeletionErrors != null) {
+      wikiErrorsSet = new HashSet<>(Arrays.asList(wikiDeletionErrors.split(";")));
     }
     return wikiErrorsSet;
   }
