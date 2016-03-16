@@ -48,6 +48,9 @@ import org.picocontainer.Startable;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.lock.LockException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.version.VersionException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -216,11 +219,15 @@ public class MigrationService implements Startable {
               if (deletionErrorsNumber > 0 || (migrationErrorsNumber > 0 && !settingService.isForceJCRDeletion())) {
                 LOG.warn(getErrorReport());
               } else {
-                //Wiki Root Node must be deleted only if all wiki has been previously deleted,
-                // and all wiki have been successfully migrated OR force deletion is enabled
-                deleteWikiRootNode();
-                //Same for all wiki migration settings
-                settingService.removeSettingValue();
+                try {
+                  //Wiki Root Node must be deleted only if all wiki has been previously deleted,
+                  // and all wiki have been successfully migrated OR force deletion is enabled
+                  deleteWikiRootNode();
+                  //Same for all wiki migration settings
+                  settingService.removeSettingValue();
+                } catch (Exception e) {
+                  LOG.error("Cannot delete root wiki data node - Cause : " + e.getMessage(), e);
+                }
               }
 
               long endTime = System.currentTimeMillis();
@@ -793,7 +800,7 @@ public class MigrationService implements Startable {
   /**
    * Manage the deletion of a wiki root node in the JCR
    */
-  private void deleteWikiRootNode() {
+  private void deleteWikiRootNode() throws RepositoryException {
     LOG.info("  Start deletion of root wiki data node ...");
 
     Session session = null;
@@ -809,9 +816,7 @@ public class MigrationService implements Startable {
         session.save();
       }
       LOG.info("  Deletion of root wiki data node done");
-    } catch (RepositoryException e) {
-      LOG.error("Cannot delete root wiki data node - Cause : " + e.getMessage(), e);
-    } finally {
+    }  finally {
       RequestLifeCycle.end();
       RequestLifeCycle.begin(currentContainer);
     }
