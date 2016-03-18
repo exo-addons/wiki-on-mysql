@@ -45,9 +45,7 @@ import org.exoplatform.wiki.service.impl.JCRDataStorage;
 import org.jgroups.util.DefaultThreadFactory;
 import org.picocontainer.Startable;
 
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
+import javax.jcr.*;
 import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.version.VersionException;
@@ -671,6 +669,9 @@ public class MigrationService implements Startable {
       for(WikiImpl wiki : allWikis) {
         deleteWiki(wiki);
       }
+
+      deleteRemainingReferences(wikiType);
+
       settingService.setWikiCleanupOfTypeDone(wikiType);
       LOG.info("  Deletion of wikis of type " + wikiType + " done");
     } catch (Exception e) {
@@ -725,6 +726,9 @@ public class MigrationService implements Startable {
         }
         current += users.length;
       } while(users != null && users.length > 0);
+
+      deleteRemainingReferences(PortalConfig.USER_TYPE);
+
       settingService.updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_CLEANUP_USER_WIKI_KEY, true);
       LOG.info("    Deletion of users wikis done");
     } catch (Exception e) {
@@ -804,6 +808,60 @@ public class MigrationService implements Startable {
     } catch(Exception e) {
       LOG.error("Cannot delete emotion icons - Cause : " + e.getMessage(), e);
     } finally {
+      RequestLifeCycle.end();
+      RequestLifeCycle.begin(currentContainer);
+    }
+  }
+
+  /**
+   * Manage the deletion of a remaining nodes referencing wiki root node in the JCR
+   */
+  private void deleteRemainingReferences(String wikiType) throws RepositoryException {
+    LOG.info("  Start deletion of remaining nodes referencing wiki root node ...");
+
+    RequestLifeCycle.end();
+    RequestLifeCycle.begin(currentContainer);
+
+    try {
+      String referencedNodePath = "exo:applications/eXoWiki/wikimetadata/";
+      if(PortalConfig.USER_TYPE.equals(wikiType)) {
+        referencedNodePath += "userwikis";
+      } else if(PortalConfig.GROUP_TYPE.equals(wikiType)) {
+        referencedNodePath += "groupwikis";
+      } else {
+        referencedNodePath += "portalwikis";
+      }
+
+      Session session = mowService.getSession().getJCRSession();
+      Node wikiRootNode = session.getRootNode().getNode(referencedNodePath);
+      if(wikiRootNode != null) {
+        PropertyIterator wikiRootNodeReferences = wikiRootNode.getReferences();
+        while(wikiRootNodeReferences.hasNext()) {
+          Property property = wikiRootNodeReferences.nextProperty();
+          Node wikiNode = property.getParent();
+          if(wikiNode.isNodeType("wiki:userwiki") && wikiNode.hasProperty("owner")) {
+            String wikiOwner = wikiNode.getProperty("owner").getString();
+            Wiki wiki = new Wiki(wikiType, wikiOwner);
+            if (settingService.isForceJCRDeletion() || !wikiErrorsList.contains(settingService.wikiToString(wiki))) {
+              try {
+                LOG.info("    Delete wiki node " + wikiNode.getPath());
+                Node wikiNodeParent = wikiNode.getParent();
+                wikiNode.remove();
+                wikiNodeParent.save();
+              } catch(Exception e) {
+                LOG.error("Cannot delete referenced wiki node " + wikiNode.getPath() + " Cause : " + e.getMessage(), e);
+                settingService.addWikiDeletionErrorToSetting(wiki);
+              }
+            } else {
+              LOG.info("    Wiki node " + wikiNode.getPath() + " not deleted");
+            }
+          }
+        }
+        LOG.info("  Deletion of remaining nodes of type " + wikiType + " referencing wiki root node done");
+      } else {
+        LOG.error("Cannot get referenced node for wikis of type " + wikiType + " (path : " + referencedNodePath + ")");
+      }
+    }  finally {
       RequestLifeCycle.end();
       RequestLifeCycle.begin(currentContainer);
     }
