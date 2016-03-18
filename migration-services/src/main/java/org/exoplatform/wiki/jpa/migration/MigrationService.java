@@ -146,6 +146,12 @@ public class MigrationService implements Startable {
 
         long startTime = System.currentTimeMillis();
 
+        // Reset migration errors list if force run migration enabled
+        if(settingService.isForceRunMigration()) {
+          settingService.removeSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_ERROR_WIKI_LIST_SETTING);
+          settingService.removeSettingValue(WikiMigrationContext.WIKI_RDBMS_MIGRATION_ERROR_PAGE_LIST_SETTING);
+        }
+
         // Start migration only for wiki type / pages that are not already been migrated
         if (!WikiMigrationContext.isPortalWikiMigrationDone()) migrateWikisOfType(PortalConfig.PORTAL_TYPE);
         if (!WikiMigrationContext.isSpaceWikiMigrationDone()) migrateWikisOfType(PortalConfig.GROUP_TYPE);
@@ -208,6 +214,11 @@ public class MigrationService implements Startable {
               // Init the Error migration list to do not delete wiki in error
               initWikiErrorsList();
 
+              // Reset deletion errors list if force deletion enabled
+              if(settingService.isForceJCRDeletion()) {
+                settingService.removeSettingValue(WikiMigrationContext.WIKI_RDBMS_DELETION_ERROR_WIKI_LIST_SETTING);
+              }
+
               // Start cleanup only for wiki type / pages that are not already been deleted
               if (!WikiMigrationContext.isPortalWikiCleanupDone() || settingService.isForceJCRDeletion()) deleteWikisOfType(PortalConfig.PORTAL_TYPE);
               if (!WikiMigrationContext.isSpaceWikiCleanupDone() || settingService.isForceJCRDeletion()) deleteWikisOfType(PortalConfig.GROUP_TYPE);
@@ -224,7 +235,7 @@ public class MigrationService implements Startable {
                   // and all wiki have been successfully migrated OR force deletion is enabled
                   deleteWikiRootNode();
                   //Same for all wiki migration settings
-                  settingService.removeSettingValue();
+                  settingService.removeAllSettingValues();
                 } catch (Exception e) {
                   LOG.error("Cannot delete root wiki data node - Cause : " + e.getMessage(), e);
                 }

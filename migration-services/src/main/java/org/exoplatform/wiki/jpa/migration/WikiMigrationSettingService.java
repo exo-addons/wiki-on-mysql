@@ -228,9 +228,28 @@ public class WikiMigrationSettingService {
   }
 
   /**
+   * Remove from the SettingService the setting with the given key
+   */
+  public void removeSettingValue(String settingKey) {
+    SettingServiceImpl settingServiceImpl = CommonsUtils.getService(SettingServiceImpl.class);
+    boolean created = settingServiceImpl.startSynchronization();
+    try {
+      settingService.remove(Context.GLOBAL, Scope.APPLICATION.id(WikiMigrationContext.WIKI_MIGRATION_SETTING_GLOBAL_KEY), settingKey);
+      try {
+        CommonsUtils.getService(ChromatticManager.class).getLifeCycle("setting").getContext().getSession().save();
+      } catch (Exception e) {
+        LOG.warn(e);
+      }
+    } finally {
+      Scope.APPLICATION.id(null);
+      settingServiceImpl.stopSynchronization(created);
+    }
+  }
+
+  /**
    * Remove from the SettingService all settings related to the wiki migration
    */
-  public void removeSettingValue() {
+  public void removeAllSettingValues() {
     SettingServiceImpl settingServiceImpl = CommonsUtils.getService(SettingServiceImpl.class);
     boolean created = settingServiceImpl.startSynchronization();
     try {
