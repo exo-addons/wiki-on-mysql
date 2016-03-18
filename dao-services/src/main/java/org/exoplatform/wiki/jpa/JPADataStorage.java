@@ -111,15 +111,13 @@ public class JPADataStorage implements DataStorage {
   }
 
   private String getSearchedText(WikiSearchData wikiSearchData) {
-    StringBuilder result = new StringBuilder();
+    String searchText = "";
     if (StringUtils.isNotBlank(wikiSearchData.getTitle())) {
-      result.append(wikiSearchData.getTitle());
+      searchText = wikiSearchData.getTitle();
+    } else if (StringUtils.isNotBlank(wikiSearchData.getContent())) {
+      searchText = wikiSearchData.getContent();
     }
-    if (StringUtils.isNotBlank(wikiSearchData.getContent())) {
-      result.append(" ");
-      result.append(wikiSearchData.getContent());
-    }
-    return result.toString();
+    return searchText;
   }
 
   private SearchResult toSearchResult(org.exoplatform.commons.api.search.data.SearchResult input) {
