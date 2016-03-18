@@ -14,9 +14,11 @@ import org.exoplatform.wiki.service.IDType;
 import org.exoplatform.wiki.service.WikiPageParams;
 import org.exoplatform.wiki.utils.JCRUtils;
 
-import javax.jcr.Node;
-import javax.jcr.Session;
+import javax.jcr.*;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.*;
 
 /**

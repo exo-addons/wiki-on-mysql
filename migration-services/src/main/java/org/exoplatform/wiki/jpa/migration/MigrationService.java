@@ -45,12 +45,7 @@ import org.exoplatform.wiki.service.impl.JCRDataStorage;
 import org.jgroups.util.DefaultThreadFactory;
 import org.picocontainer.Startable;
 
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.lock.LockException;
-import javax.jcr.nodetype.ConstraintViolationException;
-import javax.jcr.version.VersionException;
+import javax.jcr.*;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -220,9 +215,9 @@ public class MigrationService implements Startable {
               }
 
               // Start cleanup only for wiki type / pages that are not already been deleted
-              if (!WikiMigrationContext.isPortalWikiCleanupDone() || settingService.isForceJCRDeletion()) deleteWikisOfType(PortalConfig.PORTAL_TYPE);
-              if (!WikiMigrationContext.isSpaceWikiCleanupDone() || settingService.isForceJCRDeletion()) deleteWikisOfType(PortalConfig.GROUP_TYPE);
-              if (!WikiMigrationContext.isUserWikiCleanupDone() || settingService.isForceJCRDeletion()) deleteUsersWikis();
+              if (!WikiMigrationContext.isPortalWikiCleanupDone() || settingService.isForceJCRDeletion()) deleteWikiNodesOfType(PortalConfig.PORTAL_TYPE);
+              if (!WikiMigrationContext.isSpaceWikiCleanupDone() || settingService.isForceJCRDeletion()) deleteWikiNodesOfType(PortalConfig.GROUP_TYPE);
+              if (!WikiMigrationContext.isUserWikiCleanupDone() || settingService.isForceJCRDeletion()) deleteWikiNodesOfType(PortalConfig.USER_TYPE);
               if (!WikiMigrationContext.isEmoticonCleanupDone() || settingService.isForceJCRDeletion()) deleteEmotionIcons();
 
               Integer migrationErrorsNumber = settingService.getWikiMigrationErrorsNumber();
@@ -365,7 +360,7 @@ public class MigrationService implements Startable {
         LOG.info("  No " + wikiType + " wikis to migrate");
       }
       settingService.setWikiMigrationOfTypeDone(wikiType);
-      LOG.info("    Migration of "+wikiType+" wikis done");
+      LOG.info("    Migration of " + wikiType + " wikis done");
 
     } catch (Exception e) {
       LOG.error("Cannot finish the migration of " + wikiType + " wikis - Cause " + e.getMessage(), e);
@@ -653,131 +648,6 @@ public class MigrationService implements Startable {
   }
 
   /**
-   * Manage the deletion of portal and group wikis in the JCR
-   *
-   * @param wikiType type of wiki to delete
-   */
-  private void deleteWikisOfType(String wikiType) {
-    LOG.info("  Start deletion of wikis of type " + wikiType);
-
-    try {
-      RequestLifeCycle.end();
-      RequestLifeCycle.begin(currentContainer);
-
-      WikiStoreImpl wStore = (WikiStoreImpl) mowService.getWikiStore();
-      wStore.setMOWService(mowService);
-      WikiContainer<WikiImpl> wikiContainer = wStore.getWikiContainer(WikiType.valueOf(wikiType.toUpperCase()));
-      Collection<WikiImpl> allWikis = wikiContainer.getAllWikis();
-      for(WikiImpl wiki : allWikis) {
-        deleteWiki(wiki);
-      }
-      settingService.setWikiCleanupOfTypeDone(wikiType);
-      LOG.info("  Deletion of wikis of type " + wikiType + " done");
-    } catch (Exception e) {
-      LOG.error("Cannot delete wikis of type " + wikiType + " - Cause : " + e.getMessage(), e);
-    } finally {
-      RequestLifeCycle.end();
-      RequestLifeCycle.begin(currentContainer);
-    }
-  }
-
-  /**
-   * Manage the delete of user wikis in the JCR
-   *
-   */
-  private void deleteUsersWikis() {
-    int pageSize = 20;
-    int current = 0;
-    try {
-      LOG.info("  Start deletion of user wikis");
-      ListAccess<User> allUsersListAccess = organizationService.getUserHandler().findAllUsers();
-      int totalUsers = allUsersListAccess.getSize();
-      LOG.info("    Number of users = " + totalUsers);
-      User[] users;
-      do {
-        LOG.info("    Progression of users wikis deletion : " + current + "/" + totalUsers);
-        if (current + pageSize > totalUsers) {
-          pageSize = totalUsers - current;
-        }
-        users = allUsersListAccess.load(current, pageSize);
-        for (User user : users) {
-          try {
-            RequestLifeCycle.end();
-            RequestLifeCycle.begin(currentContainer);
-
-            // get user wiki
-            WikiImpl jcrWiki = fetchWikiImpl(PortalConfig.USER_TYPE, user.getUserName());
-
-            // if it exists, migrate it
-            if(jcrWiki != null) {
-              deleteWiki(jcrWiki);
-            } else {
-              LOG.info("    No wiki for user " + user.getUserName());
-            }
-
-          } catch (Exception e) {
-            LOG.error("Cannot delete wiki of user " + user.getUserName() + " - Cause " + e.getMessage(), e);
-            settingService.addWikiDeletionErrorToSetting(new Wiki(PortalConfig.USER_TYPE, user.getUserName()));
-          } finally {
-            RequestLifeCycle.end();
-            RequestLifeCycle.begin(currentContainer);
-          }
-        }
-        current += users.length;
-      } while(users != null && users.length > 0);
-      settingService.updateOperationStatus(WikiMigrationContext.WIKI_RDBMS_CLEANUP_USER_WIKI_KEY, true);
-      LOG.info("    Deletion of users wikis done");
-    } catch (Exception e) {
-      LOG.error("Cannot Delete users wikis - Cause : " + e.getMessage(), e);
-    }
-  }
-
-  /**
-   * Manage the deletion of a wiki in the JCR and catch the potential errors
-   *
-   * @param wiki wiki to delete
-   */
-  private void deleteWiki(WikiImpl wiki) {
-
-    boolean created = mowService.startSynchronization();
-
-    String wikiOwner = wiki.getOwner();
-    String wikiType = wiki.getType();
-
-    Session session = null;
-    try {
-      //Do not remove wiki with error during migration
-      if (!wikiErrorsList.contains(settingService.wikiToString(wiki)) || settingService.isForceJCRDeletion()) {
-        session = mowService.getSession().getJCRSession();
-        String wikiPath = wiki.getPath();
-        if (wikiPath.startsWith("/")) {
-          wikiPath = wikiPath.substring(1);
-        }
-        Node wikiNode = session.getRootNode().getNode(wikiPath);
-        LOG.info("    Delete wiki " + wikiType + ":" + wikiOwner);
-        Node wikiNodeParent = wikiNode.getParent();
-        wikiNode.remove();
-        wikiNodeParent.save();
-      } else {
-        LOG.info("    Not deleted Wiki " + wikiType + ":" + wikiOwner);
-      }
-    } catch (Exception e) {
-      LOG.error("Cannot delete wiki " + wikiType + ":" + wikiOwner + " - Cause : " + e.getMessage(), e);
-      settingService.addWikiDeletionErrorToSetting(new Wiki(wikiType, wikiOwner));
-      if(session != null) {
-        try {
-          session.refresh(false);
-        } catch (RepositoryException re) {
-          LOG.error("Cannot refresh JCR session - Cause : " + re.getMessage(), re);
-        }
-      }
-    } finally {
-      mowService.stopSynchronization(created);
-    }
-
-  }
-
-  /**
    * Manage the deletion of emoticon in the JCR and catch the potential errors
    *
    */
@@ -804,6 +674,79 @@ public class MigrationService implements Startable {
     } catch(Exception e) {
       LOG.error("Cannot delete emotion icons - Cause : " + e.getMessage(), e);
     } finally {
+      RequestLifeCycle.end();
+      RequestLifeCycle.begin(currentContainer);
+    }
+  }
+
+  /**
+   * Manage the deletion of a wiki nodes
+   */
+  private void deleteWikiNodesOfType(String wikiType) throws RepositoryException {
+    LOG.info("  Start deletion of " + wikiType + " wikis");
+
+    RequestLifeCycle.end();
+    RequestLifeCycle.begin(currentContainer);
+
+    try {
+      String referencedNodePath = "exo:applications/eXoWiki/wikimetadata/";
+      if(PortalConfig.USER_TYPE.equals(wikiType)) {
+        referencedNodePath += "userwikis";
+      } else if(PortalConfig.GROUP_TYPE.equals(wikiType)) {
+        referencedNodePath += "groupwikis";
+      } else {
+        referencedNodePath += "portalwikis";
+      }
+
+      Session session = mowService.getSession().getJCRSession();
+      Node wikiRootNode = session.getRootNode().getNode(referencedNodePath);
+      if(wikiRootNode != null) {
+        PropertyIterator wikiRootNodeReferences = wikiRootNode.getReferences();
+        while(wikiRootNodeReferences.hasNext()) {
+          Node wikiNode = null;
+          Wiki wiki = null;
+          try {
+            Property property = wikiRootNodeReferences.nextProperty();
+            LOG.info("    Referenced node found : " + property.getPath());
+            wikiNode = property.getParent();
+            if(wikiNode.hasProperty("owner")) {
+              String wikiOwner = wikiNode.getProperty("owner").getString();
+              wiki = new Wiki(wikiType, wikiOwner);
+              if (settingService.isForceJCRDeletion() || !wikiErrorsList.contains(settingService.wikiToString(wiki))) {
+                  LOG.info("      Delete wiki node " + wikiNode.getPath());
+                  Node wikiNodeParent = wikiNode.getParent();
+                  wikiNode.remove();
+                  wikiNodeParent.save();
+              } else {
+                LOG.info("    Wiki node " + wikiNode.getPath() + " not deleted");
+              }
+            } else {
+              LOG.error("Node referencing wiki root node but with no owner : " + wikiNode.getPath());
+            }
+          } catch(Exception e) {
+            if(wikiNode != null) {
+              LOG.error("Cannot delete referenced wiki node " + wikiNode.getPath() + " - Cause : " + e.getMessage(), e);
+              if(wiki != null) {
+                settingService.addWikiDeletionErrorToSetting(wiki);
+                if(session != null) {
+                  try {
+                    session.refresh(false);
+                  } catch (RepositoryException re) {
+                    LOG.error("Cannot refresh JCR session - Cause : " + re.getMessage(), re);
+                  }
+                }
+              }
+            } else {
+              LOG.error("Cannot delete referenced wiki node - Cause : " + e.getMessage(), e);
+            }
+          }
+        }
+        settingService.setWikiCleanupOfTypeDone(wikiType);
+        LOG.info("  Deletion of " + wikiType + " wikis done");
+      } else {
+        LOG.error("Cannot get referenced node for wikis of type " + wikiType + " (path : " + referencedNodePath + ")");
+      }
+    }  finally {
       RequestLifeCycle.end();
       RequestLifeCycle.begin(currentContainer);
     }
