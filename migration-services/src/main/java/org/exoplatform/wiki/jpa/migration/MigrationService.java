@@ -428,6 +428,7 @@ public class MigrationService implements Startable {
 
           } catch (Exception e) {
             LOG.error("Cannot migrate wiki of user " + user.getUserName() + " - Cause " + e.getMessage(), e);
+            settingService.addWikiErrorToSetting(new Wiki(PortalConfig.USER_TYPE, user.getUserName()));
           }
         }
         current += users.length;
