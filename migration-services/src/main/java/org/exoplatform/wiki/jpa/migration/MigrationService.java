@@ -363,7 +363,7 @@ public class MigrationService implements Startable {
         LOG.info("  No " + wikiType + " wikis to migrate");
       }
       settingService.setWikiMigrationOfTypeDone(wikiType);
-      LOG.info("    Migration of "+wikiType+" wikis done");
+      LOG.info("    Migration of " + wikiType + " wikis done");
 
     } catch (Exception e) {
       LOG.error("Cannot finish the migration of " + wikiType + " wikis - Cause " + e.getMessage(), e);
@@ -837,23 +837,32 @@ public class MigrationService implements Startable {
       if(wikiRootNode != null) {
         PropertyIterator wikiRootNodeReferences = wikiRootNode.getReferences();
         while(wikiRootNodeReferences.hasNext()) {
-          Property property = wikiRootNodeReferences.nextProperty();
-          Node wikiNode = property.getParent();
-          if(wikiNode.isNodeType("wiki:userwiki") && wikiNode.hasProperty("owner")) {
-            String wikiOwner = wikiNode.getProperty("owner").getString();
-            Wiki wiki = new Wiki(wikiType, wikiOwner);
-            if (settingService.isForceJCRDeletion() || !wikiErrorsList.contains(settingService.wikiToString(wiki))) {
-              try {
-                LOG.info("    Delete wiki node " + wikiNode.getPath());
-                Node wikiNodeParent = wikiNode.getParent();
-                wikiNode.remove();
-                wikiNodeParent.save();
-              } catch(Exception e) {
-                LOG.error("Cannot delete referenced wiki node " + wikiNode.getPath() + " Cause : " + e.getMessage(), e);
+          Node wikiNode = null;
+          Wiki wiki = null;
+          try {
+            Property property = wikiRootNodeReferences.nextProperty();
+            LOG.info("    Referenced node found : " + property.getPath());
+            wikiNode = property.getParent();
+            if(wikiNode.hasProperty("owner")) {
+              String wikiOwner = wikiNode.getProperty("owner").getString();
+              wiki = new Wiki(wikiType, wikiOwner);
+              if (settingService.isForceJCRDeletion() || !wikiErrorsList.contains(settingService.wikiToString(wiki))) {
+                  LOG.info("      Delete wiki node " + wikiNode.getPath());
+                  Node wikiNodeParent = wikiNode.getParent();
+                  wikiNode.remove();
+                  wikiNodeParent.save();
+              } else {
+                LOG.info("    Wiki node " + wikiNode.getPath() + " not deleted");
+              }
+            }
+          } catch(Exception e) {
+            if(wikiNode != null) {
+              LOG.error("Cannot delete referenced wiki node " + wikiNode.getPath() + " - Cause : " + e.getMessage(), e);
+              if(wiki != null) {
                 settingService.addWikiDeletionErrorToSetting(wiki);
               }
             } else {
-              LOG.info("    Wiki node " + wikiNode.getPath() + " not deleted");
+              LOG.error("Cannot delete referenced wiki node - Cause : " + e.getMessage(), e);
             }
           }
         }
