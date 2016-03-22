@@ -709,23 +709,54 @@ public class MigrationService implements Startable {
             Property property = wikiRootNodeReferences.nextProperty();
             LOG.info("    Referenced node found : " + property.getPath());
             wikiNode = property.getParent();
+            String wikiOwner = null;
             if(wikiNode.hasProperty("owner")) {
-              String wikiOwner = wikiNode.getProperty("owner").getString();
-              wiki = new Wiki(wikiType, wikiOwner);
-              if (settingService.isForceJCRDeletion() || !wikiErrorsList.contains(settingService.wikiToString(wiki))) {
-                  LOG.info("      Delete wiki node " + wikiNode.getPath());
-                  Node wikiNodeParent = wikiNode.getParent();
-                  wikiNode.remove();
-                  wikiNodeParent.save();
-              } else {
-                LOG.info("    Wiki node " + wikiNode.getPath() + " not deleted");
-              }
+              wikiOwner = wikiNode.getProperty("owner").getString();
             } else {
-              LOG.error("Node referencing wiki root node but with no owner : " + wikiNode.getPath());
+              LOG.info("      Node referencing wiki root node but with no owner : " + wikiNode.getPath());
+            }
+            wiki = new Wiki(wikiType, wikiOwner);
+            if (settingService.isForceJCRDeletion() || !wikiErrorsList.contains(settingService.wikiToString(wiki))) {
+              LOG.info("      Delete wiki node " + wikiNode.getPath());
+              Node wikiNodeParent = null;
+              try {
+                wikiNodeParent = wikiNode.getParent();
+              } catch (Exception e) {
+                // Node does not exist anymore, move to the next node
+                // Should happen mainly in case of nodes having several "ref" properties
+                LOG.info("        Node does not exist anymore");
+                continue;
+              }
+
+              // Handle very rare case where a node contains several "ref" properties
+              boolean refFound = false;
+              PropertyIterator propertyIterator = wikiNode.getProperties();
+              while (propertyIterator.hasNext()) {
+                try {
+                  Property nodeProperty = propertyIterator.nextProperty();
+                  if(nodeProperty.getName().equals("ref")) {
+                    if(refFound) {
+                      LOG.info("        Second ref found on wiki node, delete it");
+                      nodeProperty.remove();
+                      wikiNode.save();
+                    } else {
+                      refFound = true;
+                    }
+                  }
+                } catch (Exception e2) {
+                  LOG.error("Error while reading node property - Cause : " + e2.getMessage());
+                }
+              }
+
+              wikiNode.remove();
+              wikiNodeParent.save();
+            } else {
+              LOG.info("    Wiki node " + wikiNode.getPath() + " not deleted");
             }
           } catch(Exception e) {
             if(wikiNode != null) {
               LOG.error("Cannot delete referenced wiki node " + wikiNode.getPath() + " - Cause : " + e.getMessage(), e);
+
               if(wiki != null) {
                 settingService.addWikiDeletionErrorToSetting(wiki);
                 if(session != null) {
@@ -746,7 +777,7 @@ public class MigrationService implements Startable {
       } else {
         LOG.error("Cannot get referenced node for wikis of type " + wikiType + " (path : " + referencedNodePath + ")");
       }
-    }  finally {
+    } finally {
       RequestLifeCycle.end();
       RequestLifeCycle.begin(currentContainer);
     }
