@@ -21,7 +21,6 @@ import java.util.List;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.TypedQuery;
 
-import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.mow.api.WikiType;
 
@@ -34,7 +33,7 @@ public class PageDAO extends WikiBaseDAO<PageEntity, Long> {
   public List<PageEntity> getPagesOfWiki(String wikiType, String wikiOwner) {
 
     //We need to add the first "/" on the wiki owner if it's  wiki group
-    if (wikiType.toUpperCase().equals(WikiType.GROUP.name())) wikiOwner = validateWikiOwner(wikiOwner);
+    if (wikiType.toUpperCase().equals(WikiType.GROUP.name())) wikiOwner = validateGroupWikiOwner(wikiOwner);
 
     TypedQuery<PageEntity> query = getEntityManager().createNamedQuery("wikiPage.getPagesOfWiki", PageEntity.class)
         .setParameter("type", wikiType)
@@ -46,7 +45,7 @@ public class PageDAO extends WikiBaseDAO<PageEntity, Long> {
   public PageEntity getPageOfWikiByName(String wikiType, String wikiOwner, String pageName) {
 
     //We need to add the first "/" on the wiki owner if it's  wiki group
-    if (wikiType.toUpperCase().equals(WikiType.GROUP.name())) wikiOwner = validateWikiOwner(wikiOwner);
+    if (wikiType.toUpperCase().equals(WikiType.GROUP.name())) wikiOwner = validateGroupWikiOwner(wikiOwner);
 
     PageEntity pageEntity = null;
     TypedQuery<PageEntity> query = getEntityManager().createNamedQuery("wikiPage.getPageOfWikiByName", PageEntity.class)

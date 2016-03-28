@@ -98,7 +98,6 @@ public class WikiElasticUnifiedSearchServiceConnector extends ElasticSearchServi
       if (wikiType.equalsIgnoreCase(WikiType.GROUP.toString())) {
         permalink.append("/");
         permalink.append(PortalConfig.GROUP_TYPE);
-        permalink.append("/");
         permalink.append(wikiOwner);
       } else if (wikiType.equalsIgnoreCase(WikiType.USER.toString())) {
         permalink.append("/");

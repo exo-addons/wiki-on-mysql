@@ -28,7 +28,7 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.wiki.jpa.dao.PageDAO;
 import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.jpa.entity.PermissionEntity;
-import org.exoplatform.wiki.utils.Utils;
+import org.exoplatform.wiki.mow.api.WikiType;
 import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
@@ -106,7 +106,13 @@ public class WikiPageIndexingServiceConnector extends ElasticIndexingServiceConn
         fields.put("updatedDate", String.valueOf(page.getUpdatedDate().getTime()));
         fields.put("comment", page.getComment());
         fields.put("wikiType", page.getWiki().getType());
-        fields.put("wikiOwner", Utils.validateWikiOwner(page.getWiki().getType(), page.getWiki().getOwner()));
+        String wikiOwner = page.getWiki().getOwner();
+        //We need to add the first "/" on the wiki owner if it's  wiki group
+        if (page.getWiki().getType().toUpperCase().equals(WikiType.GROUP.name())) {
+          wikiOwner = dao.validateGroupWikiOwner(wikiOwner);
+        }
+        fields.put("wikiOwner", wikiOwner);
+
         return new Document(TYPE, id, page.getUrl(), page.getUpdatedDate(), computePermissions(page), fields);
     }
 

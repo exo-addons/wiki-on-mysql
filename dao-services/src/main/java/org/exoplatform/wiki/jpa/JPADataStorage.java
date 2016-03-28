@@ -97,11 +97,15 @@ public class JPADataStorage implements DataStorage {
   public PageList<SearchResult> search(WikiSearchData wikiSearchData) {
     WikiElasticSearchServiceConnector searchService = PortalContainer.getInstance().getComponentInstanceOfType(WikiElasticSearchServiceConnector.class);
 
-    //Trick to add the "/" at the beginning of the
+    //Trick to add the "/" at the beginning of the wiki owner
+    String wikiOwner = wikiSearchData.getWikiOwner();
+    if (wikiSearchData.getWikiType().toUpperCase().equals(WikiType.GROUP.name())) {
+      wikiOwner = pageDAO.validateGroupWikiOwner(wikiOwner);
+    }
 
     List<SearchResult> searchResults = searchService.searchWiki(getSearchedText(wikiSearchData),
         wikiSearchData.getWikiType(),
-        wikiSearchData.getWikiOwner(),
+        wikiOwner,
         (int) wikiSearchData.getOffset(),
         wikiSearchData.getLimit(),
         wikiSearchData.getSort(),

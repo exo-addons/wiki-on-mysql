@@ -111,7 +111,7 @@ public class WikiElasticUnifiedSearchServiceConnectorTest {
   public void getUrlFromJsonResult_spaceWiki_returnWellFormedSpaceWikiURL() {
 
     //Given
-    JSONObject hitsource = (JSONObject) JSONValue.parse("{\"wikiType\":\"GROUP\",\"wikiOwner\":\"spaces/spaceId\",\"name\":\"pageName\"}");
+    JSONObject hitsource = (JSONObject) JSONValue.parse("{\"wikiType\":\"GROUP\",\"wikiOwner\":\"/spaces/spaceId\",\"name\":\"pageName\"}");
 
     //When
     String url = searchServiceConnector.getUrlFromJsonResult(hitsource, context);

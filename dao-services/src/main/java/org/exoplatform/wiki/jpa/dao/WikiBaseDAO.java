@@ -28,7 +28,7 @@ import java.io.Serializable;
  */
 public abstract class WikiBaseDAO<E, ID extends Serializable>  extends GenericDAOJPAImpl<E, ID> {
 
-  protected String validateWikiOwner(String wikiOwner){
+  public String validateGroupWikiOwner(String wikiOwner){
     if(wikiOwner == null || wikiOwner.length() == 0){
       return null;
     }
