@@ -36,7 +36,7 @@ public class PageIndexingListener extends PageWikiListener {
   public void postDeletePage(String wikiType, String wikiOwner, String pageId, Page page) throws WikiException {
     indexingService.unindex(WikiPageIndexingServiceConnector.TYPE, page.getId());
     //We need also to unindex the attachments of the page
-    List<Long> attachmentIds = pageAttachmentDAO.getAttachmentIdByPageId(page.getId());
+    List<Long> attachmentIds = pageAttachmentDAO.getAttachmentIdByPageId(Long.valueOf(page.getId()));
     for (Long attachmentId : attachmentIds) {
       indexingService.unindex(AttachmentIndexingServiceConnector.TYPE, String.valueOf(attachmentId));
     }
