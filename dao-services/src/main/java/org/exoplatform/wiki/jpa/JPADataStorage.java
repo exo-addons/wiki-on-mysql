@@ -691,8 +691,14 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public List<TemplateSearchResult> searchTemplate(TemplateSearchData templateSearchData) throws WikiException {
+
+    String wikiOwner = templateSearchData.getWikiOwner();
+    if(templateSearchData.getWikiType().toUpperCase().equals(WikiType.GROUP.toString())) {
+      wikiOwner = templateDAO.validateGroupWikiOwner(wikiOwner);
+    }
+
     List<TemplateEntity> templates = templateDAO.searchTemplatesByTitle(templateSearchData.getWikiType(),
-        templateSearchData.getWikiOwner(),
+        wikiOwner,
         templateSearchData.getTitle());
 
     List<TemplateSearchResult> searchResults = new ArrayList<>();

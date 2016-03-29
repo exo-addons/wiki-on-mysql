@@ -16,14 +16,13 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
-import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 import org.exoplatform.wiki.jpa.entity.TemplateEntity;
 
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
-public class TemplateDAO extends GenericDAOJPAImpl<TemplateEntity, Long> {
+public class TemplateDAO extends WikiBaseDAO<TemplateEntity, Long> {
 
   public List<TemplateEntity> getTemplatesOfWiki(String wikiType, String wikiOwner) {
     TypedQuery<TemplateEntity> query = getEntityManager().createNamedQuery("template.getTemplatesOfWiki", TemplateEntity.class)
