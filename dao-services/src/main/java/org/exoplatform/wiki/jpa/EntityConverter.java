@@ -267,8 +267,10 @@ public class EntityConverter {
       draftPage.setNewPage(draftPageEntity.isNewPage());
       PageEntity targetPage = draftPageEntity.getTargetPage();
       if (targetPage != null) {
-        draftPage.setTargetPageId(String.valueOf(draftPageEntity.getTargetPage().getId()));
+        draftPage.setTargetPageId(String.valueOf(targetPage.getId()));
         draftPage.setTargetPageRevision(draftPageEntity.getTargetRevision());
+        draftPage.setWikiType(WikiType.USER.toString());
+        draftPage.setWikiOwner(draftPageEntity.getAuthor());
       }
     }
     return draftPage;

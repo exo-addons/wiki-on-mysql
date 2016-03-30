@@ -679,6 +679,8 @@ public class JPADataStorageTest extends BaseWikiJPAIntegrationTest {
     assertEquals(1, draftPagesOfUser1.size());
     assertEquals("DraftPage1", draftPagesOfUser1.get(0).getName());
     assertEquals(createdPage.getId(), draftPagesOfUser1.get(0).getTargetPageId());
+    assertEquals(WikiType.USER.toString(), draftPagesOfUser1.get(0).getWikiType());
+    assertEquals("user1", draftPagesOfUser1.get(0).getWikiOwner());
     assertEquals("Content Page 1 Updated", draftPagesOfUser1.get(0).getContent());
     assertNotNull(draftPagesOfUser2);
     assertEquals(0, draftPagesOfUser2.size());
