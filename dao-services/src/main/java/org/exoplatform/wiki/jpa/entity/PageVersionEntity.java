@@ -55,6 +55,12 @@ public class PageVersionEntity extends BasePageEntity {
   @Column(name = "VERSION_NUMBER")
   private long versionNumber;
 
+  @Column(name = "EDITION_COMMENT")
+  private String comment;
+
+  @Column(name = "MINOR_EDIT")
+  private boolean minorEdit;
+
   public long getId() {
     return id;
   }
@@ -73,5 +79,21 @@ public class PageVersionEntity extends BasePageEntity {
 
   public void setVersionNumber(long versionNumber) {
     this.versionNumber = versionNumber;
+  }
+
+  public String getComment() {
+    return comment;
+  }
+
+  public void setComment(String comment) {
+    this.comment = comment;
+  }
+
+  public boolean isMinorEdit() {
+    return minorEdit;
+  }
+
+  public void setMinorEdit(boolean minorEdit) {
+    this.minorEdit = minorEdit;
   }
 }

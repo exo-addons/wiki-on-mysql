@@ -1129,6 +1129,8 @@ public class JPADataStorage implements DataStorage {
       pageVersionEntity.setTitle(pageEntity.getTitle());
       pageVersionEntity.setAuthor(pageEntity.getAuthor());
       pageVersionEntity.setContent(pageEntity.getContent());
+      pageVersionEntity.setMinorEdit(pageEntity.isMinorEdit());
+      pageVersionEntity.setComment(pageEntity.getComment());
       Date now = Calendar.getInstance().getTime();
       pageVersionEntity.setCreatedDate(now);
       pageVersionEntity.setUpdatedDate(now);

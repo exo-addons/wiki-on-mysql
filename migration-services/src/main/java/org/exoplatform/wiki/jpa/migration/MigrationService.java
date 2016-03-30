@@ -935,7 +935,7 @@ public class MigrationService implements Startable {
       jpaPage.setUpdatedDate(firstVersion.getUpdatedDate());
       jpaPage.setOwner(jcrPage.getOwner());
       jpaPage.setComment(firstVersion.getComment());
-      // TODO minorEdit should be in PageVersion, not Page
+      // minorEdit is not available in PageVersion object, so we use the one from Page. Should be added to PageVersion.
       jpaPage.setMinorEdit(jcrPage.isMinorEdit());
       jpaPage.setActivityId(jcrPage.getActivityId());
 

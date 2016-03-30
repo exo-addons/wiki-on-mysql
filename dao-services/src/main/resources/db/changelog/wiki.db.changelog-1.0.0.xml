@@ -119,6 +119,8 @@
       </column>
       <column name="CONTENT" type="CLOB"/>
       <column name="SYNTAX" type="NVARCHAR(30)"/>
+      <column name="EDITION_COMMENT" type="NVARCHAR(1000)"/>
+      <column name="MINOR_EDIT" type="BOOLEAN"/>
       <column name="PAGE_ID" type="BIGINT">
         <constraints nullable="false"/>
       </column>
