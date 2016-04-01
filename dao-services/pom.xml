@@ -15,7 +15,7 @@
   <parent>
     <artifactId>wiki-rdbms-addon</artifactId>
     <groupId>org.exoplatform.addons.wiki</groupId>
-    <version>1.0.0-M01</version>
+    <version>1.0.x-SNAPSHOT</version>
   </parent>
   <artifactId>wiki-rdbms-dao-services</artifactId>
   <packaging>jar</packaging>
