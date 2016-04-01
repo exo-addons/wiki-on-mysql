@@ -39,7 +39,12 @@
     <module>extension</module>
     <module>packaging</module>
   </modules>
-
+  <scm>
+    <connection>scm:git:git://github.com/exo-addons/wiki-rdbms.git</connection>
+    <developerConnection>scm:git:git@github.com:exo-addons/wiki-rdbms.git</developerConnection>
+    <tag>HEAD</tag>
+    <url>https://github.com/exo-addons/wiki-rdbms</url>
+  </scm>
   <properties>
     <!-- Platform Project Dependencies -->
     <org.exoplatform.platform.version>4.3.x-SNAPSHOT</org.exoplatform.platform.version>
