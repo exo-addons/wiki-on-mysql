@@ -283,38 +283,48 @@ public class JPADataStorageTest extends BaseWikiJPAIntegrationTest {
   @Test
   public void testMovePage() throws WikiException {
     // Given
-    Wiki wiki = new Wiki();
-    wiki.setType("portal");
-    wiki.setOwner("wiki1");
-    wiki = storage.createWiki(wiki);
+    Wiki wiki1 = new Wiki();
+    wiki1.setType("portal");
+    wiki1.setOwner("wiki1");
+    wiki1 = storage.createWiki(wiki1);
+    Wiki wiki2 = new Wiki();
+    wiki2.setType("portal");
+    wiki2.setOwner("wiki2");
+    wiki2 = storage.createWiki(wiki2);
 
     Page page1 = new Page();
-    page1.setWikiId(wiki.getId());
-    page1.setWikiType(wiki.getType());
-    page1.setWikiOwner(wiki.getOwner());
     page1.setName("page1");
     page1.setTitle("Page 1");
+    Page page11 = new Page();
+    page11.setName("page11");
+    page11.setTitle("Page 11");
 
     Page page2 = new Page();
-    page2.setWikiId(wiki.getId());
-    page2.setWikiType(wiki.getType());
-    page2.setWikiOwner(wiki.getOwner());
     page2.setName("page2");
     page2.setTitle("Page 2");
 
     // When
-    storage.createPage(wiki, wiki.getWikiHome(), page1);
-    storage.createPage(wiki, wiki.getWikiHome(), page2);
-    assertEquals(3, pageDAO.findAll().size());
-    assertEquals(2, storage.getChildrenPageOf(wiki.getWikiHome()).size());
-    storage.movePage(new WikiPageParams(wiki.getType(), wiki.getOwner(), page2.getName()), new WikiPageParams(wiki.getType(),
-            wiki.getOwner(),
-            page1.getName()));
+    storage.createPage(wiki1, wiki1.getWikiHome(), page1);
+    storage.createPage(wiki1, page1, page11);
+    storage.createPage(wiki1, wiki1.getWikiHome(), page2);
+    assertEquals(5, pageDAO.findAll().size());
+    assertEquals(2, storage.getChildrenPageOf(wiki1.getWikiHome()).size());
+    storage.movePage(new WikiPageParams(wiki1.getType(), wiki1.getOwner(), page1.getName()), new WikiPageParams(wiki2.getType(),
+            wiki2.getOwner(),
+            wiki2.getWikiHome().getName()));
 
     // Then
-    assertEquals(3, pageDAO.findAll().size());
-    assertEquals(1, storage.getChildrenPageOf(wiki.getWikiHome()).size());
-    assertEquals(1, storage.getChildrenPageOf(page1).size());
+    assertEquals(5, pageDAO.findAll().size());
+    assertEquals(1, storage.getChildrenPageOf(wiki1.getWikiHome()).size());
+    List<Page> wiki2HomeChildrenPages = storage.getChildrenPageOf(wiki2.getWikiHome());
+    assertEquals(1, wiki2HomeChildrenPages.size());
+    Page movedPage1 = wiki2HomeChildrenPages.get(0);
+    assertEquals("page1", movedPage1.getName());
+    assertEquals("Page 1", movedPage1.getTitle());
+    assertEquals(1, storage.getChildrenPageOf(movedPage1).size());
+    Page fetchedPage11 = storage.getPageOfWikiByName(PortalConfig.PORTAL_TYPE, "wiki2", "page11");
+    assertNotNull(fetchedPage11);
+    assertEquals("page11", fetchedPage11.getName());
   }
 
   @Test

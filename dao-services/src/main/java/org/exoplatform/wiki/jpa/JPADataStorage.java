@@ -459,13 +459,29 @@ public class JPADataStorage implements DataStorage {
     // move must be saved here because of Hibernate bug HHH-6776
     pageMoveDAO.create(move);
 
-    pageEntity.setWiki(destinationPageEntity.getWiki());
     pageEntity.setParentPage(destinationPageEntity);
+    updateWikiOfPageTree(destinationPageEntity.getWiki(), pageEntity);
 
     pageMoves.add(move);
     pageEntity.setMoves(pageMoves);
 
     pageDAO.update(pageEntity);
+  }
+
+  /**
+   * Recursively update wiki of children pages
+   * @param wikiEntity The new wiki
+   * @param pageEntity The page to update
+   */
+  private void updateWikiOfPageTree(WikiEntity wikiEntity, PageEntity pageEntity) {
+    pageEntity.setWiki(wikiEntity);
+
+    List<PageEntity> childrenPages = pageDAO.getChildrenPages(pageEntity);
+    if(childrenPages != null) {
+      for (PageEntity childrenPageEntity : childrenPages) {
+        updateWikiOfPageTree(wikiEntity, childrenPageEntity);
+      }
+    }
   }
 
   @Override
