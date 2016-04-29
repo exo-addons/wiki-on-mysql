@@ -47,7 +47,7 @@ public class WikiElasticSearchServiceConnector extends ElasticSearchServiceConne
 
   private static final String INDEX = "wiki";
   private static final String TYPE = "wiki,wiki-page,wiki-attachment";
-  private static final String[] SEARCH_FIELDS = {"name", "title", "content", "comment", "file"};
+  private static final String[] SEARCH_FIELDS = {"name", "title", "content", "comment", "file.content"};
 
   public WikiElasticSearchServiceConnector(InitParams initParams, ElasticSearchingClient client) {
     super(initParams, client);

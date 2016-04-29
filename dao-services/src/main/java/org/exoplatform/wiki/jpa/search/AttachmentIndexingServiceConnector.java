@@ -126,7 +126,7 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
 
     //Construct attachment field
     JSONObject attachmentFields = new JSONObject();
-    attachmentFields.put("file", fastVectorHighlighterField);
+    attachmentFields.put("content", fastVectorHighlighterField);
     attachmentFields.put("title", postingHighlighterField);
     JSONObject attachmentField = new JSONObject();
     attachmentField.put("type", "attachment");
