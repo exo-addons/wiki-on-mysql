@@ -25,9 +25,9 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.apache.lucene</groupId>
-        <artifactId>lucene-core</artifactId>
-        <version>${lucene.version}</version>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-core</artifactId>
+        <version>${hibernate.version}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
@@ -38,15 +38,18 @@
       <groupId>org.exoplatform.addons.es</groupId>
       <artifactId>exo-es-search-service</artifactId>
       <version>${exo.es.search.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.exoplatform.core</groupId>
       <artifactId>exo.core.component.organization.api</artifactId>
+      <version>${org.exoplatform.core.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.exoplatform.commons</groupId>
       <artifactId>commons-api</artifactId>
+      <version>${org.exoplatform.platform.version}</version>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
@@ -58,6 +61,7 @@
     <dependency>
       <groupId>org.exoplatform.commons</groupId>
       <artifactId>commons-component-common</artifactId>
+      <version>${org.exoplatform.platform.version}</version>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
@@ -69,6 +73,7 @@
     <dependency>
       <groupId>org.exoplatform.wiki</groupId>
       <artifactId>wiki-service</artifactId>
+      <version>${org.exoplatform.platform.version}</version>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
@@ -82,21 +87,25 @@
     <dependency>
       <groupId>org.exoplatform.commons</groupId>
       <artifactId>commons-testing</artifactId>
+      <version>${org.exoplatform.platform.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.hsqldb</groupId>
       <artifactId>hsqldb</artifactId>
+      <version>${hsqldb.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.exoplatform.integration</groupId>
       <artifactId>integ-search-service</artifactId>
+      <version>${org.exoplatform.platform.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.exoplatform.social</groupId>
@@ -129,21 +138,21 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.elasticsearch</groupId>
-      <artifactId>elasticsearch-mapper-attachments</artifactId>
+      <groupId>org.elasticsearch.plugin</groupId>
+      <artifactId>mapper-attachments</artifactId>
       <version>${elasticsearch-mapper-attachments.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.elasticsearch.plugin</groupId>
+      <artifactId>delete-by-query</artifactId>
+      <version>${elasticsearch-delete-by-query.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>${logback.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
       <scope>test</scope>
     </dependency>
 

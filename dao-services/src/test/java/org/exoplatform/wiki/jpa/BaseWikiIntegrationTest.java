@@ -19,15 +19,17 @@
 
 package org.exoplatform.wiki.jpa;
 
+import org.elasticsearch.Version;
 import org.elasticsearch.action.admin.cluster.node.info.NodeInfo;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoRequest;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
-import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.env.Environment;
+import org.elasticsearch.mapper.attachments.MapperAttachmentsPlugin;
 import org.elasticsearch.node.Node;
-import org.elasticsearch.node.internal.InternalNode;
-import org.elasticsearch.plugins.PluginsService;
-import org.elasticsearch.rest.RestController;
+import org.elasticsearch.plugin.deletebyquery.DeleteByQueryPlugin;
+import org.elasticsearch.plugins.Plugin;
 import org.exoplatform.addons.es.dao.IndexingOperationDAO;
 import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.IndexingService;
@@ -40,6 +42,7 @@ import org.exoplatform.wiki.jpa.entity.PageEntity;
 import org.exoplatform.wiki.jpa.entity.PermissionEntity;
 import org.exoplatform.wiki.jpa.entity.WikiEntity;
 import org.exoplatform.wiki.jpa.search.AttachmentIndexingServiceConnector;
+import org.exoplatform.wiki.jpa.search.EmbeddedNode;
 import org.exoplatform.wiki.jpa.search.WikiPageIndexingServiceConnector;
 
 import java.io.IOException;
@@ -48,10 +51,8 @@ import java.net.ServerSocket;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
-import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
 import static org.junit.Assert.assertNotEquals;
 
 /**
@@ -115,16 +116,20 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
 
     // Init ES
     LOGGER.info("Embedded ES instance - Starting on port " + esPort);
-    ImmutableSettings.Builder elasticsearchSettings = ImmutableSettings.settingsBuilder()
-            .put(RestController.HTTP_JSON_ENABLE, true)
-            .put(InternalNode.HTTP_ENABLED, true)
+    Settings.Builder elasticsearchSettings = Settings.settingsBuilder()
+            .put(Node.HTTP_ENABLED, true)
             .put("network.host", "127.0.0.1")
             .put("http.port", esPort)
-            .put("path.data", "target/data")
-            .put("plugins."
-                            + PluginsService.LOAD_PLUGIN_FROM_CLASSPATH,
-                    true);
-    node = nodeBuilder().local(true).settings(elasticsearchSettings.build()).node();
+            .put("name", "esEmbeddedForTests" + esPort)
+            .put("path.home", "target/es")
+            .put("path.data", "target/es")
+            .put("plugins.load_classpath_plugins", true);
+
+    Environment environment = new Environment(elasticsearchSettings.build());
+    Collection plugins = new ArrayList<>();
+    Collections.<Class<? extends Plugin>>addAll(plugins, MapperAttachmentsPlugin.class, DeleteByQueryPlugin.class);
+    node = new EmbeddedNode(environment, Version.CURRENT, plugins);
+    node.start();
     node.client().admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
     assertNotNull(node);
     assertFalse(node.isClosed());
@@ -138,7 +143,6 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
     PropertyManager.setProperty("exo.es.index.server.url", url);
     PropertyManager.setProperty("exo.es.search.server.url", url);
   }
-
 
   public void tearDown() {
 
