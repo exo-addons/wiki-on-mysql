@@ -23,7 +23,7 @@
   <parent>
     <artifactId>wiki-rdbms-addon</artifactId>
     <groupId>org.exoplatform.addons.wiki</groupId>
-    <version>1.0.x-SNAPSHOT</version>
+    <version>1.0.0-RC03</version>
   </parent>
   <artifactId>wiki-rdbms-packaging</artifactId>
   <packaging>pom</packaging>
@@ -33,19 +33,19 @@
     <dependency>
       <groupId>org.exoplatform.addons.wiki</groupId>
       <artifactId>wiki-rdbms-dao-services</artifactId>
-      <version>1.0.x-SNAPSHOT</version>
+      <version>1.0.0-RC03</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.exoplatform.addons.wiki</groupId>
       <artifactId>wiki-rdbms-migration-services</artifactId>
-      <version>1.0.x-SNAPSHOT</version>
+      <version>1.0.0-RC03</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.exoplatform.addons.wiki</groupId>
       <artifactId>wiki-rdbms-extension</artifactId>
-      <version>1.0.x-SNAPSHOT</version>
+      <version>1.0.0-RC03</version>
       <scope>provided</scope>
       <type>war</type>
     </dependency>
