@@ -28,7 +28,7 @@
   </parent>
   <groupId>org.exoplatform.addons.wiki</groupId>
   <artifactId>wiki-rdbms-addon</artifactId>
-  <version>1.0.0-RC03</version>
+  <version>1.0.x-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Wiki RDBMS Addon</name>
   <description>Wiki RDBMS Addon</description>
@@ -41,7 +41,7 @@
   <scm>
     <connection>scm:git:git://github.com/exo-addons/wiki-rdbms.git</connection>
     <developerConnection>scm:git:git@github.com:exo-addons/wiki-rdbms.git</developerConnection>
-    <tag>1.0.0-RC03</tag>
+    <tag>HEAD</tag>
     <url>https://github.com/exo-addons/wiki-rdbms</url>
   </scm>
   <properties>
