@@ -61,6 +61,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-entitymanager</artifactId>
+      <version>4.2.21.Final</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.exoplatform.wiki</groupId>
       <artifactId>wiki-injector</artifactId>
       <version>${org.exoplatform.platform.version}</version>
