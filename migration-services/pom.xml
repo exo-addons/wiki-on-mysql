@@ -33,6 +33,12 @@
       <groupId>org.exoplatform.commons</groupId>
       <artifactId>commons-component-common</artifactId>
       <version>${org.exoplatform.platform.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-entitymanager</artifactId>
+        </exclusion>
+      </exclusions>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -58,12 +64,6 @@
       <groupId>org.exoplatform.commons</groupId>
       <artifactId>commons-testing</artifactId>
       <version>${org.exoplatform.platform.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-entitymanager</artifactId>
-      <version>4.2.21.Final</version>
       <scope>test</scope>
     </dependency>
     <dependency>
