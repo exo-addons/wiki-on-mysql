@@ -15,7 +15,7 @@
   <parent>
     <artifactId>wiki-rdbms-addon</artifactId>
     <groupId>org.exoplatform.addons.wiki</groupId>
-    <version>1.0.x-SNAPSHOT</version>
+    <version>1.0.x-file-rdbms-SNAPSHOT</version>
   </parent>
   <artifactId>wiki-rdbms-dao-services</artifactId>
   <packaging>jar</packaging>
@@ -58,6 +58,13 @@
         </exclusion>
       </exclusions>
     </dependency>
+
+    <dependency>
+      <groupId>org.exoplatform.commons</groupId>
+      <artifactId>commons-file-storage</artifactId>
+      <version>${org.exoplatform.platform.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.exoplatform.commons</groupId>
       <artifactId>commons-component-common</artifactId>
