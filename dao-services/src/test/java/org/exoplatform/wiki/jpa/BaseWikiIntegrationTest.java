@@ -33,6 +33,7 @@ import org.elasticsearch.plugins.Plugin;
 import org.exoplatform.addons.es.dao.IndexingOperationDAO;
 import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.IndexingService;
+import org.exoplatform.commons.file.model.FileItem;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.services.log.ExoLogger;
@@ -45,6 +46,7 @@ import org.exoplatform.wiki.jpa.search.AttachmentIndexingServiceConnector;
 import org.exoplatform.wiki.jpa.search.EmbeddedNode;
 import org.exoplatform.wiki.jpa.search.WikiPageIndexingServiceConnector;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
@@ -238,12 +240,23 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
     page.setWiki(wiki);
     pageDAO.create(page);
     PageAttachmentEntity attachment = new PageAttachmentEntity();
-    attachment.setName(title);
-    attachment.setTitle(title);
-    attachment.setContent(Files.readAllBytes(Paths.get(filePath)));
+    FileItem fileItem = null;
+    try {
+      fileItem = new FileItem(null,
+              title,
+              null,
+              JPADataStorage.WIKI_FILES_NAMESPACE_NAME,
+              Files.readAllBytes(Paths.get(fileResource.toURI())).length,
+              new Date(),
+              owner,
+              false,
+              new ByteArrayInputStream(Files.readAllBytes(Paths.get(filePath))));
+      fileItem = fileService.writeFile(fileItem);
+    } catch (Exception e) {
+      fail();
+    }
+    attachment.setAttachmentFileID(fileItem.getFileInfo().getId());
     attachment.setCreatedDate(new Date());
-    attachment.setUpdatedDate(new Date());
-    attachment.setCreator(owner);
     attachment.setPage(page);
     attachment = pageAttachmentDAO.create(attachment);
     assertNotEquals(attachment.getId(), 0);

@@ -22,6 +22,10 @@ package org.exoplatform.wiki.jpa.search;
 import org.apache.commons.lang.StringUtils;
 import org.exoplatform.addons.es.domain.Document;
 import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
+import org.exoplatform.commons.file.model.FileInfo;
+import org.exoplatform.commons.file.model.FileItem;
+import org.exoplatform.commons.file.services.FileService;
+import org.exoplatform.commons.file.services.FileStorageException;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -48,10 +52,12 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
   private static final Log LOGGER = ExoLogger.getExoLogger(AttachmentIndexingServiceConnector.class);
   public static final String TYPE = "wiki-attachment";
   private final PageAttachmentDAO attachmentDAO;
+  private final FileService fileService;
 
-  public AttachmentIndexingServiceConnector(InitParams initParams, PageAttachmentDAO attachmentDAO) {
+  public AttachmentIndexingServiceConnector(InitParams initParams, FileService fileService, PageAttachmentDAO attachmentDAO) {
     super(initParams);
     this.attachmentDAO = attachmentDAO;
+    this.fileService = fileService;
   }
 
   @Override
@@ -66,14 +72,33 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
       return null;
     }
 
+    FileItem fileItem = null;
+    try {
+      fileItem = fileService.getFile(attachment.getAttachmentFileID());
+    } catch (FileStorageException e) {
+      e.printStackTrace();
+    }
+    if (fileItem==null) {
+      LOGGER.info("The attachment entity with id {} doesn't exist.", id);
+      return null;
+    }
+
+
     Map<String,String> fields = new HashMap<>();
-    Document doc = new Document(TYPE, id, getUrl(attachment), attachment.getUpdatedDate(),
-        computePermissions(attachment), fields);
-    doc.addField("title", attachment.getTitle());
-    doc.addField("file", attachment.getContent());
-    doc.addField("name", attachment.getName());
+    Document doc = new Document(TYPE, id, getUrl(attachment), fileItem.getFileInfo().getUpdatedDate(),
+        computePermissions(fileItem.getFileInfo().getUpdater(),attachment), fields);
+    int index = fileItem.getFileInfo().getName().lastIndexOf(".");
+    if(index != -1) {
+      doc.addField("title", fileItem.getFileInfo().getName().substring(0, index - 1));
+    }
+    else{
+      doc.addField("title", fileItem.getFileInfo().getName());
+    }
+
+    doc.addField("file", fileItem.getAsByte());
+    doc.addField("name", fileItem.getFileInfo().getName());
     doc.addField("createdDate", String.valueOf(attachment.getCreatedDate().getTime()));
-    doc.addField("updatedDate", String.valueOf(attachment.getUpdatedDate().getTime()));
+    doc.addField("updatedDate", String.valueOf(fileItem.getFileInfo().getUpdatedDate().getTime()));
     PageEntity page = attachment.getPage();
     doc.addField("pageName", page.getName());
     fields.put("wikiType", page.getWiki().getType());
@@ -87,9 +112,9 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
     return create(id);
   }
 
-  private String[] computePermissions(PageAttachmentEntity attachment) {
+  private String[] computePermissions(String creator, PageAttachmentEntity attachment) {
     List<String> permissions = new ArrayList<>();
-    permissions.add(attachment.getCreator());
+    permissions.add(creator);
     //Add permissions from the wiki page
     List<PermissionEntity> pagePermission = attachment.getPage().getPermissions();
     if (pagePermission != null) {

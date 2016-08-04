@@ -17,6 +17,8 @@
 package org.exoplatform.wiki.jpa.search;
 
 import org.exoplatform.addons.es.index.IndexingService;
+import org.exoplatform.commons.file.model.FileInfo;
+import org.exoplatform.commons.file.services.FileService;
 import org.exoplatform.commons.utils.CommonsUtils;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -44,8 +46,11 @@ public class AttachmentIndexingListener extends AttachmentWikiListener {
 
   private JPADataStorage jpaDataStorage;
 
-  public AttachmentIndexingListener(JPADataStorage jpaDataStorage) {
+  private FileService fileService;
+
+  public AttachmentIndexingListener(FileService fileService, JPADataStorage jpaDataStorage) {
     this.jpaDataStorage = jpaDataStorage;
+    this.fileService = fileService;
   }
 
   @Override
@@ -80,7 +85,9 @@ public class AttachmentIndexingListener extends AttachmentWikiListener {
       if (attachmentsEntities != null) {
         for (int i = 0; i < attachmentsEntities.size(); i++) {
           AttachmentEntity attachmentEntity = attachmentsEntities.get(i);
-          if (attachmentEntity.getName() != null && attachmentEntity.getName().equals(attachmentName)) {
+          long fileId = attachmentEntity.getAttachmentFileID();
+          FileInfo fileInfo = fileService.getFileInfo(fileId);
+          if (fileInfo.getName() != null && fileInfo.getName().equals(attachmentName)) {
             return String.valueOf(attachmentEntity.getId());
           }
         }
