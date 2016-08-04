@@ -22,6 +22,8 @@ package org.exoplatform.wiki.jpa;
 import org.apache.commons.lang.StringUtils;
 import org.exoplatform.commons.api.persistence.DataInitializer;
 import org.exoplatform.commons.api.persistence.ExoTransactional;
+import org.exoplatform.commons.file.services.FileService;
+import org.exoplatform.commons.file.services.FileStorageException;
 import org.exoplatform.commons.utils.ObjectPageList;
 import org.exoplatform.commons.utils.PageList;
 import org.exoplatform.container.PortalContainer;
@@ -59,6 +61,9 @@ import static org.exoplatform.wiki.jpa.EntityConverter.*;
 public class JPADataStorage implements DataStorage {
   public static final String WIKI_TYPE_DRAFT = "draft";
 
+  public static final String WIKI_FILES_NAMESPACE_NAME = "wiki-attachment";
+  public static final String WIKI_FILES_NAMESPACE_DESCRIPTION = "wiki attachment files";
+
   private WikiDAO        wikiDAO;
   private PageDAO        pageDAO;
   private PageAttachmentDAO  pageAttachmentDAO;
@@ -68,6 +73,7 @@ public class JPADataStorage implements DataStorage {
   private PageMoveDAO    pageMoveDAO;
   private TemplateDAO    templateDAO;
   private EmotionIconDAO emotionIconDAO;
+  private FileService fileService;
 
   /**
    * JPADataStorage must depends on DataInitializer to make sure data structure is created before initializing it
@@ -81,7 +87,8 @@ public class JPADataStorage implements DataStorage {
                         PageMoveDAO pageMoveDAO,
                         TemplateDAO templateDAO,
                         EmotionIconDAO emotionIconDAO,
-                        DataInitializer dataInitializer) {
+                        DataInitializer dataInitializer,
+                        FileService fileService) {
     this.wikiDAO = wikiDAO;
     this.pageDAO = pageDAO;
     this.pageAttachmentDAO = pageAttachmentDAO;
@@ -91,6 +98,7 @@ public class JPADataStorage implements DataStorage {
     this.pageMoveDAO = pageMoveDAO;
     this.templateDAO = templateDAO;
     this.emotionIconDAO = emotionIconDAO;
+    this.fileService = fileService;
   }
 
   @Override
@@ -791,7 +799,7 @@ public class JPADataStorage implements DataStorage {
     List<Attachment> attachments = new ArrayList<>();
     if (attachmentsEntities != null) {
       for (AttachmentEntity attachmentEntity : attachmentsEntities) {
-        Attachment attachment = convertAttachmentEntityToAttachment(attachmentEntity);
+        Attachment attachment = convertAttachmentEntityToAttachment(fileService, attachmentEntity);
         // set title and full title if not there
         if (attachment.getTitle() == null || StringUtils.isEmpty(attachment.getTitle())) {
           attachment.setTitle(attachment.getName());
@@ -800,7 +808,7 @@ public class JPADataStorage implements DataStorage {
           attachment.setFullTitle(attachment.getTitle());
         }
         // build download url
-        attachment.setDownloadURL(getDownloadURL(wikiType, wikiOwner, pageName, attachmentEntity));
+        attachment.setDownloadURL(getDownloadURL(wikiType, wikiOwner, pageName, attachment));
         attachments.add(attachment);
       }
     }
@@ -814,13 +822,10 @@ public class JPADataStorage implements DataStorage {
 
     if(page instanceof DraftPage) {
 
-      DraftPageAttachmentEntity attachmentEntity = convertAttachmentToDraftPageAttachmentEntity(attachment);
+      DraftPageAttachmentEntity attachmentEntity = convertAttachmentToDraftPageAttachmentEntity(fileService, attachment);
       Date now = GregorianCalendar.getInstance().getTime();
       if (attachmentEntity.getCreatedDate() == null) {
         attachmentEntity.setCreatedDate(now);
-      }
-      if (attachmentEntity.getUpdatedDate() == null) {
-        attachmentEntity.setUpdatedDate(now);
       }
 
       DraftPageEntity draftPageEntity = draftPageDAO.findLatestDraftPageByUserAndName(Utils.getCurrentUser(), page.getName());
@@ -844,13 +849,10 @@ public class JPADataStorage implements DataStorage {
       draftPageDAO.update(draftPageEntity);
     } else {
 
-      PageAttachmentEntity attachmentEntity = convertAttachmentToPageAttachmentEntity(attachment);
+      PageAttachmentEntity attachmentEntity = convertAttachmentToPageAttachmentEntity(fileService, attachment);
       Date now = GregorianCalendar.getInstance().getTime();
       if (attachmentEntity.getCreatedDate() == null) {
         attachmentEntity.setCreatedDate(now);
-      }
-      if (attachmentEntity.getUpdatedDate() == null) {
-        attachmentEntity.setUpdatedDate(now);
       }
 
       PageEntity pageEntity = fetchPageEntity(page);
@@ -892,13 +894,19 @@ public class JPADataStorage implements DataStorage {
     if (attachmentsEntities != null) {
       for (int i = 0; i < attachmentsEntities.size(); i++) {
         AttachmentEntity attachmentEntity = attachmentsEntities.get(i);
-        if (attachmentEntity.getName() != null && attachmentEntity.getName().equals(attachmentName)) {
+        String name = null;
+        if(attachmentEntity.getAttachmentFileID() != null){
+           name = fileService.getFileInfo(attachmentEntity.getAttachmentFileID()).getName();
+        }
+        if (name != null && name.equals(attachmentName)) {
           attachmentFound = true;
           attachmentsEntities.remove(i);
           if (page instanceof DraftPage) {
+            fileService.deleteFile(attachmentEntity.getAttachmentFileID());
             draftPageAttachmentDAO.delete((DraftPageAttachmentEntity) attachmentEntity);
           }
           else {
+            fileService.deleteFile(attachmentEntity.getAttachmentFileID());
             pageAttachmentDAO.delete((PageAttachmentEntity) attachmentEntity);
           }
           pageEntity.setAttachments(attachmentsEntities);
@@ -1326,10 +1334,10 @@ public class JPADataStorage implements DataStorage {
 
   /**
    * Build the download URL of an attachment
-   * @param attachmentEntity
+   * @param attachment
    * @return
    */
-  private String getDownloadURL(String wikiType, String wikiOwner, String pageName, AttachmentEntity attachmentEntity) {
+  private String getDownloadURL(String wikiType, String wikiOwner, String pageName, Attachment attachment) {
     StringBuilder sb = new StringBuilder();
 
     sb.append(Utils.getDefaultRestBaseURI())
@@ -1344,9 +1352,9 @@ public class JPADataStorage implements DataStorage {
         .append("/")
         .append(pageName);
     try {
-      sb.append("/").append(URLEncoder.encode(attachmentEntity.getName(), "UTF-8"));
+      sb.append("/").append(URLEncoder.encode(attachment.getName(), "UTF-8"));
     } catch (UnsupportedEncodingException e) {
-      sb.append("/").append(attachmentEntity.getName());
+      sb.append("/").append(attachment.getName());
     }
 
     return sb.toString();

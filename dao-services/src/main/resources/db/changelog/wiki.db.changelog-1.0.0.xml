@@ -98,6 +98,14 @@
     </modifySql>
   </changeSet>
 
+  <changeSet author="wiki" id="1.0.0-3.1">
+    <addColumn tableName="WIKI_PAGE_ATTACHMENTS">
+      <column name="ATTACHMENT_FILE_ID" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+  </changeSet>
+
   <changeSet author="wiki" id="1.0.0-5">
     <createTable tableName="WIKI_PAGE_VERSIONS">
       <column name="PAGE_VERSION_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
@@ -264,6 +272,14 @@
     <modifySql dbms="mysql">
       <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
     </modifySql>
+  </changeSet>
+
+  <changeSet author="wiki" id="1.0.0-5.1">
+    <addColumn tableName="WIKI_DRAFT_ATTACHMENTS">
+      <column name="ATTACHMENT_FILE_ID" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
   </changeSet>
 
   <changeSet author="wiki" id="1.0.0-13">
@@ -458,4 +474,31 @@
     <createSequence sequenceName="SEQ_WIKI_DRAFT_PAGES_DRAFT_ID" startValue="1"/>
   </changeSet>
 
+  <!-- Migration Attachment to File RDBMS -->
+  <changeSet id="1.0.0-39" author="wiki">
+    <customChange class="org.exoplatform.wiki.migration.AttachmentsMigration">
+    </customChange>
+  </changeSet>
+
+  <changeSet id="1.0.0-40" author="wiki">
+    <dropColumn tableName="WIKI_PAGE_ATTACHMENTS">
+      <column name="NAME" type="NVARCHAR(550)"/>
+      <column name="UPDATED_DATE" type="TIMESTAMP"/>
+      <column name="CREATOR" type="NVARCHAR(200)"/>
+      <column name="TITLE" type="NVARCHAR(550)"/>
+      <column name="CONTENT" type="LONGBLOB"/>
+      <column name="MIMETYPE" type="NVARCHAR(100)"/>
+    </dropColumn>
+  </changeSet>
+
+  <changeSet id="1.0.0-41" author="wiki">
+    <dropColumn tableName="WIKI_DRAFT_ATTACHMENTS">
+      <column name="NAME" type="NVARCHAR(550)"/>
+      <column name="UPDATED_DATE" type="TIMESTAMP"/>
+      <column name="CREATOR" type="NVARCHAR(200)"/>
+      <column name="TITLE" type="NVARCHAR(550)"/>
+      <column name="CONTENT" type="LONGBLOB"/>
+      <column name="MIMETYPE" type="NVARCHAR(100)"/>
+    </dropColumn>
+  </changeSet>
 </databaseChangeLog>

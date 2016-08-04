@@ -40,6 +40,7 @@ import org.exoplatform.wiki.service.search.TemplateSearchResult;
 import org.exoplatform.wiki.utils.WikiConstants;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
 import java.util.*;
 
 /**
@@ -485,11 +486,13 @@ public class JPADataStorageTest extends BaseWikiJPAIntegrationTest {
     attachment1.setCreatedDate(Calendar.getInstance());
     attachment1.setUpdatedDate(Calendar.getInstance());
     attachment1.setName("attachment1");
+    attachment1.setContent("content attachment1".getBytes());
 
     Attachment attachment2 = new Attachment();
     attachment2.setCreatedDate(Calendar.getInstance());
     attachment2.setUpdatedDate(Calendar.getInstance());
     attachment2.setName("attachment2");
+    attachment2.setContent("content attachment2".getBytes());
 
     // When
     storage.createPage(wiki, wiki.getWikiHome(), page1);
@@ -528,11 +531,13 @@ public class JPADataStorageTest extends BaseWikiJPAIntegrationTest {
     attachment1.setCreatedDate(GregorianCalendar.getInstance());
     attachment1.setUpdatedDate(GregorianCalendar.getInstance());
     attachment1.setName("attachment1");
+    attachment1.setContent("content attachment2".getBytes());
 
     Attachment attachment2 = new Attachment();
     attachment2.setName("attachment2");
     attachment2.setCreatedDate(GregorianCalendar.getInstance());
     attachment2.setUpdatedDate(GregorianCalendar.getInstance());
+    attachment2.setContent("content attachment2".getBytes());
 
     // When
     storage.createPage(wiki, wiki.getWikiHome(), page1);
