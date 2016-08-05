@@ -626,11 +626,10 @@ public class JPADataStorage implements DataStorage {
 
       if(wikiType != null && wikiOwner != null) {
         Page targetPage = getPageOfWikiByName(wikiType, wikiOwner, pageName);
-        if (targetPage == null) {
-          throw new WikiException("Cannot get target page for draft (" + wikiType + ":" + wikiOwner + ":" + pageName + ")");
+        if (targetPage != null) {
+          draftPage.setTargetPageId(targetPage.getId());
+          draftPage.setTargetPageRevision("1");
         }
-        draftPage.setTargetPageId(targetPage.getId());
-        draftPage.setTargetPageRevision("1");
       }
 
       createDraftPageForUser(draftPage, username);
@@ -829,6 +828,8 @@ public class JPADataStorage implements DataStorage {
         throw new WikiException("Cannot add an attachment to draft page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
             + page.getName() + " because draft page does not exist.");
       }
+
+      attachmentEntity.setDraftPage(draftPageEntity);
 
       // attachment must be saved here because of Hibernate bug HHH-6776
       draftPageAttachmentDAO.create(attachmentEntity);
