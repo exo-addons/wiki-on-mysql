@@ -76,7 +76,7 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
     try {
       fileItem = fileService.getFile(attachment.getAttachmentFileID());
     } catch (FileStorageException e) {
-      e.printStackTrace();
+      LOGGER.error("Cannot get attachment file ID {}, cause {}",attachment.getAttachmentFileID(),e.getCause());
     }
     if (fileItem==null) {
       LOGGER.info("The attachment entity with id {} doesn't exist.", id);
