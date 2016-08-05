@@ -5,6 +5,9 @@ import org.apache.commons.lang.StringUtils;
 import org.exoplatform.commons.file.model.FileItem;
 import org.exoplatform.commons.file.services.FileService;
 import org.exoplatform.commons.file.services.FileStorageException;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.jpa.dao.PageDAO;
 import org.exoplatform.wiki.jpa.dao.WikiDAO;
 import org.exoplatform.wiki.jpa.entity.*;
@@ -19,6 +22,8 @@ import java.util.*;
  * Utility class to convert JPA entity objects
  */
 public class EntityConverter {
+
+  private static final Log LOG                            = ExoLogger.getLogger(EntityConverter.class);
 
   public static Wiki convertWikiEntityToWiki(WikiEntity wikiEntity) {
     Wiki wiki = null;
@@ -189,7 +194,7 @@ public class EntityConverter {
     return permissionEntities;
   }
 
-  public static Attachment convertAttachmentEntityToAttachment(FileService fileService, AttachmentEntity attachmentEntity) {
+  public static Attachment convertAttachmentEntityToAttachment(FileService fileService, AttachmentEntity attachmentEntity) throws WikiException {
     Attachment attachment = null;
     FileItem fileItem = null;
     if (attachmentEntity != null) {
@@ -203,16 +208,15 @@ public class EntityConverter {
       try {
         fileItem = fileService.getFile(attachmentEntity.getAttachmentFileID());
       } catch (FileStorageException e) {
-        return attachment;
+        throw new WikiException("Cannot get attachment file ID "+ attachmentEntity.getAttachmentFileID() + " from storage", e.getCause());
       }
       if (fileItem != null) {
         String name = fileItem.getFileInfo().getName();
         attachment.setName(name);
         int index = name.lastIndexOf(".");
-        if(index != -1) {
+        if (index != -1) {
           attachment.setTitle(name.substring(0, index - 1));
-        }
-        else{
+        } else {
           attachment.setTitle(name);
         }
         attachment.setContent(fileItem.getAsByte());
@@ -230,7 +234,7 @@ public class EntityConverter {
     return attachment;
   }
 
-  public static PageAttachmentEntity convertAttachmentToPageAttachmentEntity(FileService fileService, Attachment attachment) {
+  public static PageAttachmentEntity convertAttachmentToPageAttachmentEntity(FileService fileService, Attachment attachment) throws WikiException {
     PageAttachmentEntity attachmentEntity = null;
     FileItem fileItem = null;
 
@@ -259,7 +263,7 @@ public class EntityConverter {
 
         fileItem = fileService.writeFile(fileItem);
       } catch (Exception ex) {
-        return attachmentEntity;
+        throw new WikiException("Cannot persist page attachment file NAME "+  attachment.getName() + " on file storage", ex.getCause());
       }
       attachmentEntity = new PageAttachmentEntity();
       attachmentEntity.setAttachmentFileID(fileItem.getFileInfo().getId());
@@ -272,7 +276,7 @@ public class EntityConverter {
   }
 
   public static DraftPageAttachmentEntity convertAttachmentToDraftPageAttachmentEntity(FileService fileService,
-                                                                                       Attachment attachment) {
+                                                                                       Attachment attachment) throws WikiException {
     DraftPageAttachmentEntity attachmentEntity = null;
     FileItem fileItem = null;
     if (attachment != null) {
@@ -300,7 +304,7 @@ public class EntityConverter {
 
         fileItem = fileService.writeFile(fileItem);
       } catch (Exception ex) {
-        return attachmentEntity;
+        throw new WikiException("Cannot persist draft attachment file NAME "+  attachment.getName() + " on file storage", ex.getCause());
       }
       if (attachment.getUpdatedDate() == null) {
         attachment.setUpdatedDate(GregorianCalendar.getInstance());

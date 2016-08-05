@@ -61,8 +61,8 @@ import static org.exoplatform.wiki.jpa.EntityConverter.*;
 public class JPADataStorage implements DataStorage {
   public static final String WIKI_TYPE_DRAFT = "draft";
 
-  public static final String WIKI_FILES_NAMESPACE_NAME = "wiki-attachment";
-  public static final String WIKI_FILES_NAMESPACE_DESCRIPTION = "wiki attachment files";
+  public static final String WIKI_FILES_NAMESPACE_NAME = "wiki";
+  public static final String WIKI_FILES_NAMESPACE_DESCRIPTION = "wiki application files";
 
   private WikiDAO        wikiDAO;
   private PageDAO        pageDAO;

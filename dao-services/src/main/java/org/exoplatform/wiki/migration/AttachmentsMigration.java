@@ -23,8 +23,9 @@ import java.sql.SQLException;
 import java.util.Calendar;
 
 /**
- * Attachment Migration service Created by The eXo Platform SAS Author :
- * eXoPlatform@exo@exoplatform.com
+ * Attachment Migration service :  Custom tag Liquibase implements CustomTaskChange
+ * This service will be used to migrate attachments wiki page and draft page from WIKI_PAGE_ATTACHMENTS and WIKI_DRAFT_ATTACHMENTS
+ * To File Rdbms storage.
  */
 public class AttachmentsMigration implements CustomTaskChange {
   private static final Log  LOG                            = ExoLogger.getLogger(AttachmentsMigration.class);
@@ -68,17 +69,23 @@ public class AttachmentsMigration implements CustomTaskChange {
     int fromId;
     int toId = 0;
     long startTime = System.currentTimeMillis();
-    ;
-    try {
+
+    try (PreparedStatement findPageAttachment_ = dbConn.prepareStatement(PAGE_ATTACHMENTS_SELECT_QUERY);
+        PreparedStatement findDraftAttachment_ = dbConn.prepareStatement(DRAFT_ATTACHMENTS_SELECT_QUERY);
+        PreparedStatement updatePageAttachment_ = dbConn.prepareStatement(PAGE_ATTACHMENTS_UPDATE_QUERY);
+        PreparedStatement updateDraftAttachment_ = dbConn.prepareStatement(DRAFT_ATTACHMENTS_UPDATE_QUERY);
+        PreparedStatement findPageAttachmentCount_ = dbConn.prepareStatement(PAGE_ATTACHMENTS_COUNT);
+        PreparedStatement findDraftAttachmentCount_ = dbConn.prepareStatement(DRAFT_ATTACHMENTS_COUNT);) {
+
+      findPageAttachment = findPageAttachment_;
+      findDraftAttachment = findDraftAttachment_;
+      updatePageAttachment = updatePageAttachment_;
+      updateDraftAttachment = updateDraftAttachment_;
+      findPageAttachmentCount = findPageAttachmentCount_;
+      findDraftAttachmentCount = findDraftAttachmentCount_;
+      
       // create wiki namespace if not exist
       nameService.createNameSpace(JPADataStorage.WIKI_FILES_NAMESPACE_NAME, JPADataStorage.WIKI_FILES_NAMESPACE_DESCRIPTION);
-
-      findPageAttachment = dbConn.prepareStatement(PAGE_ATTACHMENTS_SELECT_QUERY);
-      findDraftAttachment = dbConn.prepareStatement(DRAFT_ATTACHMENTS_SELECT_QUERY);
-      updatePageAttachment = dbConn.prepareStatement(PAGE_ATTACHMENTS_UPDATE_QUERY);
-      updateDraftAttachment = dbConn.prepareStatement(DRAFT_ATTACHMENTS_UPDATE_QUERY);
-      findPageAttachmentCount = dbConn.prepareStatement(PAGE_ATTACHMENTS_COUNT);
-      findDraftAttachmentCount = dbConn.prepareStatement(DRAFT_ATTACHMENTS_COUNT);
 
       int attachmentSize = findPageAttachmentCount() + findDraftAttachmentCount();
       int count = 0;
@@ -198,36 +205,6 @@ public class AttachmentsMigration implements CustomTaskChange {
         LOG.info("Numbers of wiki attachments in error during migration attachment to File Rdbms = " + errorNumber);
       }
       LOG.info("===  Wiki attachments migration to File RDBMS done in " + (endTime - startTime) + " ms");
-      try {
-        findPageAttachment.close();
-      } catch (SQLException e) {
-        LOG.error("Error during close PreparedStatement  - Cause : " + e.getMessage(), e);
-      }
-      try {
-        findDraftAttachment.close();
-      } catch (SQLException e) {
-        LOG.error("Error during close PreparedStatement  - Cause : " + e.getMessage(), e);
-      }
-      try {
-        updatePageAttachment.close();
-      } catch (SQLException e) {
-        LOG.error("Error during close PreparedStatement  - Cause : " + e.getMessage(), e);
-      }
-      try {
-        updateDraftAttachment.close();
-      } catch (SQLException e) {
-        LOG.error("Error during close PreparedStatement  - Cause : " + e.getMessage(), e);
-      }
-      try {
-        findPageAttachmentCount.close();
-      } catch (SQLException e) {
-        LOG.error("Error during close PreparedStatement  - Cause : " + e.getMessage(), e);
-      }
-      try {
-        findDraftAttachmentCount.close();
-      } catch (SQLException e) {
-        LOG.error("Error during close PreparedStatement  - Cause : " + e.getMessage(), e);
-      }
       try {
         attachmentSet.close();
       } catch (SQLException e) {
