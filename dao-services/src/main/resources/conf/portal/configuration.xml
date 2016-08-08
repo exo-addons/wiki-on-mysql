@@ -177,7 +177,7 @@
   <external-component-plugins>
     <target-component>org.exoplatform.commons.file.services.NameSpaceService</target-component>
     <component-plugin>
-      <name>AvatarNameSpacePlugin</name>
+      <name>WikiNameSpacePlugin</name>
       <set-method>addNameSpacePlugin</set-method>
       <type>org.exoplatform.commons.file.services.NameSpacePlugin</type>
       <init-params>

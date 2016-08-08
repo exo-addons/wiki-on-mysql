@@ -267,7 +267,6 @@ public class AttachmentsMigration implements CustomTaskChange {
   }
 
   private int findPageAttachmentCount() throws SQLException {
-    ;
     try (ResultSet count = findPageAttachmentCount.executeQuery()) {
       if (count.next()) {
         return count.getInt(1);
@@ -279,7 +278,6 @@ public class AttachmentsMigration implements CustomTaskChange {
   }
 
   private int findDraftAttachmentCount() throws SQLException {
-    ;
     try (ResultSet count = findDraftAttachmentCount.executeQuery()) {
       if (count.next()) {
         return count.getInt(1);
