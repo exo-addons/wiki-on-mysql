@@ -36,7 +36,7 @@ public class PermissionEntity {
   /**
    * User or Group
    */
-  @Column(name = "IDENTITY")
+  @Column(name = "WIKI_IDENTITY")
   private String identity;
 
   @Column(name = "IDENTITY_TYPE")

@@ -502,4 +502,12 @@
       <column name="MIMETYPE"/>
     </dropColumn>
   </changeSet>
+
+  <!--Fix issue SOC-5440-->
+  <changeSet id="1.0.0-44" author="wiki">
+    <renameColumn tableName="WIKI_PAGE_PERMISSIONS" oldColumnName="IDENTITY" newColumnName="WIKI_IDENTITY"
+                  columnDataType="NVARCHAR(200)"/>
+    <renameColumn tableName="WIKI_WIKI_PERMISSIONS" oldColumnName="IDENTITY" newColumnName="WIKI_IDENTITY"
+                  columnDataType="NVARCHAR(200)"/>
+  </changeSet>
 </databaseChangeLog>
