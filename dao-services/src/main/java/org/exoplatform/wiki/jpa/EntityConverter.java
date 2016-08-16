@@ -267,7 +267,12 @@ public class EntityConverter {
       }
       attachmentEntity = new PageAttachmentEntity();
       attachmentEntity.setAttachmentFileID(fileItem.getFileInfo().getId());
-      attachmentEntity.setFullTitle(attachment.getFullTitle());
+      if(attachment.getFullTitle() == null){
+        attachmentEntity.setFullTitle(attachment.getName());
+      }
+      else{
+        attachmentEntity.setFullTitle(attachment.getFullTitle());
+      }
       if (attachment.getCreatedDate() != null) {
         attachmentEntity.setCreatedDate(attachment.getCreatedDate().getTime());
       }
@@ -311,7 +316,12 @@ public class EntityConverter {
       }
       attachmentEntity = new DraftPageAttachmentEntity();
       attachmentEntity.setAttachmentFileID(fileItem.getFileInfo().getId());
-      attachmentEntity.setFullTitle(attachment.getFullTitle());
+      if(attachment.getFullTitle() == null){
+        attachmentEntity.setFullTitle(attachment.getName());
+      }
+      else{
+        attachmentEntity.setFullTitle(attachment.getFullTitle());
+      }
       if (attachment.getCreatedDate() != null) {
         attachmentEntity.setCreatedDate(attachment.getCreatedDate().getTime());
       }
