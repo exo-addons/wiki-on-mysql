@@ -401,11 +401,21 @@ public class JPADataStorage implements DataStorage {
 
   @Override
   public void deleteDraftOfPage(Page page, String username) throws WikiException {
+    List<DraftPageEntity> draftPages = draftPageDAO.findDraftPagesByUserAndTargetPage(username, Long.valueOf(page.getId()));
+    for (DraftPageEntity draftPage: draftPages) {
+      if(draftPage != null){
+        deleteAttachmentsOfDraftPage(draftPage);
+      }
+    }
     draftPageDAO.deleteDraftPagesByUserAndTargetPage(username, Long.valueOf(page.getId()));
   }
 
   @Override
   public void deleteDraftByName(String draftPageName, String username) throws WikiException {
+    DraftPageEntity draftPage = draftPageDAO.findLatestDraftPageByUserAndName(username, draftPageName);
+    if(draftPage != null){
+      deleteAttachmentsOfDraftPage(draftPage);
+    }
     draftPageDAO.deleteDraftPagesByUserAndName(draftPageName, username);
   }
 
@@ -634,11 +644,10 @@ public class JPADataStorage implements DataStorage {
 
       if(wikiType != null && wikiOwner != null) {
         Page targetPage = getPageOfWikiByName(wikiType, wikiOwner, pageName);
-        if (targetPage == null) {
-          throw new WikiException("Cannot get target page for draft (" + wikiType + ":" + wikiOwner + ":" + pageName + ")");
+        if (targetPage != null) {
+          draftPage.setTargetPageId(targetPage.getId());
+          draftPage.setTargetPageRevision("1");
         }
-        draftPage.setTargetPageId(targetPage.getId());
-        draftPage.setTargetPageRevision("1");
       }
 
       createDraftPageForUser(draftPage, username);
@@ -834,6 +843,8 @@ public class JPADataStorage implements DataStorage {
         throw new WikiException("Cannot add an attachment to draft page " + page.getWikiType() + ":" + page.getWikiOwner() + ":"
             + page.getName() + " because draft page does not exist.");
       }
+
+      attachmentEntity.setDraftPage(draftPageEntity);
 
       // attachment must be saved here because of Hibernate bug HHH-6776
       draftPageAttachmentDAO.create(attachmentEntity);
@@ -1305,6 +1316,21 @@ public class JPADataStorage implements DataStorage {
     } else {
       throw new WikiException("Cannot remove watcher " + username + " of page " + page.getWikiType() + ":" + page.getWikiOwner()
           + ":" + page.getName() + " because watcher does not exist.");
+    }
+  }
+
+  @ExoTransactional
+  public void deleteAttachmentsOfDraftPage(DraftPageEntity page) throws WikiException {
+    List<DraftPageAttachmentEntity> attachmentsEntities = page.getAttachments();
+    if (attachmentsEntities != null) {
+      for (int i = 0; i < attachmentsEntities.size(); i++) {
+        AttachmentEntity attachmentEntity = attachmentsEntities.get(i);
+        attachmentsEntities.remove(i);
+        fileService.deleteFile(attachmentEntity.getAttachmentFileID());
+        draftPageAttachmentDAO.delete((DraftPageAttachmentEntity) attachmentEntity);
+      }
+      page.setAttachments(attachmentsEntities);
+      draftPageDAO.update(page);
     }
   }
 
