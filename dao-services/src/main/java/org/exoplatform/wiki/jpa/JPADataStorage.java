@@ -258,6 +258,11 @@ public class JPADataStorage implements DataStorage {
   }
 
   @Override
+  public DraftPage getDraftPageById(String id) throws WikiException {
+    return convertDraftPageEntityToDraftPage(draftPageDAO.find(Long.parseLong(id)));
+  }
+
+  @Override
   public Page getParentPageOf(Page page) throws WikiException {
     Page parentPage = null;
 
