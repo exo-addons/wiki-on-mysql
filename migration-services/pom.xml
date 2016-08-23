@@ -54,9 +54,10 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.exoplatform.addons.es</groupId>
-      <artifactId>exo-es-search-service</artifactId>
-      <version>${exo.es.search.version}</version>
+      <groupId>org.exoplatform.commons</groupId>
+      <artifactId>commons-search</artifactId>
+      <version>${org.exoplatform.platform.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Tests -->
