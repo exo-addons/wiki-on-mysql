@@ -188,6 +188,7 @@ public abstract class BaseWikiIntegrationTest extends BaseWikiJPAIntegrationTest
 
   private void cleanDB() {
     indexingOperationDAO.deleteAll();
+    indexingOperationProcessor.process();
   }
 
   private void deleteAllDocumentsInES() {
