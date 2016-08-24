@@ -78,6 +78,9 @@ public abstract class BasePageEntity {
   }
 
   public String getContent() {
+    if (content == null) {
+      content = "";
+    }
     return content;
   }
 
