@@ -69,6 +69,7 @@ public class AttachmentsMigration implements CustomTaskChange {
     int fromId;
     int toId = 0;
     long startTime = System.currentTimeMillis();
+    boolean autoCommit =  false;
 
     try (PreparedStatement findPageAttachment_ = dbConn.prepareStatement(PAGE_ATTACHMENTS_SELECT_QUERY);
         PreparedStatement findDraftAttachment_ = dbConn.prepareStatement(DRAFT_ATTACHMENTS_SELECT_QUERY);
@@ -83,6 +84,9 @@ public class AttachmentsMigration implements CustomTaskChange {
       updateDraftAttachment = updateDraftAttachment_;
       findPageAttachmentCount = findPageAttachmentCount_;
       findDraftAttachmentCount = findDraftAttachmentCount_;
+
+      autoCommit = dbConn.getAutoCommit();
+      dbConn.setAutoCommit(false);
       
       // create wiki namespace if not exist
       nameService.createNameSpace(JPADataStorage.WIKI_FILES_NAMESPACE_NAME, JPADataStorage.WIKI_FILES_NAMESPACE_DESCRIPTION);
@@ -131,6 +135,7 @@ public class AttachmentsMigration implements CustomTaskChange {
             fileItem = fileService.writeFile(fileItem);
             if (fileItem.getFileInfo().getId() != null) {
               updatePageAttachment(id, fileItem.getFileInfo().getId());
+              dbConn.commit();
             }
             LOG.info("Migration page attachment id {} Done, progress {}/{}", id, count, attachmentSize);
           } catch (Exception e) {
@@ -181,6 +186,7 @@ public class AttachmentsMigration implements CustomTaskChange {
             fileItem = fileService.writeFile(fileItem);
             if (fileItem.getFileInfo().getId() != null) {
               updateDraftAttachment(id, fileItem.getFileInfo().getId());
+              dbConn.commit();
             }
             LOG.info("Migration draft attachment id {} Done, progress {}/{}", id, count, attachmentSize);
           } catch (Exception e) {
@@ -209,6 +215,12 @@ public class AttachmentsMigration implements CustomTaskChange {
         attachmentSet.close();
       } catch (SQLException e) {
         LOG.error("Error during close ResultSet  - Cause : " + e.getMessage(), e);
+      }
+
+      try {
+        dbConn.setAutoCommit(autoCommit);
+      } catch (DatabaseException e) {
+        LOG.error("Error during set AutoCommit  - Cause : " + e.getMessage(), e);
       }
     }
 
@@ -251,8 +263,8 @@ public class AttachmentsMigration implements CustomTaskChange {
   private int updatePageAttachment(long id, long fileID) throws SQLException {
     updatePageAttachment.clearParameters();
 
-    updatePageAttachment.setLong(1, id);
-    updatePageAttachment.setLong(2, fileID);
+    updatePageAttachment.setLong(1, fileID);
+    updatePageAttachment.setLong(2, id);
 
     return updatePageAttachment.executeUpdate();
   }
@@ -260,8 +272,8 @@ public class AttachmentsMigration implements CustomTaskChange {
   private int updateDraftAttachment(long id, long fileID) throws SQLException {
     updateDraftAttachment.clearParameters();
 
-    updateDraftAttachment.setLong(1, id);
-    updateDraftAttachment.setLong(2, fileID);
+    updateDraftAttachment.setLong(1, fileID);
+    updateDraftAttachment.setLong(2, id);
 
     return updateDraftAttachment.executeUpdate();
   }
