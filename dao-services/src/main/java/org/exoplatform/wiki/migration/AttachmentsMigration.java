@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Attachment Migration service :  Custom tag Liquibase implements CustomTaskChange
@@ -114,21 +115,20 @@ public class AttachmentsMigration implements CustomTaskChange {
 
           byte[] content = attachmentSet.getBytes("CONTENT");
           long contentSize = 0;
-          Calendar updatedDate = null;
+          Date updatedDate = null;
           if (content != null) {
             contentSize = content.length;
           }
           try {
-            if (attachmentSet.getDate("UPDATED_DATE") != null) {
-              updatedDate = Calendar.getInstance();
-              updatedDate.setTime(attachmentSet.getDate("UPDATED_DATE"));
+            if (attachmentSet.getTimestamp("UPDATED_DATE") != null) {
+              updatedDate = new Date(attachmentSet.getTimestamp("UPDATED_DATE").getTime());
             }
             FileItem fileItem = new FileItem(null,
                                              attachmentSet.getString("NAME"),
                                              attachmentSet.getString("MIMETYPE"),
                                              JPADataStorage.WIKI_FILES_NAMESPACE_NAME,
                                              contentSize,
-                                             updatedDate.getTime(),
+                                             updatedDate,
                                              attachmentSet.getString("CREATOR"),
                                              false,
                                              new ByteArrayInputStream(content));
@@ -165,21 +165,20 @@ public class AttachmentsMigration implements CustomTaskChange {
 
           byte[] content = attachmentSet.getBytes("CONTENT");
           long contentSize = 0;
-          Calendar updatedDate = null;
+          Date updatedDate = null;
           if (content != null) {
             contentSize = content.length;
           }
           try {
-            if (attachmentSet.getDate("UPDATED_DATE") != null) {
-              updatedDate = Calendar.getInstance();
-              updatedDate.setTime(attachmentSet.getDate("UPDATED_DATE"));
+            if (attachmentSet.getTimestamp("UPDATED_DATE") != null) {
+              updatedDate = new Date(attachmentSet.getTimestamp("UPDATED_DATE").getTime());
             }
             FileItem fileItem = new FileItem(null,
                                              attachmentSet.getString("NAME"),
                                              attachmentSet.getString("MIMETYPE"),
                                              JPADataStorage.WIKI_FILES_NAMESPACE_NAME,
                                              contentSize,
-                                             updatedDate.getTime(),
+                                             updatedDate,
                                              attachmentSet.getString("CREATOR"),
                                              false,
                                              new ByteArrayInputStream(content));

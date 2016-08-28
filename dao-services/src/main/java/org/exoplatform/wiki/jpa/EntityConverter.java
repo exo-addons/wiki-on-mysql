@@ -211,14 +211,17 @@ public class EntityConverter {
         throw new WikiException("Cannot get attachment file ID "+ attachmentEntity.getAttachmentFileID() + " from storage", e.getCause());
       }
       if (fileItem != null) {
-        String name = fileItem.getFileInfo().getName();
-        attachment.setName(name);
-        int index = name.lastIndexOf(".");
-        if (index != -1) {
-          attachment.setTitle(name.substring(0, index - 1));
-        } else {
-          attachment.setTitle(name);
+        attachment.setName(fileItem.getFileInfo().getName());
+        String fullTitle = attachment.getFullTitle();
+        if (fullTitle != null && !StringUtils.isEmpty(fullTitle)) {
+          int index = fullTitle.lastIndexOf(".");
+          if (index != -1) {
+            attachment.setTitle(fullTitle.substring(0, index));
+          } else {
+            attachment.setTitle(fullTitle);
+          }
         }
+        
         attachment.setContent(fileItem.getAsByte());
         attachment.setMimeType(fileItem.getFileInfo().getMimetype());
         attachment.setWeightInBytes(fileItem.getFileInfo().getSize());
