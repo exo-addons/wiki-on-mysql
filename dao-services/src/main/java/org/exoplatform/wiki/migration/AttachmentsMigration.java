@@ -20,7 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Calendar;
+import java.sql.Timestamp;
 import java.util.Date;
 
 /**
@@ -36,16 +36,16 @@ public class AttachmentsMigration implements CustomTaskChange {
   private static String     DRAFT_ATTACHMENTS_COUNT        = "select count(*) from WIKI_DRAFT_ATTACHMENTS";
 
   private static String     PAGE_ATTACHMENTS_SELECT_QUERY  =
-                                                          "select P.ATTACHMENT_ID, P.NAME, P.CREATOR, P.UPDATED_DATE, P.MIMETYPE, P.CONTENT from WIKI_PAGE_ATTACHMENTS P where P.ATTACHMENT_ID>= ? and P.ATTACHMENT_ID <?";
+                                                          "select P.ATTACHMENT_ID, P.NAME, P.CREATOR, P.CREATED_DATE, P.UPDATED_DATE, P.MIMETYPE, P.CONTENT from WIKI_PAGE_ATTACHMENTS P where P.ATTACHMENT_ID>= ? and P.ATTACHMENT_ID <?";
 
   private static String     PAGE_ATTACHMENTS_UPDATE_QUERY  =
-                                                          "update WIKI_PAGE_ATTACHMENTS set ATTACHMENT_FILE_ID= ? where ATTACHMENT_ID = ?";
+                                                          "update WIKI_PAGE_ATTACHMENTS set ATTACHMENT_FILE_ID= ? , CREATED_DATE= ?  where ATTACHMENT_ID = ?";
 
   private static String     DRAFT_ATTACHMENTS_SELECT_QUERY =
-                                                           "select P.ATTACHMENT_ID, P.NAME, P.CREATOR, P.UPDATED_DATE, P.MIMETYPE, P.CONTENT from WIKI_DRAFT_ATTACHMENTS P  where P.ATTACHMENT_ID>= ? and P.ATTACHMENT_ID <?";
+                                                           "select P.ATTACHMENT_ID, P.NAME, P.CREATOR, P.CREATED_DATE, P.UPDATED_DATE, P.MIMETYPE, P.CONTENT from WIKI_DRAFT_ATTACHMENTS P  where P.ATTACHMENT_ID>= ? and P.ATTACHMENT_ID <?";
 
   private static String     DRAFT_ATTACHMENTS_UPDATE_QUERY =
-                                                           "update WIKI_DRAFT_ATTACHMENTS set ATTACHMENT_FILE_ID= ? where ATTACHMENT_ID = ?";
+                                                           "update WIKI_DRAFT_ATTACHMENTS set ATTACHMENT_FILE_ID= ? , CREATED_DATE= ? where ATTACHMENT_ID = ?";
 
   private PreparedStatement findPageAttachment;
 
@@ -134,7 +134,8 @@ public class AttachmentsMigration implements CustomTaskChange {
                                              new ByteArrayInputStream(content));
             fileItem = fileService.writeFile(fileItem);
             if (fileItem.getFileInfo().getId() != null) {
-              updatePageAttachment(id, fileItem.getFileInfo().getId());
+              Timestamp createdDate = attachmentSet.getTimestamp("CREATED_DATE");
+              updatePageAttachment(id, fileItem.getFileInfo().getId(), createdDate);
               dbConn.commit();
             }
             LOG.info("Migration page attachment id {} Done, progress {}/{}", id, count, attachmentSize);
@@ -184,7 +185,8 @@ public class AttachmentsMigration implements CustomTaskChange {
                                              new ByteArrayInputStream(content));
             fileItem = fileService.writeFile(fileItem);
             if (fileItem.getFileInfo().getId() != null) {
-              updateDraftAttachment(id, fileItem.getFileInfo().getId());
+              Timestamp createdDate = attachmentSet.getTimestamp("CREATED_DATE");
+              updateDraftAttachment(id, fileItem.getFileInfo().getId(), createdDate);
               dbConn.commit();
             }
             LOG.info("Migration draft attachment id {} Done, progress {}/{}", id, count, attachmentSize);
@@ -259,20 +261,22 @@ public class AttachmentsMigration implements CustomTaskChange {
     return findDraftAttachment.executeQuery();
   }
 
-  private int updatePageAttachment(long id, long fileID) throws SQLException {
+  private int updatePageAttachment(long id, long fileID, Timestamp created) throws SQLException {
     updatePageAttachment.clearParameters();
 
     updatePageAttachment.setLong(1, fileID);
-    updatePageAttachment.setLong(2, id);
+    updatePageAttachment.setTimestamp(2, created);
+    updatePageAttachment.setLong(3, id);
 
     return updatePageAttachment.executeUpdate();
   }
 
-  private int updateDraftAttachment(long id, long fileID) throws SQLException {
+  private int updateDraftAttachment(long id, long fileID, Timestamp created) throws SQLException {
     updateDraftAttachment.clearParameters();
 
     updateDraftAttachment.setLong(1, fileID);
-    updateDraftAttachment.setLong(2, id);
+    updateDraftAttachment.setTimestamp(2, created);
+    updateDraftAttachment.setLong(3, id);
 
     return updateDraftAttachment.executeUpdate();
   }
