@@ -816,10 +816,15 @@ public class JPADataStorage implements DataStorage {
         Attachment attachment = convertAttachmentEntityToAttachment(fileService, attachmentEntity);
         // set title and full title if not there
         if (attachment.getTitle() == null || StringUtils.isEmpty(attachment.getTitle())) {
-          attachment.setTitle(attachment.getName());
+          int index = attachment.getName().lastIndexOf(".");
+          if (index != -1) {
+            attachment.setTitle(attachment.getName().substring(0, index));
+          } else {
+            attachment.setTitle(attachment.getName());
+          }
         }
         if (attachment.getFullTitle() == null || StringUtils.isEmpty(attachment.getFullTitle())) {
-          attachment.setFullTitle(attachment.getTitle());
+          attachment.setFullTitle(attachment.getName());
         }
         // build download url
         attachment.setDownloadURL(getDownloadURL(wikiType, wikiOwner, pageName, attachment));
