@@ -461,18 +461,14 @@
   <!-- Migration Attachment to File RDBMS -->
   <changeSet author="wiki" id="1.0.0-39">
     <addColumn tableName="WIKI_PAGE_ATTACHMENTS">
-      <column name="ATTACHMENT_FILE_ID" type="BIGINT">
-        <constraints nullable="false"/>
-      </column>
+      <column name="ATTACHMENT_FILE_ID" type="BIGINT"/>
     </addColumn>
   </changeSet>
 
 
   <changeSet author="wiki" id="1.0.0-40">
     <addColumn tableName="WIKI_DRAFT_ATTACHMENTS">
-      <column name="ATTACHMENT_FILE_ID" type="BIGINT">
-        <constraints nullable="false"/>
-      </column>
+      <column name="ATTACHMENT_FILE_ID" type="BIGINT"/>
     </addColumn>
   </changeSet>
 
@@ -503,8 +499,16 @@
     </dropColumn>
   </changeSet>
 
-  <!--Fix issue SOC-5440-->
   <changeSet id="1.0.0-44" author="wiki">
+    <addNotNullConstraint tableName="WIKI_PAGE_ATTACHMENTS" columnName="ATTACHMENT_FILE_ID"/>
+  </changeSet>
+
+  <changeSet id="1.0.0-45" author="wiki">
+    <addNotNullConstraint tableName="WIKI_DRAFT_ATTACHMENTS" columnName="ATTACHMENT_FILE_ID"/>
+  </changeSet>
+
+  <!--Fix issue SOC-5440-->
+  <changeSet id="1.0.0-46" author="wiki">
     <renameColumn tableName="WIKI_PAGE_PERMISSIONS" oldColumnName="IDENTITY" newColumnName="WIKI_IDENTITY"
                   columnDataType="NVARCHAR(200)"/>
     <renameColumn tableName="WIKI_WIKI_PERMISSIONS" oldColumnName="IDENTITY" newColumnName="WIKI_IDENTITY"
