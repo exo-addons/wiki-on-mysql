@@ -500,11 +500,11 @@
   </changeSet>
 
   <changeSet id="1.0.0-44" author="wiki">
-    <addNotNullConstraint tableName="WIKI_PAGE_ATTACHMENTS" columnName="ATTACHMENT_FILE_ID"/>
+    <addNotNullConstraint tableName="WIKI_PAGE_ATTACHMENTS" columnName="ATTACHMENT_FILE_ID" columnDataType="BIGINT"/>
   </changeSet>
 
   <changeSet id="1.0.0-45" author="wiki">
-    <addNotNullConstraint tableName="WIKI_DRAFT_ATTACHMENTS" columnName="ATTACHMENT_FILE_ID"/>
+    <addNotNullConstraint tableName="WIKI_DRAFT_ATTACHMENTS" columnName="ATTACHMENT_FILE_ID" columnDataType="BIGINT"/>
   </changeSet>
 
   <!--Fix issue SOC-5440-->
