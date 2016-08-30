@@ -16,10 +16,15 @@
  */
 package org.exoplatform.wiki.jpa.dao;
 
+import org.exoplatform.commons.file.model.FileInfo;
+import org.exoplatform.commons.file.model.FileItem;
+import org.exoplatform.commons.file.services.FileStorageException;
 import org.exoplatform.wiki.jpa.BaseWikiJPAIntegrationTest;
+import org.exoplatform.wiki.jpa.JPADataStorage;
 import org.exoplatform.wiki.jpa.entity.*;
 import org.exoplatform.wiki.mow.api.PermissionType;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -52,18 +57,35 @@ public class PageAttachmentDAOTest extends BaseWikiJPAIntegrationTest {
     page = pageDAO.create(page);
     URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
     PageAttachmentEntity att = new PageAttachmentEntity();
-    att.setContent(Files.readAllBytes(Paths.get(fileResource.toURI())));
-    att.setName("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
+    FileItem fileItem = null;
+    try {
+       fileItem = new FileItem(null,
+              "AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf",
+              null,
+              JPADataStorage.WIKI_FILES_NAMESPACE_NAME,
+              Files.readAllBytes(Paths.get(fileResource.toURI())).length,
+              new Date(),
+              "marry",
+              false,
+              new ByteArrayInputStream(Files.readAllBytes(Paths.get(fileResource.toURI()))));
+      fileItem = fileService.writeFile(fileItem);
+    } catch (Exception e) {
+      fail();
+    }
+    att.setAttachmentFileID(fileItem.getFileInfo().getId());
     att.setPage(page);
     att.setCreatedDate(new Date());
-    att.setUpdatedDate(new Date());
     //When
     pageAttachmentDAO.create(att);
     Long id = att.getId();
     //Then
     AttachmentEntity got = pageAttachmentDAO.find(id);
-    assertNotNull(got.getContent());
-    assertEquals(new File(fileResource.toURI()).length(), got.getWeightInBytes());
+    try {
+      assertNotNull(fileService.getFile(got.getAttachmentFileID()).getAsByte());
+      assertEquals(new File(fileResource.toURI()).length(), fileService.getFile(got.getAttachmentFileID()).getFileInfo().getSize());
+    } catch (FileStorageException e) {
+      fail();
+    }
     //Delete
     pageAttachmentDAO.delete(att);
     assertNull(pageAttachmentDAO.find(id));
@@ -83,11 +105,24 @@ public class PageAttachmentDAOTest extends BaseWikiJPAIntegrationTest {
     page = pageDAO.create(page);
     URL fileResource = this.getClass().getClassLoader().getResource("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
     PageAttachmentEntity att = new PageAttachmentEntity();
-    att.setContent(Files.readAllBytes(Paths.get(fileResource.toURI())));
-    att.setName("AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf");
+    FileItem fileItem = null;
+    try {
+      fileItem = new FileItem(null,
+              "AGT2010.DimitriBaeli.EnterpriseScrum-V1.2.pdf",
+              null,
+              JPADataStorage.WIKI_FILES_NAMESPACE_NAME,
+              Files.readAllBytes(Paths.get(fileResource.toURI())).length,
+              new Date(),
+              "marry",
+              false,
+              new ByteArrayInputStream(Files.readAllBytes(Paths.get(fileResource.toURI()))));
+      fileItem = fileService.writeFile(fileItem);
+    } catch (Exception e) {
+      fail();
+    }
+    att.setAttachmentFileID(fileItem.getFileInfo().getId());
     att.setPage(page);
     att.setCreatedDate(new Date());
-    att.setUpdatedDate(new Date());
     //When
     pageAttachmentDAO.create(att);
     Long id = att.getId();
@@ -97,15 +132,21 @@ public class PageAttachmentDAOTest extends BaseWikiJPAIntegrationTest {
     per.setPermissionType(PermissionType.ADMINPAGE);
     List<PermissionEntity> permissions = new ArrayList<>();
     permissions.add(per);
-    att.setCreator("creator");
-    att.setTitle("title");
     Date date = new Date();
-    att.setUpdatedDate(date);
+    fileItem.getFileInfo().setUpdater("creator");
+    fileItem.getFileInfo().setUpdatedDate(date);
+
+    try {
+      fileService.updateFile(fileItem);
+    } catch (FileStorageException e) {
+      fail();
+    }
     //Then
     pageAttachmentDAO.update(att);
     AttachmentEntity got = pageAttachmentDAO.find(id);
-    assertEquals("title", got.getTitle());
-    assertEquals("creator", got.getCreator());
-    assertEquals(date, got.getUpdatedDate());
+
+    FileInfo fileInfo=fileService.getFileInfo(got.getAttachmentFileID());
+    assertEquals("creator", fileInfo.getUpdater());
+    assertEquals(date, fileInfo.getUpdatedDate());
   }
 }

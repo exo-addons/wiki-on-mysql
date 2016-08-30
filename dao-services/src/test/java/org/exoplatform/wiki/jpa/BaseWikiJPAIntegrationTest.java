@@ -20,6 +20,7 @@
 package org.exoplatform.wiki.jpa;
 
 import org.exoplatform.commons.api.persistence.DataInitializer;
+import org.exoplatform.commons.file.services.FileService;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.wiki.jpa.dao.*;
 
@@ -37,6 +38,7 @@ public abstract class BaseWikiJPAIntegrationTest extends BaseTest {
   protected PageMoveDAO    pageMoveDAO;
   protected TemplateDAO    templateDAO;
   protected EmotionIconDAO emotionIconDAO;
+  protected FileService fileService;
 
   public void setUp() {
     super.setUp();
@@ -45,6 +47,8 @@ public abstract class BaseWikiJPAIntegrationTest extends BaseTest {
     DataInitializer dataInitializer = PortalContainer.getInstance().getComponentInstanceOfType(DataInitializer.class);
     dataInitializer.initData();
 
+    //Init fileService
+    fileService= PortalContainer.getInstance().getComponentInstanceOfType(FileService.class);
     // Init DAO
     wikiDAO = PortalContainer.getInstance().getComponentInstanceOfType(WikiDAO.class);
     pageDAO = PortalContainer.getInstance().getComponentInstanceOfType(PageDAO.class);

@@ -184,5 +184,7 @@
     </component-plugin>
   </external-component-plugins>
 
+  <import>jar:conf/portal/files-configuration.xml</import>
+
   <import>jar:/conf/portal/configuration.xml</import>
 </configuration>

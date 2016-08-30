@@ -60,6 +60,11 @@
     </dependency>
     <dependency>
       <groupId>org.exoplatform.commons</groupId>
+      <artifactId>commons-file-storage</artifactId>
+      <version>${org.exoplatform.platform.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.commons</groupId>
       <artifactId>commons-component-common</artifactId>
       <version>${org.exoplatform.platform.version}</version>
       <scope>provided</scope>
@@ -172,6 +177,18 @@
   </dependencies>
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemProperties>
+            <property>
+              <name>exo.data.dir</name>
+              <value>target/exo-files</value>
+            </property>
+          </systemProperties>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>com.jcabi</groupId>
         <artifactId>jcabi-maven-plugin</artifactId>

@@ -458,4 +458,93 @@
     <createSequence sequenceName="SEQ_WIKI_DRAFT_PAGES_DRAFT_ID" startValue="1"/>
   </changeSet>
 
+  <!-- Migration Attachment to File RDBMS -->
+  <changeSet author="wiki" id="1.0.0-39">
+    <addColumn tableName="WIKI_PAGE_ATTACHMENTS">
+      <column name="ATTACHMENT_FILE_ID" type="BIGINT"/>
+    </addColumn>
+  </changeSet>
+
+
+  <changeSet author="wiki" id="1.0.0-40">
+    <addColumn tableName="WIKI_DRAFT_ATTACHMENTS">
+      <column name="ATTACHMENT_FILE_ID" type="BIGINT"/>
+    </addColumn>
+  </changeSet>
+
+  <changeSet id="1.0.0-41" author="wiki">
+    <customChange class="org.exoplatform.wiki.migration.AttachmentsMigration">
+    </customChange>
+  </changeSet>
+
+  <changeSet id="1.0.0-42" author="wiki">
+    <dropColumn tableName="WIKI_PAGE_ATTACHMENTS">
+      <column name="NAME"/>
+      <column name="UPDATED_DATE"/>
+      <column name="CREATOR"/>
+      <column name="TITLE"/>
+      <column name="CONTENT"/>
+      <column name="MIMETYPE"/>
+    </dropColumn>
+  </changeSet>
+
+  <changeSet id="1.0.0-43" author="wiki">
+    <dropColumn tableName="WIKI_DRAFT_ATTACHMENTS">
+      <column name="NAME"/>
+      <column name="UPDATED_DATE"/>
+      <column name="CREATOR"/>
+      <column name="TITLE"/>
+      <column name="CONTENT"/>
+      <column name="MIMETYPE"/>
+    </dropColumn>
+  </changeSet>
+
+  <changeSet id="1.0.0-44" author="wiki">
+    <addNotNullConstraint tableName="WIKI_PAGE_ATTACHMENTS" columnName="ATTACHMENT_FILE_ID" columnDataType="BIGINT"/>
+  </changeSet>
+
+  <changeSet id="1.0.0-45" author="wiki">
+    <addNotNullConstraint tableName="WIKI_DRAFT_ATTACHMENTS" columnName="ATTACHMENT_FILE_ID" columnDataType="BIGINT"/>
+  </changeSet>
+
+  <!--Fix issue SOC-5440-->
+  <changeSet id="1.0.0-46" author="wiki">
+    <renameColumn tableName="WIKI_PAGE_PERMISSIONS" oldColumnName="IDENTITY" newColumnName="WIKI_IDENTITY"
+                  columnDataType="NVARCHAR(200)"/>
+    <renameColumn tableName="WIKI_WIKI_PERMISSIONS" oldColumnName="IDENTITY" newColumnName="WIKI_IDENTITY"
+                  columnDataType="NVARCHAR(200)"/>
+  </changeSet>
+
+  <!--Fix issue WIKI-1263-->
+  <changeSet id="1.0.0-47" author="wiki">
+    <modifyDataType tableName="WIKI_PAGE_ATTACHMENTS" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+  </changeSet>
+
+  <changeSet id="1.0.0-48" author="wiki">
+    <modifyDataType tableName="WIKI_DRAFT_ATTACHMENTS" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+  </changeSet>
+
+  <changeSet id="1.0.0-49" author="wiki">
+    <modifyDataType tableName="WIKI_DRAFT_PAGES" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+    <modifyDataType tableName="WIKI_DRAFT_PAGES" columnName="UPDATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+  </changeSet>
+
+  <changeSet id="1.0.0-50" author="wiki">
+    <modifyDataType tableName="WIKI_PAGES" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+    <modifyDataType tableName="WIKI_PAGES" columnName="UPDATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+  </changeSet>
+
+  <changeSet id="1.0.0-51" author="wiki">
+    <modifyDataType tableName="WIKI_PAGE_MOVES" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+  </changeSet>
+
+  <changeSet id="1.0.0-52" author="wiki">
+    <modifyDataType tableName="WIKI_PAGE_VERSIONS" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+    <modifyDataType tableName="WIKI_PAGE_VERSIONS" columnName="UPDATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+  </changeSet>
+
+  <changeSet id="1.0.0-53" author="wiki">
+    <modifyDataType tableName="WIKI_TEMPLATES" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+    <modifyDataType tableName="WIKI_TEMPLATES" columnName="UPDATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+  </changeSet>
 </databaseChangeLog>

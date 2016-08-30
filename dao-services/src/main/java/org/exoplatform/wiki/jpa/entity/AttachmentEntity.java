@@ -38,56 +38,20 @@ public class AttachmentEntity {
   @GeneratedValue(strategy=GenerationType.AUTO, generator="SEQ_WIKI_PAGE_ATTACH_ATTACH_ID")
   private Long id;
 
-  @Column(name = "NAME")
-  private String name;
-
-  @Column(name = "CREATOR")
-  private String creator;
-
   @Column(name = "CREATED_DATE")
   @Temporal(TemporalType.TIMESTAMP)
   private Date createdDate;
 
-  @Column(name = "UPDATED_DATE")
-  @Temporal(TemporalType.TIMESTAMP)
-  private Date updatedDate;
-
-  @Column(name = "TITLE")
-  private String title;
-
   @Column(name = "FULL_TITLE")
   private String fullTitle;
 
-  @Column(name = "CONTENT")
-  private byte[] content;
-
-  @Column(name = "MIMETYPE")
-  private String mimeType;
+  @Column(name = "ATTACHMENT_FILE_ID")
+  private Long attachmentFileID;
 
   public long getId(){return this.id;}
 
   public void setId(Long id) {
     this.id = id;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public long getWeightInBytes(){
-    return content==null?0:content.length;
-  }
-
-  public String getCreator(){
-    return creator;
-  }
-
-  public void setCreator(String creator) {
-    this.creator = creator;
   }
 
   public Date getCreatedDate(){
@@ -98,22 +62,6 @@ public class AttachmentEntity {
     this.createdDate = createdDate;
   }
 
-  public Date getUpdatedDate(){
-    return updatedDate;
-  }
-
-  public void setUpdatedDate(Date updatedDate) {
-    this.updatedDate = updatedDate;
-  }
-
-  public String getTitle(){
-    return title;
-  }
-
-  public void setTitle(String title){
-    this.title = title;
-  }
-
   public String getFullTitle() {
     return fullTitle;
   }
@@ -122,20 +70,12 @@ public class AttachmentEntity {
     this.fullTitle = fullTitle;
   }
 
-  public byte[] getContent() {
-    return content;
+  public Long getAttachmentFileID() {
+    return attachmentFileID;
   }
 
-  public void setContent(byte[] content) {
-    this.content = content;
-  }
-
-  public String getMimeType() {
-    return mimeType;
-  }
-
-  public void setMimeType(String mimeType) {
-    this.mimeType = mimeType;
+  public void setAttachmentFileID(Long attachmentFileID) {
+    this.attachmentFileID = attachmentFileID;
   }
 
 }

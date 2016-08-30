@@ -2,11 +2,19 @@ package org.exoplatform.wiki.jpa;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.exoplatform.commons.file.model.FileItem;
+import org.exoplatform.commons.file.services.FileService;
+import org.exoplatform.commons.file.services.FileStorageException;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.wiki.WikiException;
 import org.exoplatform.wiki.jpa.dao.PageDAO;
 import org.exoplatform.wiki.jpa.dao.WikiDAO;
 import org.exoplatform.wiki.jpa.entity.*;
 import org.exoplatform.wiki.mow.api.*;
 import org.exoplatform.wiki.service.IDType;
+
+import java.io.ByteArrayInputStream;
 
 import java.util.*;
 
@@ -14,6 +22,8 @@ import java.util.*;
  * Utility class to convert JPA entity objects
  */
 public class EntityConverter {
+
+  private static final Log LOG                            = ExoLogger.getLogger(EntityConverter.class);
 
   public static Wiki convertWikiEntityToWiki(WikiEntity wikiEntity) {
     Wiki wiki = null;
@@ -184,70 +194,140 @@ public class EntityConverter {
     return permissionEntities;
   }
 
-  public static Attachment convertAttachmentEntityToAttachment(AttachmentEntity attachmentEntity) {
+  public static Attachment convertAttachmentEntityToAttachment(FileService fileService, AttachmentEntity attachmentEntity) throws WikiException {
     Attachment attachment = null;
+    FileItem fileItem = null;
     if (attachmentEntity != null) {
       attachment = new Attachment();
-      attachment.setName(attachmentEntity.getName());
-      attachment.setTitle(attachmentEntity.getTitle());
       attachment.setFullTitle(attachmentEntity.getFullTitle());
-      attachment.setCreator(attachmentEntity.getCreator());
       if (attachmentEntity.getCreatedDate() != null) {
         Calendar createdDate = Calendar.getInstance();
         createdDate.setTime(attachmentEntity.getCreatedDate());
         attachment.setCreatedDate(createdDate);
       }
-      if (attachmentEntity.getUpdatedDate() != null) {
-        Calendar updatedDate = Calendar.getInstance();
-        updatedDate.setTime(attachmentEntity.getUpdatedDate());
-        attachment.setUpdatedDate(updatedDate);
+      try {
+        fileItem = fileService.getFile(attachmentEntity.getAttachmentFileID());
+      } catch (FileStorageException e) {
+        throw new WikiException("Cannot get attachment file ID "+ attachmentEntity.getAttachmentFileID() + " from storage", e.getCause());
       }
-      attachment.setContent(attachmentEntity.getContent());
-      attachment.setMimeType(attachmentEntity.getMimeType());
-      attachment.setWeightInBytes(attachmentEntity.getWeightInBytes());
-      // attachment.setPermissions(?);
+      if (fileItem != null) {
+        attachment.setName(fileItem.getFileInfo().getName());
+        String fullTitle = attachment.getFullTitle();
+        if (fullTitle != null && !StringUtils.isEmpty(fullTitle)) {
+          int index = fullTitle.lastIndexOf(".");
+          if (index != -1) {
+            attachment.setTitle(fullTitle.substring(0, index));
+          } else {
+            attachment.setTitle(fullTitle);
+          }
+        }
+        
+        attachment.setContent(fileItem.getAsByte());
+        attachment.setMimeType(fileItem.getFileInfo().getMimetype());
+        attachment.setWeightInBytes(fileItem.getFileInfo().getSize());
+        attachment.setCreator(fileItem.getFileInfo().getUpdater());
+        if (fileItem.getFileInfo().getUpdatedDate() != null) {
+          Calendar updatedDate = Calendar.getInstance();
+          updatedDate.setTime(fileItem.getFileInfo().getUpdatedDate());
+          attachment.setUpdatedDate(updatedDate);
+        }
+      }
     }
+
     return attachment;
   }
 
-  public static PageAttachmentEntity convertAttachmentToPageAttachmentEntity(Attachment attachment) {
+  public static PageAttachmentEntity convertAttachmentToPageAttachmentEntity(FileService fileService, Attachment attachment) throws WikiException {
     PageAttachmentEntity attachmentEntity = null;
+    FileItem fileItem = null;
+
     if (attachment != null) {
+      try {
+        Date updatedDate;
+        if(attachment.getUpdatedDate() != null){
+          updatedDate = attachment.getUpdatedDate().getTime();
+        }
+        else{
+          updatedDate = GregorianCalendar.getInstance().getTime();
+        }
+        long size = 0;
+        if(attachment.getContent() != null){
+          size = attachment.getContent().length;
+        }
+        fileItem = new FileItem(null,
+                                attachment.getName(),
+                                attachment.getMimeType(),
+                                JPADataStorage.WIKI_FILES_NAMESPACE_NAME,
+                                size,
+                                updatedDate,
+                                attachment.getCreator(),
+                                false,
+                                new ByteArrayInputStream(attachment.getContent()));
+
+        fileItem = fileService.writeFile(fileItem);
+      } catch (Exception ex) {
+        throw new WikiException("Cannot persist page attachment file NAME "+  attachment.getName() + " on file storage", ex.getCause());
+      }
       attachmentEntity = new PageAttachmentEntity();
-      attachmentEntity.setName(attachment.getName());
-      attachmentEntity.setTitle(attachment.getTitle());
-      attachmentEntity.setFullTitle(attachment.getFullTitle());
-      attachmentEntity.setCreator(attachment.getCreator());
+      attachmentEntity.setAttachmentFileID(fileItem.getFileInfo().getId());
+      if(attachment.getFullTitle() == null){
+        attachmentEntity.setFullTitle(attachment.getName());
+      }
+      else{
+        attachmentEntity.setFullTitle(attachment.getFullTitle());
+      }
       if (attachment.getCreatedDate() != null) {
         attachmentEntity.setCreatedDate(attachment.getCreatedDate().getTime());
       }
-      if (attachment.getUpdatedDate() != null) {
-        attachmentEntity.setUpdatedDate(attachment.getUpdatedDate().getTime());
-      }
-      attachmentEntity.setContent(attachment.getContent());
-      attachmentEntity.setMimeType(attachment.getMimeType());
-      // page.setPermissions(pageEntity.getPermissions());
     }
     return attachmentEntity;
   }
 
-  public static DraftPageAttachmentEntity convertAttachmentToDraftPageAttachmentEntity(Attachment attachment) {
+  public static DraftPageAttachmentEntity convertAttachmentToDraftPageAttachmentEntity(FileService fileService,
+                                                                                       Attachment attachment) throws WikiException {
     DraftPageAttachmentEntity attachmentEntity = null;
+    FileItem fileItem = null;
     if (attachment != null) {
+      try {
+        Date updatedDate;
+        if(attachment.getUpdatedDate() != null){
+          updatedDate = attachment.getUpdatedDate().getTime();
+        }
+        else{
+          updatedDate = GregorianCalendar.getInstance().getTime();
+        }
+        int size =0;
+        if(attachment.getContent() != null){
+          size = attachment.getContent().length;
+        }
+        fileItem = new FileItem(null,
+                                attachment.getName(),
+                                attachment.getMimeType(),
+                                JPADataStorage.WIKI_FILES_NAMESPACE_NAME,
+                                size,
+                                updatedDate,
+                                attachment.getCreator(),
+                                false,
+                                new ByteArrayInputStream(attachment.getContent()));
+
+        fileItem = fileService.writeFile(fileItem);
+      } catch (Exception ex) {
+        throw new WikiException("Cannot persist draft attachment file NAME "+  attachment.getName() + " on file storage", ex.getCause());
+      }
+      if (attachment.getUpdatedDate() == null) {
+        attachment.setUpdatedDate(GregorianCalendar.getInstance());
+      }
       attachmentEntity = new DraftPageAttachmentEntity();
-      attachmentEntity.setName(attachment.getName());
-      attachmentEntity.setTitle(attachment.getTitle());
-      attachmentEntity.setFullTitle(attachment.getFullTitle());
-      attachmentEntity.setCreator(attachment.getCreator());
+      attachmentEntity.setAttachmentFileID(fileItem.getFileInfo().getId());
+      if(attachment.getFullTitle() == null){
+        attachmentEntity.setFullTitle(attachment.getName());
+      }
+      else{
+        attachmentEntity.setFullTitle(attachment.getFullTitle());
+      }
       if (attachment.getCreatedDate() != null) {
         attachmentEntity.setCreatedDate(attachment.getCreatedDate().getTime());
       }
-      if (attachment.getUpdatedDate() != null) {
-        attachmentEntity.setUpdatedDate(attachment.getUpdatedDate().getTime());
-      }
-      attachmentEntity.setContent(attachment.getContent());
-      attachmentEntity.setMimeType(attachment.getMimeType());
-      // page.setPermissions(pageEntity.getPermissions());
     }
     return attachmentEntity;
   }
