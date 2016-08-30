@@ -514,4 +514,37 @@
     <renameColumn tableName="WIKI_WIKI_PERMISSIONS" oldColumnName="IDENTITY" newColumnName="WIKI_IDENTITY"
                   columnDataType="NVARCHAR(200)"/>
   </changeSet>
+
+  <!--Fix issue WIKI-1263-->
+  <changeSet id="1.0.0-47" author="wiki">
+    <modifyDataType tableName="WIKI_PAGE_ATTACHMENTS" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+  </changeSet>
+
+  <changeSet id="1.0.0-48" author="wiki">
+    <modifyDataType tableName="WIKI_DRAFT_ATTACHMENTS" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+  </changeSet>
+
+  <changeSet id="1.0.0-49" author="wiki">
+    <modifyDataType tableName="WIKI_DRAFT_PAGES" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+    <modifyDataType tableName="WIKI_DRAFT_PAGES" columnName="UPDATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+  </changeSet>
+
+  <changeSet id="1.0.0-50" author="wiki">
+    <modifyDataType tableName="WIKI_PAGES" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+    <modifyDataType tableName="WIKI_PAGES" columnName="UPDATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+  </changeSet>
+
+  <changeSet id="1.0.0-51" author="wiki">
+    <modifyDataType tableName="WIKI_PAGE_MOVES" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+  </changeSet>
+
+  <changeSet id="1.0.0-52" author="wiki">
+    <modifyDataType tableName="WIKI_PAGE_VERSIONS" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+    <modifyDataType tableName="WIKI_PAGE_VERSIONS" columnName="UPDATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+  </changeSet>
+
+  <changeSet id="1.0.0-53" author="wiki">
+    <modifyDataType tableName="WIKI_TEMPLATES" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+    <modifyDataType tableName="WIKI_TEMPLATES" columnName="UPDATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+  </changeSet>
 </databaseChangeLog>
