@@ -517,34 +517,67 @@
 
   <!--Fix issue WIKI-1263-->
   <changeSet id="1.0.0-47" author="wiki">
-    <modifyDataType tableName="WIKI_PAGE_ATTACHMENTS" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+    <customChange class="org.exoplatform.wiki.liquibase.TimestampChange">
+      <param name="tableName" value="WIKI_PAGE_ATTACHMENTS"></param>
+      <param name="columnName" value="CREATED_DATE"></param>
+    </customChange>
   </changeSet>
 
   <changeSet id="1.0.0-48" author="wiki">
-    <modifyDataType tableName="WIKI_DRAFT_ATTACHMENTS" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+    <customChange class="org.exoplatform.wiki.liquibase.TimestampChange">
+      <param name="tableName" value="WIKI_DRAFT_ATTACHMENTS"></param>
+      <param name="columnName" value="CREATED_DATE"></param>
+    </customChange>
   </changeSet>
 
   <changeSet id="1.0.0-49" author="wiki">
-    <modifyDataType tableName="WIKI_DRAFT_PAGES" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
-    <modifyDataType tableName="WIKI_DRAFT_PAGES" columnName="UPDATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+    <customChange class="org.exoplatform.wiki.liquibase.TimestampChange">
+      <param name="tableName" value="WIKI_DRAFT_PAGES"></param>
+      <param name="columnName" value="CREATED_DATE"></param>
+    </customChange>
+    <customChange class="org.exoplatform.wiki.liquibase.TimestampChange">
+      <param name="tableName" value="WIKI_DRAFT_PAGES"></param>
+      <param name="columnName" value="UPDATED_DATE"></param>
+    </customChange>
   </changeSet>
 
   <changeSet id="1.0.0-50" author="wiki">
-    <modifyDataType tableName="WIKI_PAGES" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
-    <modifyDataType tableName="WIKI_PAGES" columnName="UPDATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+    <customChange class="org.exoplatform.wiki.liquibase.TimestampChange">
+      <param name="tableName" value="WIKI_PAGES"></param>
+      <param name="columnName" value="CREATED_DATE"></param>
+    </customChange>
+    <customChange class="org.exoplatform.wiki.liquibase.TimestampChange">
+      <param name="tableName" value="WIKI_PAGES"></param>
+      <param name="columnName" value="UPDATED_DATE"></param>
+    </customChange>
   </changeSet>
 
   <changeSet id="1.0.0-51" author="wiki">
-    <modifyDataType tableName="WIKI_PAGE_MOVES" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+    <customChange class="org.exoplatform.wiki.liquibase.TimestampChange">
+      <param name="tableName" value="WIKI_PAGE_MOVES"></param>
+      <param name="columnName" value="CREATED_DATE"></param>
+    </customChange>
   </changeSet>
 
   <changeSet id="1.0.0-52" author="wiki">
-    <modifyDataType tableName="WIKI_PAGE_VERSIONS" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
-    <modifyDataType tableName="WIKI_PAGE_VERSIONS" columnName="UPDATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+    <customChange class="org.exoplatform.wiki.liquibase.TimestampChange">
+      <param name="tableName" value="WIKI_PAGE_VERSIONS"></param>
+      <param name="columnName" value="CREATED_DATE"></param>
+    </customChange>
+    <customChange class="org.exoplatform.wiki.liquibase.TimestampChange">
+      <param name="tableName" value="WIKI_PAGE_VERSIONS"></param>
+      <param name="columnName" value="UPDATED_DATE"></param>
+    </customChange>
   </changeSet>
 
   <changeSet id="1.0.0-53" author="wiki">
-    <modifyDataType tableName="WIKI_TEMPLATES" columnName="CREATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
-    <modifyDataType tableName="WIKI_TEMPLATES" columnName="UPDATED_DATE" newDataType="TIMESTAMP NOT NULL DEFAULT ${now}"/>
+    <customChange class="org.exoplatform.wiki.liquibase.TimestampChange">
+      <param name="tableName" value="WIKI_TEMPLATES"></param>
+      <param name="columnName" value="CREATED_DATE"></param>
+    </customChange>
+    <customChange class="org.exoplatform.wiki.liquibase.TimestampChange">
+      <param name="tableName" value="WIKI_TEMPLATES"></param>
+      <param name="columnName" value="UPDATED_DATE"></param>
+    </customChange>
   </changeSet>
 </databaseChangeLog>
