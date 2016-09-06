@@ -17,7 +17,7 @@ import java.util.TimeZone;
 
 /**
  * Custom tag Liquibase implements CustomSqlChange
- * This service will be used to update Default TimeStamp.
+ * This service will be used to be able to set correctly the UTC time  (use '1970-01-01 00:00:01' as default TIMESTAMP).
  */
 public class TimestampChange implements CustomSqlChange {
 
@@ -68,15 +68,18 @@ public class TimestampChange implements CustomSqlChange {
   }
 
   public static String getLocalToUtcDelta() {
-    Calendar gmt = Calendar.getInstance();
-    gmt.set(1970, Calendar.JANUARY, 1, 0, 0, 1);
+    Calendar utcDate = Calendar.getInstance();
+    utcDate.set(1970, Calendar.JANUARY, 1, 0, 0, 1);
 
     String format = "yyyy/MM/dd HH:mm:ss";
     SimpleDateFormat sdf = new SimpleDateFormat(format);
 
-    // Convert UTC to Local Time
-    Date locale = new Date(gmt.getTime().getTime() + TimeZone.getDefault().getOffset(gmt.getTime().getTime()));
+    TimeZone tz = TimeZone.getDefault();
+    Date local = utcDate.getTime();
+    if (tz.getRawOffset() > 0) {
+      local = new Date(utcDate.getTime().getTime() + tz.getRawOffset());
+    }
 
-    return sdf.format(locale);
+    return sdf.format(local);
   }
 }
