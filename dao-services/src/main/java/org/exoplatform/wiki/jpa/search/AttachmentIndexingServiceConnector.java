@@ -87,10 +87,9 @@ public class AttachmentIndexingServiceConnector  extends ElasticIndexingServiceC
     Map<String,String> fields = new HashMap<>();
     Document doc = new Document(TYPE, id, getUrl(attachment), fileItem.getFileInfo().getUpdatedDate(),
         computePermissions(fileItem.getFileInfo().getUpdater(),attachment), fields);
-    String fileName = org.exoplatform.wiki.utils.Utils.escapeIllegalCharacterInName(fileItem.getFileInfo().getName());
-    doc.addField("title", fileName);
+    doc.addField("title", attachment.getFullTitle());
     doc.addField("file", fileItem.getAsByte());
-    doc.addField("name", fileName);
+    doc.addField("name", fileItem.getFileInfo().getName());
     doc.addField("createdDate", String.valueOf(attachment.getCreatedDate().getTime()));
     doc.addField("updatedDate", String.valueOf(fileItem.getFileInfo().getUpdatedDate().getTime()));
     PageEntity page = attachment.getPage();
